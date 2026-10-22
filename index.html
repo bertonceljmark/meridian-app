@@ -1444,6 +1444,12 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .thero-fig .fig { font-size: calc(54px * var(--tsd, 1)); line-height: 1; }
 .thero-fig .unit { font-size: calc(18px * var(--ts, 1)); color: var(--on-deep-2); font-weight: 520; }
 .thero-sub { grid-area: sub; padding: 0 var(--gut); margin-top: 6px; font-size: calc(14px * var(--ts, 1)); color: var(--on-deep-2); line-height: 1.35; }
+.thero { grid-template-areas: "kick kick" "obj obj" "fig link" "sub sub" "fresh fresh"; }
+.thero-fresh { grid-area: fresh; display: flex; align-items: center; gap: 8px; margin: 10px var(--gut) 0; min-height: 44px; padding: 8px 12px; border-radius: 16px; background: rgba(237,241,246,.07); box-shadow: inset 0 0 0 1px rgba(205,220,245,.08); color: var(--on-deep-2); font-size: calc(14px * var(--ts, 1)); line-height: 1.3; text-align: left; }
+.thero-fresh b { color: var(--on-deep); font-weight: 620; }
+.thero-fresh .tf-t { flex: 1; min-width: 0; }
+.thero-fresh .dot { flex: none; width: 7px; height: 7px; border-radius: 4px; background: oklch(.84 .1 190); box-shadow: 0 0 0 3px oklch(.84 .1 190 / .18); }
+.thero-fresh svg { flex: none; }
 .thero-link { grid-area: link; align-self: end; margin: 0 calc(var(--gut) - 12px) -4px 0; min-height: 44px; padding: 0 10px 0 14px; display: inline-flex; align-items: center; gap: 2px; font-weight: 620; font-size: calc(15px * var(--ts, 1)); color: var(--on-deep); border-radius: 22px; }
 .thero[data-today-hero="week"] .thero-link { margin-top: 4px; }
 .thero.entering .thero-obj { animation: rise .7s var(--out) both; }
@@ -2756,6 +2762,7 @@ const ITEMS0 = [{
 }, {
   id: 'date',
   name: 'Date night',
+  lens: 'rhythm',
   kind: 'routine',
   measure: 'event',
   hue: 356,
@@ -2777,6 +2784,7 @@ const ITEMS0 = [{
   id: 'call',
   name: 'Call parents',
   short: 'Parents',
+  lens: 'rhythm',
   kind: 'routine',
   measure: 'confirmation',
   hue: 30,
@@ -2949,6 +2957,7 @@ const ITEMS0 = [{
   id: 'friends',
   name: 'Time with friends',
   short: 'Friends',
+  lens: 'rhythm',
   kind: 'routine',
   measure: 'event',
   hue: 342,
@@ -5367,7 +5376,7 @@ function consequence(db, it, ev, opts = {}) {
   if (c === 'day') return `today`;
   return '';
 }
-const RHYTHM = it => it.lens ? it.lens === 'rhythm' && it.cadence && it.cadence.type !== 'day' : ['date', 'call', 'friends'].includes(it.id);
+const RHYTHM = it => it.lens === 'rhythm' && !!it.cadence && it.cadence.type !== 'day';
 const LENS_OPTS = [{
   v: 'count',
   l: 'Count'
@@ -5496,7 +5505,7 @@ function keptOf(db, it, L) {
   const have = new Set(L.all.map(e => periodOf(it, dayOf(e.t))[0]));
   let n = 0,
     k = 0,
-    d = it.created,
+    d = L.since != null ? L.since : it.created,
     g = 0;
   const end = it.retired != null ? Math.min(db.today, it.retired) : db.today;
   while (d <= end && g++ < 4000) {
@@ -7045,7 +7054,14 @@ function Bars({
     rx: 4,
     fill: deep ? 'rgba(255,255,255,.1)' : 'var(--ink)',
     opacity: deep ? 1 : .08
-  }), React.createElement(Tx, {
+  }), pl + span.i0 * bw + 3 + String(span.label).length * 8 > W - 2 ? React.createElement(Tx, {
+    c: 2,
+    x: W - 2,
+    y: pt - 15,
+    anchor: "end",
+    size: 12,
+    weight: 600
+  }, span.label) : React.createElement(Tx, {
     c: 2,
     x: pl + span.i0 * bw + 3,
     y: pt - 15,
@@ -7076,7 +7092,33 @@ function Bars({
       rx: 1.5,
       fill: deep ? 'var(--on-deep-2)' : 'var(--ink-3)'
     }));
-    if (d.state === 'unknown' || d.state === 'before' || d.state === 'paused' || d.state === 'set-aside') {
+    if (d.state === 'set-aside') {
+      const v = d.v || 0;
+      const hh = v > 0 ? Math.max(3, H - pb - y(Math.min(v, max))) : 0;
+      return React.createElement("g", {
+        key: i,
+        opacity: on ? 1 : .95,
+        "data-aside-bar": true
+      }, React.createElement("rect", {
+        x: x,
+        y: H - pb - 6,
+        width: w,
+        height: 5,
+        rx: Math.min(2.5, w / 2),
+        fill: deep ? 'var(--on-deep-3)' : 'var(--ink-4)',
+        opacity: .55
+      }), hh > 0 && React.createElement("rect", {
+        x: x + w * .15,
+        y: H - pb - hh,
+        width: w * .7,
+        height: Math.max(0, hh - 7),
+        rx: Math.min(4, w / 3),
+        fill: deep ? 'var(--on-deep-3)' : 'var(--ink-3)',
+        opacity: .6,
+        "data-aside-entry": true
+      }));
+    }
+    if (d.state === 'unknown' || d.state === 'before' || d.state === 'paused') {
       const lab = d.state === 'paused' ? 'P' : d.state === 'set-aside' ? '·' : '';
       return React.createElement("g", {
         key: i,
@@ -7173,7 +7215,7 @@ function Bars({
     weight: cur === i ? 650 : 500
   }, d.l) : null)), cur != null && data[cur] && (idx != null || !say || cur !== ref0 && !selProg) && React.createElement(Ctip, {
     pct: clamp((pl + cur * bw + bw / 2) / W * 100, 22, 78)
-  }, data[cur].state === 'none' ? `${data[cur].tip || data[cur].l}, didn’t do it, noted` : data[cur].state === 'unknown' ? `${data[cur].tip || data[cur].l}, ${unknownLabel}` : data[cur].state === 'paused' ? `${data[cur].tip || data[cur].l}, paused` : data[cur].state === 'before' ? `${data[cur].tip || data[cur].l}, before it started` : data[cur].state === 'set-aside' ? `${data[cur].tip || data[cur].l}, set aside (${data[cur].ctx || 'context'})` : `${data[cur].tip || data[cur].l}, ${fmt(data[cur].v, data[cur])}`)));
+  }, data[cur].state === 'none' ? `${data[cur].tip || data[cur].l}, didn’t do it, noted` : data[cur].state === 'unknown' ? `${data[cur].tip || data[cur].l}, ${unknownLabel}` : data[cur].state === 'paused' ? `${data[cur].tip || data[cur].l}, paused` : data[cur].state === 'before' ? `${data[cur].tip || data[cur].l}, before it started` : data[cur].state === 'set-aside' ? `${data[cur].tip || data[cur].l}, set aside (${data[cur].ctx || 'context'})${data[cur].v ? `, ${fmt(data[cur].v, data[cur])} logged` : ''}` : `${data[cur].tip || data[cur].l}, ${fmt(data[cur].v, data[cur])}${data[cur].inProgress ? ' so far' : ''}`)));
 }
 function Lines({
   series,
@@ -7960,7 +8002,7 @@ function ItemObject({
       return recs.map(e => ({
         on: true,
         dim: dayOf(e.t) < ev.a,
-        h: Math.max(.12, 1.5 * (e.v || 0) / ref),
+        h: Math.max(.04, 1.5 * (e.v || 0) / ref),
         pick: e.id
       }));
     }
@@ -8092,7 +8134,7 @@ function ItemObject({
     fallback: fallback
   }));
 }
-const monthSoFar = d => d && d.daysWith ? `So far, ${plural(d.daysWith, 'day')} with something recorded` : 'Nothing recorded yet';
+const monthSoFar = (d, h) => h && h.held && h.held.length ? `So far: ${heldText(h.held)}` : d && d.rings && d.rings.length ? `So far: ${(n => n.length <= 2 ? n.join(' and ') : `${n[0]}, ${n[1]} and ${n.length - 2} more`)(d.rings.map(it => it.short || it.name))}` : 'Nothing recorded yet';
 function YearObject({
   db,
   data,
@@ -8153,14 +8195,14 @@ function YearObject({
   }), React.createElement("div", {
     className: "m3-cap",
     "aria-live": "polite"
-  }, React.createElement("b", null, MONTHS[front]), React.createElement("span", null, fut ? 'Still ahead' : notes[front] || (front === monthOf(db.today) ? monthSoFar(data[front]) : null) || heldText((held && held[front] || {
+  }, React.createElement("b", null, MONTHS[front]), React.createElement("span", null, fut ? 'Still ahead' : notes[front] || (front === monthOf(db.today) ? monthSoFar(data[front], held && held[front]) : null) || heldText((held && held[front] || {
     held: []
   }).held) || monthFact(db, front) || 'A quieter month')));
 }
 const dayColsMax = S => S.axL ? 4 : 5;
 const colVal = (db, it) => {
   const ev = currentEval(db, it);
-  return rowVal(db, it, ev).replace(/ today$/, '');
+  return rowVal(db, it, ev).replace(/ today$/, '').replace(/ of (?=\S+$|\S+\u00a0\S+$)/, ' of\u00a0');
 };
 function DayColumns({
   db,
@@ -8695,7 +8737,7 @@ function monthDiscData(db, m, filterId) {
   const alive = db.items.filter(it => isRoutine(it) && it.created <= Math.min(b, db.today) && !(it.retired != null && it.retired < a) && !(isPausedOn(it, a) && isPausedOn(it, Math.min(b, db.today)))).length;
   const hm = !f && b >= 0 ? monthHeld(db, m) : null;
   const best = !f && b >= 0 ? monthBest(db, a, Math.min(b, db.today)) : '';
-  const held = hm ? heldText(hm.held.slice(0, 1)) : '';
+  const held = hm ? heldText(hm.held.slice(0, 1)) + (hm.held.length && monthEnd(m) > db.today ? ' so far' : '') : '';
   const fact = best || held || (hm ? monthFact(db, m) : '');
   return {
     a,
@@ -14207,7 +14249,15 @@ function ResultsSection({
     style: {
       border: '1px solid var(--ink-4)'
     }
-  }), "paused"), data.some(d => d.state === 'none') && React.createElement("span", null, React.createElement("i", {
+  }), "paused"), data.some(d => d.state === 'set-aside') && React.createElement("span", {
+    "data-legend-aside": true
+  }, React.createElement("i", {
+    style: {
+      height: 5,
+      background: 'var(--ink-4)',
+      opacity: .55
+    }
+  }), "set aside", data.some(d => d.state === 'set-aside' && d.v > 0) ? ', muted if logged' : ''), data.some(d => d.state === 'none') && React.createElement("span", null, React.createElement("i", {
     style: {
       height: 3,
       background: 'var(--ink-3)'
@@ -18279,7 +18329,7 @@ function TimeRoot() {
     const h = heldBy[m];
     const fh = f ? h.all.find(x => x.it.id === f.id) : null;
     const open = m === monthOf(db.today);
-    const sub = open ? f ? fh && fh.met ? 'Some of the time so far' : 'Nothing yet this month' : [plateNotes[m], monthSoFar(data[m])].filter(Boolean)[0] : f ? fh ? fh.share >= .75 ? 'Held' : fh.met ? 'Some of the time' : 'A quiet month for it' : 'Not part of it yet' : [plateNotes[m], heldText(h.held)].filter(Boolean)[0] || (data[m].daysWith ? 'A quieter month' : 'Nothing recorded');
+    const sub = open ? f ? fh && fh.met ? 'Some of the time so far' : 'Nothing yet this month' : [plateNotes[m], monthSoFar(data[m], h)].filter(Boolean)[0] : f ? fh ? fh.share >= .75 ? 'Held' : fh.met ? 'Some of the time' : 'A quiet month for it' : 'Not part of it yet' : [plateNotes[m], heldText(h.held)].filter(Boolean)[0] || (data[m].daysWith ? 'A quieter month' : 'Nothing recorded');
     const fact = monthFact(db, m);
     return React.createElement(Row, {
       key: m,
@@ -18385,9 +18435,11 @@ function MonthView({
       let met = 0,
         due = 0;
       for (let d = Math.max(a, it.created); d <= b; d++) {
-        if (isPausedOn(it, d) || restsOn(db, it, d)) continue;
+        if (isPausedOn(it, d)) continue;
+        const ok = evalPeriod(db, it, d, d).state === 'met';
+        if (!ok && restsOn(db, it, d)) continue;
         due++;
-        if (evalPeriod(db, it, d, d).state === 'met') met++;
+        if (ok) met++;
       }
       sub = !due ? 'resting' : met ? `at the aim on ${plural(met, 'day')}${b < monthEnd(m) ? ' so far' : ''}` : b < monthEnd(m) ? 'not at the aim yet this month' : 'a quieter month for it; nothing carries over';
     } else if (c === 'week') {
@@ -19202,16 +19254,16 @@ function ObStones({
     label: label
   }));
 }
-const OB_YEAR = {
+const obYear = cm => ({
   months: [.35, .5, .42, .7, .55, .3, .8, .62, .45, 1, .58, .4].map((size, m) => ({
     m,
-    fut: m > 9,
-    cur: m === 9,
-    ctx: m < 9,
+    fut: m > cm,
+    cur: m === cm,
+    ctx: m < cm,
     hue: 215,
     size
   }))
-};
+});
 function Onboarding({
   onDone
 }) {
@@ -19242,7 +19294,7 @@ function Onboarding({
     "data-ob-object": true
   }, React.createElement(Hero3D, {
     kind: "year",
-    data: OB_YEAR,
+    data: obYear(monthOf(db.today)),
     height: 230,
     opts: {
       drag: true,
@@ -19252,7 +19304,7 @@ function Onboarding({
     fallback: React.createElement("div", {
       className: "yflat",
       "aria-hidden": "true"
-    }, OB_YEAR.months.map(x => React.createElement("span", {
+    }, obYear(monthOf(db.today)).months.map(x => React.createElement("span", {
       key: x.m
     }, React.createElement("i", {
       style: {
@@ -22301,7 +22353,8 @@ function YearPage({
     l: MON3[x.m].slice(0, 1),
     tip: MONTHS[x.m],
     v: x.ns.length ? Math.round(median(x.ns.map(n => n.asleep))) : 0,
-    state: x.before ? 'before' : x.ns.length ? 'met' : 'unknown'
+    state: x.before ? 'before' : x.ns.length ? 'met' : 'unknown',
+    inProgress: x.prog
   }));
   return React.createElement(Page, {
     back: back,
@@ -22374,10 +22427,10 @@ function YearPage({
     height: 130,
     band: true,
     lead: (() => {
-      const k = wBars.filter(b => b.state !== 'before');
+      const k = wBars.filter(b => b.state !== 'before' && b.v > 0);
       if (!k.length) return null;
       const m = k.reduce((x, y) => y.v > x.v ? y : x, k[0]);
-      return `Most in ${m.tip}, ${plural(m.v, 'workout')}.`;
+      return `Most in ${m.tip}${m.inProgress ? ' so far' : ''}, ${plural(m.v, 'workout')}.`;
     })()
   }))), React.createElement("div", {
     className: "sec",
@@ -24745,17 +24798,10 @@ const dueWord = (db, x) => {
 function todayHeroPick(db) {
   const past = db.workouts.filter(w => w.t + w.dur <= db.T);
   const lastW = past[past.length - 1];
-  if (lastW && db.T - (lastW.t + lastW.dur) < 18 * 60) return {
-    kind: 'workout',
-    w: lastW
-  };
-  const n = db.sleep[db.today];
-  if (n && db.nowMin < 11 * 60 + 30) return {
-    kind: 'night',
-    n
-  };
+  const w = lastW && db.T - (lastW.t + lastW.dur) < 18 * 60 ? lastW : null;
   return {
-    kind: 'day'
+    kind: 'day',
+    w
   };
 }
 function todayRing(db) {
@@ -24932,113 +24978,45 @@ function WeekStones({
     label: `This week as seven stones, one a day, lit where something was kept and taller where more was. ${said}`
   }));
 }
+function FreshWorkout({
+  w
+}) {
+  const S = useStore();
+  const db = S.db;
+  const run = w.type === 'run';
+  const arrived = S.arrivedW === w.id;
+  const open = e => S.nav.push({
+    k: 'workout',
+    id: w.id,
+    morph: MI.morphFrom(e.currentTarget)
+  });
+  const when = arrived ? 'Just in' : relDay(w.d, db.today) === 'yesterday' && minOf(w.t) >= 19 * 60 ? 'Last night' : relDay(w.d, db.today).replace(/^./, c => c.toUpperCase());
+  const what = w.dist ? `${w.dist.toFixed(1)} km ${run ? 'run' : WORKOUT_TYPES[w.type].name.toLowerCase()}` : `${fmtDur(w.dur)} ${WORKOUT_TYPES[w.type].name.toLowerCase()}`;
+  const f = runFact(db, w);
+  const tail = f || (w.dist ? `${fmtPace(w.secs / w.dist)} /km` : w.avgHR ? `${w.avgHR} bpm avg` : '');
+  return React.createElement("button", {
+    className: "thero-fresh",
+    onClick: open,
+    "aria-label": `${when}: ${what}${tail ? ', ' + tail : ''}. Open the report`,
+    "data-fresh-workout": w.id
+  }, React.createElement("span", {
+    className: "dot",
+    "aria-hidden": "true"
+  }), React.createElement("span", {
+    className: "tf-t"
+  }, React.createElement("span", {
+    className: "tf-w"
+  }, when, ": "), React.createElement("b", null, what), tail ? `, ${tail}` : ''), React.createElement(Icon, {
+    n: "right",
+    s: 15,
+    w: 2.2
+  }));
+}
 function TodayHero({
   pick
 }) {
   const S = useStore();
   const db = S.db;
-  if (pick.kind === 'workout') {
-    const w = pick.w;
-    const run = w.type === 'run';
-    const H = run ? splitHalves(w) : null;
-    const arrived = S.arrivedW === w.id;
-    const open = e => S.nav.push({
-      k: 'workout',
-      id: w.id,
-      morph: MI.morphFrom(e.currentTarget)
-    });
-    const zones = !w.track && !run ? zoneMinutes(workoutSeries(w)) : null;
-    const when = relDay(w.d, db.today) === 'yesterday' && minOf(w.t) >= 19 * 60 ? 'Last night' : relDay(w.d, db.today).replace(/^./, c => c.toUpperCase());
-    return React.createElement("div", {
-      className: cx('thero', arrived && 'entering'),
-      "data-today-hero": "workout",
-      "data-arrived": arrived || undefined
-    }, React.createElement("button", {
-      className: "thero-obj",
-      onClick: open,
-      "aria-label": `${run ? `${w.dist.toFixed(1)} km run` : WORKOUT_TYPES[w.type].name}. Open the report`,
-      "data-moment": "workout"
-    }, w.track || run ? React.createElement(MomentRun, {
-      w: w,
-      height: 136
-    }) : React.createElement(ZoneColumns, {
-      zones: zones,
-      height: 136
-    })), React.createElement("div", {
-      className: "thero-fig"
-    }, React.createElement("span", {
-      className: "fig"
-    }, w.dist ? w.dist.toFixed(1) : fmtDur(w.dur)), React.createElement("span", {
-      className: "unit"
-    }, w.dist ? `km ${run ? 'run' : WORKOUT_TYPES[w.type].name.toLowerCase()}` : WORKOUT_TYPES[w.type].name.toLowerCase())), React.createElement("div", {
-      className: "thero-sub tnum",
-      "data-halfsplit": H ? H.neg ? H.d : H.pos ? -H.d : 0 : undefined
-    }, React.createElement("span", {
-      className: "thero-when"
-    }, React.createElement("span", {
-      className: "dot",
-      "aria-hidden": "true"
-    }), React.createElement("span", {
-      className: "tw"
-    }, when, arrived ? ', just in' : '', ", ")), (() => {
-      const f = runFact(db, w);
-      return f ? React.createElement("b", {
-        className: "thero-fact",
-        "data-run-fact": true
-      }, f) : null;
-    })(), React.createElement("span", {
-      className: runFact(db, w) ? 'tp' : undefined
-    }, runFact(db, w) ? ', ' : '', w.dist ? `${fmtPace(w.secs / w.dist)} /km` : `${w.avgHR} bpm avg`), !runFact(db, w) && H ? H.neg ? ', faster second half' : H.pos ? ', slower second half' : ', an even pace' : ''), React.createElement("button", {
-      className: "thero-link",
-      onClick: open,
-      "data-hero-open": true
-    }, "Report", React.createElement(Icon, {
-      n: "right",
-      s: 15,
-      w: 2.2
-    })));
-  }
-  if (pick.kind === 'night') {
-    const n = pick.n;
-    const open = () => S.nav.push({
-      k: 'sleep',
-      d: db.today
-    });
-    return React.createElement("div", {
-      className: "thero",
-      "data-today-hero": "night"
-    }, React.createElement("button", {
-      className: "thero-obj",
-      onClick: open,
-      "aria-label": "Last night. Open sleep"
-    }, React.createElement(NightObject, {
-      n: n,
-      height: 136
-    })), React.createElement("div", {
-      className: "thero-fig"
-    }, React.createElement("span", {
-      className: "fig"
-    }, fmtDur(n.asleep).replace(/\s+h\s+/, ':').replace(/\s+h$/, ':00')), React.createElement("span", {
-      className: "unit"
-    }, "asleep")), React.createElement("div", {
-      className: "thero-sub tnum",
-      "data-night-timing": true
-    }, React.createElement("span", {
-      className: "thero-when"
-    }, React.createElement("span", {
-      className: "dot",
-      "aria-hidden": "true"
-    }), "Last night"), ", ", fmtHM((n.onset % 1440 + 1440) % 1440), "\u2013", fmtHM(n.wake), nightVsUsual(db, n) ? React.createElement(React.Fragment, null, ", ", React.createElement("b", {
-      className: "thero-fact"
-    }, "asleep ", nightVsUsual(db, n) === 'your usual time' ? 'at your usual time' : nightVsUsual(db, n))) : null), React.createElement("button", {
-      className: "thero-link",
-      onClick: open
-    }, "Sleep", React.createElement(Icon, {
-      n: "right",
-      s: 15,
-      w: 2.2
-    })));
-  }
   const open = () => S.nav.push({
     k: 'day',
     d: db.today
@@ -25080,7 +25058,9 @@ function TodayHero({
   })), React.createElement("div", {
     className: "thero-sub tnum",
     "data-ring-sub": true
-  }, [wv ? `${fmtAmount(wIt, wv)} water` : null, lastT ? `last logged ${fmtHM(minOf(lastT))}` : 'nothing logged yet'].filter(Boolean).join(', ').replace(/^./, c => c.toUpperCase())));
+  }, [wv ? `${fmtAmount(wIt, wv)} water` : null, lastT ? `last logged ${fmtHM(minOf(lastT))}` : 'nothing logged yet'].filter(Boolean).join(', ').replace(/^./, c => c.toUpperCase())), pick.w && React.createElement(FreshWorkout, {
+    w: pick.w
+  }));
 }
 const NEWS_ORDER = ['back', 'sick', 'day1', 'half', 'pattern', 'week', 'intent', 'passed'];
 function newsText(db, m) {
@@ -26070,7 +26050,7 @@ function TodayScreen() {
     "data-today-title": true
   }, dom(db.today), " ", MONTHS[monthOf(db.today)])), React.createElement("div", {
     className: "headchips"
-  }, n && pick.kind !== 'night' && React.createElement("button", {
+  }, n && React.createElement("button", {
     className: "hchip",
     onClick: () => S.nav.push({
       k: 'sleep',
@@ -26172,7 +26152,7 @@ function TodayScreen() {
     s: 16
   }), React.createElement("span", {
     className: "dl1-t"
-  }, "By ", DOW3[dow(dateKeys[0].due)], " ", dom(dateKeys[0].due), " ", MON3[monthOf(dateKeys[0].due)], ": ", React.createElement("b", null, dateKeys[0].title), dateKeys.length > 1 ? `, ${dateKeys.length - 1} more` : ''), React.createElement(Icon, {
+  }, dateKeys[0].win ? `${DOW3[dow(dateKeys[0].due)]} ${dom(dateKeys[0].due)} ${MON3[monthOf(dateKeys[0].due)]}, ${fmtHM(dateKeys[0].win[0])}` : `By ${DOW3[dow(dateKeys[0].due)]} ${dom(dateKeys[0].due)} ${MON3[monthOf(dateKeys[0].due)]}`, ": ", React.createElement("b", null, dateKeys[0].title), dateKeys.length > 1 ? `, ${dateKeys.length - 1} more` : ''), React.createElement(Icon, {
     n: "right",
     s: 15,
     w: 2.2
@@ -34438,20 +34418,28 @@ function App() {
     lastAmount: it => lastAmt[it.id] || it.def || (it.presets ? it.presets[1] : 1),
     lastServing: it => (it.servings || []).find(s => s.id === lastServ[it.id]) || it.servings[0],
     startLive: (it, e, plan) => {
-      if (live) {
-        endLiveNow();
-        return;
-      }
-      setLive({
+      const nx = {
         id: it.id,
         started: Date.now(),
         plan: plan || null
-      });
+      };
+      if (live) {
+        if (live.id === it.id) return;
+        switchLive(nx, it.name, e);
+        return;
+      }
+      setLive(nx);
       haptic('tap', e);
     },
     startIntent: (x, plan, e) => {
       if (live) {
-        endLiveNow();
+        if (live.intent === x.id) return;
+        switchLive({
+          id: 'intent:' + x.id,
+          intent: x.id,
+          started: Date.now(),
+          plan
+        }, x.title, e);
         return;
       }
       setLive({
@@ -34523,6 +34511,72 @@ function App() {
       }), 80);
     }
   };
+  function switchLive(next, nextName, e) {
+    const prev = live;
+    const now = Date.now();
+    const started = prev.pausedAt ? prev.started + (now - prev.pausedAt) : prev.started;
+    const mins = Math.max(1, Math.round((now - started) / 60000));
+    const it = !prev.intent && db.byId[prev.id];
+    let undoPrev = () => {},
+      prevName = 'the session',
+      kept = '';
+    if (it) {
+      const eid = act.log(it.id, mins, {}, {
+        silent: true
+      });
+      prevName = it.name;
+      kept = `${it.name}, ${fmtDur(mins)} saved`;
+      undoPrev = () => {
+        if (!eid) return;
+        const nu = {
+          ...userRef.current,
+          added: userRef.current.added.filter(x => x.id !== eid)
+        };
+        userRef.current = nu;
+        setUser(nu);
+      };
+    } else {
+      const x = (intents || []).find(i => i.id === prev.intent);
+      if (x) {
+        const before = {
+          spent: x.spent,
+          status: x.status
+        };
+        setIntents(l => l.map(y => y.id === x.id ? {
+          ...y,
+          spent: (y.spent || 0) + mins,
+          status: 'started'
+        } : y));
+        prevName = x.title;
+        kept = `${x.title}, ${fmtDur(mins)} kept`;
+        undoPrev = () => setIntents(l => l.map(y => y.id === x.id ? {
+          ...y,
+          ...before
+        } : y));
+      }
+    }
+    setLive(next);
+    haptic('tap', e);
+    showToast({
+      title: `Switched to ${nextName}`,
+      sub: kept,
+      neutral: true,
+      glyph: 'play',
+      hue: 0,
+      undo: () => {
+        undoPrev();
+        setLive(prev);
+        showToast({
+          title: `Undone, back to ${prevName}`,
+          sub: 'Still running, nothing saved',
+          neutral: true,
+          glyph: 'undo',
+          hue: 0,
+          quick: true
+        });
+      }
+    });
+  }
   function endLiveNow() {
     if (!live) return;
     const now = Date.now();
