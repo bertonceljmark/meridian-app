@@ -6,8 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0B1019">
-<title>Meridian Today: Light Studies</title>
+<title>Meridian Today: Four Routes</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5.0.20/200.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5.0.20/300.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5.0.20/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5.0.20/500.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.0.15/400.css">
@@ -25,9 +26,13 @@ body.full{--row:0px}
 html,body{background:var(--bg);color:var(--t1);height:100%;overflow-x:hidden}
 body{font-family:var(--sans);-webkit-font-smoothing:antialiased}
 .screen{position:relative;min-height:100%;padding-bottom:calc(var(--safe-b) + 84px)}
-#hero{position:absolute;left:0;top:0;width:100%;height:var(--hero);display:block;touch-action:manipulation}
+.hero{position:absolute;left:0;top:0;width:100%;height:var(--hero);overflow:hidden}
+#hero{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation}
+.layer{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s}
+body[data-idea="ember"] #ember, body[data-idea="next"] #next, body[data-idea="field"] #fieldl, body[data-idea="tide"] #tidel{opacity:1;pointer-events:auto}
+body[data-idea="ember"] #hero, body[data-idea="next"] #hero{visibility:hidden}
 
-/* prototype chrome: idea switcher + data toggle (not part of the design) */
+/* prototype chrome: switcher + data toggle (not part of the design) */
 .proto{position:absolute;z-index:6;top:calc(var(--safe-t) + 2px);left:12px;right:12px;display:flex;gap:6px;align-items:center}
 .proto .seg{display:flex;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;background:rgba(18,23,34,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--rule);border-radius:99px;padding:3px}
 .proto .seg::-webkit-scrollbar{display:none}
@@ -38,15 +43,41 @@ body.full .proto .seg{display:none}
 body.full .proto{left:auto;right:12px;opacity:.55}
 body.shot.full .proto{display:none}
 
-.head{position:relative;z-index:2;padding:calc(var(--safe-t) + var(--row) + 6px) 20px 0;pointer-events:none}
+.head{position:relative;z-index:3;padding:calc(var(--safe-t) + var(--row) + 6px) 20px 0;pointer-events:none}
 .head .k{font:400 13px/1.2 var(--sans);color:var(--t2);letter-spacing:.01em}
 .head h1{font:500 30px/1.15 var(--sans);letter-spacing:-.02em;margin-top:2px}
-.axis{position:absolute;left:0;width:100%;top:calc(var(--hero) - 34px);height:16px;z-index:2;pointer-events:none;transition:opacity .3s}
+.axis{position:absolute;left:0;width:100%;top:calc(var(--hero) - 34px);height:16px;z-index:2;pointer-events:none;opacity:0;transition:opacity .3s}
+body[data-idea="reeds"] .axis{opacity:1}
 .axis span{position:absolute;transform:translateX(-50%);font:400 10.5px/1 var(--mono);color:var(--t3)}
 .axis span.now{color:var(--now)}
 
+/* 1 Ember: pre-rendered frames, cross-faded by the week's momentum */
+#ember img{mix-blend-mode:lighten;position:absolute;left:0;width:100%;top:calc(var(--safe-t) + var(--row) + 34px);height:auto;opacity:0;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 30%,#000 80%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 30%,#000 80%,transparent 100%)}
+.cap{position:absolute;left:20px;right:20px;bottom:30px;display:flex;justify-content:space-between;align-items:baseline;font:400 12px/1.3 var(--sans);color:var(--t2)}
+.cap b{font:400 12px/1 var(--mono);color:var(--t1);font-weight:400}
+/* 2 Dawn: stars are the open items */
+#tidel .cap{bottom:26px}
+/* 3 Areas: one label per area */
+#fieldl .lbl{position:absolute;transform:translate(-50%,0);text-align:center;font:400 12px/1.25 var(--sans);color:var(--t2);white-space:nowrap}
+#fieldl .lbl b{display:block;font:400 11px/1.3 var(--mono);color:var(--t1);font-weight:400}
+/* 4 Next: an instrument, almost no picture */
+#next{padding:calc(var(--safe-t) + var(--row) + 84px) 20px 0}
+#next .lab{font:400 12px/1 var(--sans);color:var(--t3);letter-spacing:.02em}
+#next .what{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:8px}
+#next .nm{font:300 46px/1 var(--sans);letter-spacing:-.035em;transition:transform .5s cubic-bezier(.2,.9,.2,1),opacity .3s}
+#next .nm.out{transform:translateY(-22px);opacity:0}
+#next .when{font:400 13px/1.35 var(--mono);color:var(--t2);margin-top:10px;min-height:18px}
+#next svg{display:block;width:100%;height:46px;margin-top:16px;overflow:visible}
+.bigkey{all:unset;cursor:pointer;flex:none;width:92px;height:54px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(180deg,#2a3242,#1b2130);font:500 14px/1 var(--sans);color:var(--t1);
+  box-shadow:0 4px 0 #05070b,0 10px 18px -6px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.1),inset 0 -1px 0 rgba(0,0,0,.4);transition:transform .07s,box-shadow .07s}
+.bigkey i{width:6px;height:6px;border-radius:50%;background:#3a4356;transition:background .25s,box-shadow .25s}
+.bigkey.down{transform:translateY(4px);box-shadow:0 0 0 #05070b,0 3px 6px -3px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06)}
+.bigkey.lit i{background:#ffe6c2;box-shadow:0 0 10px 2px rgba(255,214,160,.6)}
+.bigkey[hidden]{display:none}
+
 .below{position:relative;z-index:2;margin-top:calc(var(--hero) - var(--safe-t) - var(--row) - 50px);padding:0 20px}
-/* the readout: one big figure, one fact beside it, a plain sentence of news */
 .readout{display:grid;grid-template-columns:auto 1fr auto;align-items:end;column-gap:14px}
 .readout .n{font:200 76px/.8 var(--sans);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
 .readout .lab{font:400 14px/1.25 var(--sans);color:var(--t2);padding-bottom:2px}
@@ -57,7 +88,6 @@ body.shot.full .proto{display:none}
 .news{font:400 14px/1.4 var(--sans);color:var(--t2);margin-top:16px}
 .news:empty{display:none}
 .news b{font-weight:500;color:var(--t1)}
-/* open items: a ruled table, not cards. time | name | a real key */
 .open{margin-top:22px;border-top:1px solid var(--rule)}
 .open h2{font:400 12px/1 var(--sans);color:var(--t3);letter-spacing:.02em;padding:14px 0 4px}
 .it{display:grid;grid-template-columns:82px 1fr auto;align-items:center;min-height:62px;border-bottom:1px solid var(--rule)}
@@ -70,7 +100,7 @@ body.shot.full .proto{display:none}
   transition:transform .07s ease-out,box-shadow .07s ease-out;display:flex;align-items:center;justify-content:center;gap:7px;
   font:500 12px/1 var(--sans);color:var(--t2)}
 .key i{width:5px;height:5px;border-radius:50%;background:#323a4b;box-shadow:inset 0 1px 1px rgba(0,0,0,.6);transition:background .25s,box-shadow .25s}
-.key:active,.key.down{transform:translateY(3px);box-shadow:0 0 0 #06080d,0 2px 4px -2px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05),inset 0 -1px 0 rgba(0,0,0,.35)}
+.key.down{transform:translateY(3px);box-shadow:0 0 0 #06080d,0 2px 4px -2px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05),inset 0 -1px 0 rgba(0,0,0,.35)}
 .key.latched{transform:translateY(2px);box-shadow:0 1px 0 #06080d,0 3px 6px -3px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05);color:var(--t1)}
 .key.latched i{background:#ffe6c2;box-shadow:0 0 8px 1px rgba(255,214,160,.55)}
 .it.done .nm,.it.done .tm{color:var(--t3)}
@@ -81,24 +111,38 @@ body.shot.full .proto{display:none}
 .tabs a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5}
 .tabs .logk{width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 50% 28%,#fff,#dde2ea);box-shadow:0 8px 20px -6px rgba(0,0,0,.7),inset 0 -2px 0 rgba(0,0,0,.12);display:grid;place-items:center}
 .tabs .logk svg{width:20px;height:20px;stroke:#0B1019;stroke-width:2.2;fill:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
-<body>
+<body data-idea="reeds">
 <div class="screen">
-  <canvas id="hero" role="img" aria-label=""></canvas>
+  <div class="hero" id="heroBox">
+    <canvas id="hero" role="img" aria-label=""></canvas>
+    <div class="layer" id="ember" role="img" aria-label="">
+      <div class="cap"><span id="emberCap"></span><b id="emberNum"></b></div>
+    </div>
+    <div class="layer" id="tidel"><div class="cap"><span id="tideCap"></span><b id="tideNum"></b></div></div>
+    <div class="layer" id="fieldl"></div>
+    <div class="layer" id="next">
+      <div class="lab" id="nextLab">Next</div>
+      <div class="what"><div class="nm" id="nextNm"></div><button class="bigkey" id="nextKey"><i></i><span>Log</span></button></div>
+      <div class="when" id="nextWhen"></div>
+      <svg id="ruler" aria-hidden="true"></svg>
+    </div>
+  </div>
   <div class="proto" id="proto">
     <div class="seg" id="seg"></div>
     <button class="solo" id="data" type="button">Different data</button>
     <button class="solo" id="full" type="button">Full</button>
   </div>
   <header class="head">
-    <div class="k" id="kicker">Thursday 22 October</div><h1>Today</h1>
+    <div class="k" id="kicker"></div><h1>Today</h1>
   </header>
   <div class="axis" id="axis"></div>
   <main class="below">
     <div class="readout">
-      <div class="n" id="num">8</div>
-      <div class="lab" id="unit">logged<br>today</div>
+      <div class="n" id="num"></div>
+      <div class="lab">logged<br>today</div>
       <div class="last" id="last"><div class="t"></div><div class="w"></div></div>
     </div>
     <p class="news" id="news"></p>
@@ -114,81 +158,99 @@ body.shot.full .proto{display:none}
 </div>
 
 <script>
-/* ---------------------------------------------------------------
-   DATA: one source feeds every idea, the readout, the open list and
-   the accessibility text. All routines equal; medication quieter.
-   --------------------------------------------------------------- */
+/* ===============================================================
+   DATA. One source: today's logs, what is still open, the last six
+   days and what is usual. Every routine counts the same.
+   =============================================================== */
 const RT = {
-  meditation:{c:'#9fc2ff',name:'Meditation'}, water:{c:'#5fd0e0',name:'Water'}, meal:{c:'#ffb76a',name:'Meal'},
-  sketching:{c:'#ff8576',name:'Sketching'}, reading:{c:'#c3a2ff',name:'Reading'}, run:{c:'#ff8a5c',name:'Run'},
-  stretch:{c:'#7fe8a8',name:'Stretch'}, journaling:{c:'#8f9cff',name:'Journaling'}, medication:{c:'#c9ced8',name:'Medication',neutral:true},
+  meditation:{c:'#9fc2ff',name:'Meditation',area:'mind'}, water:{c:'#5fd0e0',name:'Water',area:'nourish'}, meal:{c:'#ffb76a',name:'Meal',area:'nourish'},
+  sketching:{c:'#ff8576',name:'Sketching',area:'make'}, reading:{c:'#c3a2ff',name:'Reading',area:'mind'}, run:{c:'#ff8a5c',name:'Run',area:'body'},
+  stretch:{c:'#7fe8a8',name:'Stretch',area:'body'}, journaling:{c:'#8f9cff',name:'Journaling',area:'mind'}, medication:{c:'#c9ced8',name:'Medication',area:'nourish',neutral:true},
 };
+const AREAS=[
+  {id:'body',   name:'Body',    c:'#ff9c80', usual:1.2},
+  {id:'mind',   name:'Mind',    c:'#a99cff', usual:2.0},
+  {id:'nourish',name:'Nourish', c:'#72d3cc', usual:6.5},
+  {id:'make',   name:'Make',    c:'#ffc46b', usual:0.9},
+];
 const hm=(h,m)=>h+m/60;
 const DAYS=[
  {kicker:'Thursday 22 October',now:hm(14,20),news:'Yesterday you ran <b>6.2 km</b>, your longest this month.',
+  week:[9,7,0,8,10,6], usual:8,
   logs:[['meditation',hm(7,10),12,'min'],['water',hm(8,32),300,'ml'],['meal',hm(8,45),1,'breakfast'],['medication',hm(9,0),1,'dose'],
         ['sketching',hm(10,0),25,'min'],['water',hm(11,15),250,'ml'],['meal',hm(12,40),1,'lunch'],['water',hm(13,50),300,'ml']],
-  next:[['stretch',hm(18,0),hm(19,0)],['reading',hm(21,0),hm(22,30)],['water',null,hm(22,0)]]},
+  next:[['water',null,hm(22,0)],['stretch',hm(18,0),hm(19,0)],['reading',hm(21,0),hm(22,30)]]},
  {kicker:'Sunday 18 October',now:hm(11,5),news:'',
+  week:[3,0,5,0,2,4], usual:6,
   logs:[['water',hm(9,40),250,'ml']],
   next:[['meal',hm(12,0),hm(14,0)],['reading',hm(21,0),hm(23,0)]]},
  {kicker:'Tuesday 20 October',now:hm(21,40),news:'You slept <b>7 h 40</b> last night.',
+  week:[10,12,9,11,13,10], usual:11,
   logs:[['meditation',hm(6,50),15,'min'],['run',hm(7,30),34,'min'],['water',hm(8,10),400,'ml'],['medication',hm(8,15),1,'dose'],['meal',hm(8,30),1,'breakfast'],
         ['water',hm(10,5),250,'ml'],['water',hm(10,40),250,'ml'],['water',hm(10,55),200,'ml'],['meal',hm(12,30),1,'lunch'],['sketching',hm(15,0),40,'min'],
         ['water',hm(15,50),300,'ml'],['meal',hm(18,45),1,'dinner'],['stretch',hm(19,10),15,'min'],['medication',hm(20,0),1,'dose'],['reading',hm(21,0),30,'min'],['journaling',hm(21,15),10,'min']],
   next:[]},
  {kicker:'Saturday 17 October',now:hm(17,30),news:'',
+  week:[7,0,6,8,0,5], usual:7,
   logs:[['meal',hm(10,30),1,'brunch'],['water',hm(10,45),500,'ml'],['reading',hm(11,0),50,'min'],['sketching',hm(14,10),90,'min'],['water',hm(16,0),300,'ml']],
   next:[['meal',hm(18,30),hm(20,30)],['stretch',hm(20,0),hm(21,0)]]},
 ];
 const IDEAS=[
-  {id:'reeds', name:'Reeds',  axis:true},
-  {id:'aurora',name:'Aurora', axis:true},
-  {id:'ink',   name:'Ink',    axis:true, tint:.75},
-  {id:'focus', name:'Focus',  axis:true},
+  {id:'reeds', name:'0 Timeline'},
+  {id:'ember', name:'1 Ember'},
+  {id:'tide',  name:'2 Dawn'},
+  {id:'field', name:'3 Areas'},
+  {id:'next',  name:'4 Next'},
 ];
 const T0=5, T1=24.5;
-const fmt=t=>{const h=Math.floor(t+1e-6),m=Math.round((t-h)*60);return String(h%24).padStart(2,'0')+':'+String(m).padStart(2,'0')};
+const fmt=t=>{const h=Math.floor(t+1e-6),m=Math.round((t-h)*60);return String(h%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const dur=h=>{const m=Math.round(h*60);return m<60?`${m} min`:(m%60?`${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`:`${m/60} h`)};
 const amountEq=l=>l.u==='min'?l.v:l.u==='ml'?l.v/20:l.r==='medication'?8:20;
 const amountTxt=l=>l.u==='min'?l.v+' min':l.u==='ml'?l.v+' ml':l.u==='dose'?'taken':l.u;
 const describe=l=>`${fmt(l.t)} ${RT[l.r].name}, ${amountTxt(l)}`;
 const hex=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)/255).map(v=>Math.pow(v,2.2));
 const WARM=hex('#fff0dc');
+const tint=(c,k)=>{const h=hex(c);return h.map((v,i)=>WARM[i]*(1-k)+v*k)};
 const Q=new URLSearchParams(location.search);
 const SHOT=Q.has('shot');
-const TINT=+(Q.get('tint')||.45);
-const tintK=(rt,K)=>{const c=hex(rt.c), k=rt.neutral?0:K; return c.map((v,i)=>WARM[i]*(1-k)+v*k);};
-const tint=rt=>{const c=hex(rt.c), k=rt.neutral?0:TINT; return c.map((v,i)=>WARM[i]*(1-k)+v*k);};
-let ideaIx=Math.max(0,Math.min(IDEAS.length-1,(+(Q.get('idea')||1))-1));
+let ideaIx=Math.max(0,Math.min(IDEAS.length-1,+(Q.get('idea')??0)||0));
 let dayIx=+(Q.get('sample')||0)%DAYS.length;
 if(Q.has('full'))document.body.classList.add('full');
 if(SHOT)document.body.classList.add('shot');
-let day, logs, nowT, lights=[];
+let day, logs, open, nowT, lights=[];
+
+/* derived facts, each from the same source */
+const usualByNow=d=>d.usual*Math.min(1,Math.max(.08,(d.now-6.5)/15));
+function momentum(){                       // last 7 days, each capped at "a usual day", today pro-rated
+  const prev=day.week.map(n=>Math.min(1,n/day.usual));
+  const today=Math.min(1,logs.length/usualByNow(day));
+  return (prev.reduce((a,b)=>a+b,0)+today)/7;
+}
+function activeDays(){return day.week.filter(n=>n>0).length+(logs.length>0?1:0)}
+function areaTend(){                       // each area against its own usual by this hour; never a score
+  const f=Math.min(1,Math.max(.1,(nowT-6.5)/15));
+  return AREAS.map(a=>{const n=logs.filter(l=>RT[l.r].area===a.id).length; return {...a,n,usualNow:a.usual*f,w:Math.min(1.5,n/Math.max(.35,a.usual*f))}});
+}
+function progress(){const o=open.length; return logs.length/(logs.length+o)}
 
 function loadDay(i,animate){
   day=DAYS[i]; nowT=day.now;
   logs=day.logs.map(([r,t,v,u])=>({r,t,v,u}));
+  open=day.next.map(([r,a,b])=>({r,a,b}));
   const now=performance.now();
   lights.forEach(L=>{L.dying=now});
   lights=lights.filter(L=>animate&&L.i>0.01).concat(logs.map((l,k)=>mkLight(l, animate? now+260+k*55 : -1e9)));
-  renderText(); kick();
+  renderText(); setTargets(animate); kick();
 }
 function mkLight(l,born){
   const eq=Math.min(amountEq(l),90);
   return {log:l,t:l.t,dur:l.u==='min'?l.v/60:0,eq:amountEq(l),
-    hT:0.30+0.62*Math.sqrt(eq/90), iT:RT[l.r].neutral?0.55:1.0, c:tint(RT[l.r]), raw:RT[l.r],
-    seed:Math.abs(Math.sin(l.t*127.1+eq*3.7)*43758.5453)%1, born, i:0};
+    hT:0.30+0.62*Math.sqrt(eq/90), iT:RT[l.r].neutral?0.55:1.0, c:tint(RT[l.r].c,RT[l.r].neutral?0:.45), born, i:0};
 }
-function setLast(t,w,flash){
-  const el=document.getElementById('last'); el.querySelector('.t').textContent=t; el.querySelector('.w').textContent=w;
-  el.classList.toggle('flash',!!flash);
-}
+function setLast(t,w,flash){const el=document.getElementById('last'); el.querySelector('.t').textContent=t; el.querySelector('.w').textContent=w; el.classList.toggle('flash',!!flash);}
 let lastTimer;
-function lastDefault(){
-  const past=logs.filter(l=>l.t<=nowT+1e-6), last=past.at(-1);
-  if(last)setLast(fmt(last.t),RT[last.r].name+', last logged'); else setLast('—','nothing yet');
-}
-function showLog(l){ setLast(fmt(l.t),RT[l.r].name+', '+amountTxt(l),true); clearTimeout(lastTimer); lastTimer=setTimeout(lastDefault,3500); }
+function lastDefault(){const last=logs.filter(l=>l.t<=nowT+1e-6).at(-1); if(last)setLast(fmt(last.t),RT[last.r].name+', last logged'); else setLast('—','nothing yet');}
+function flash(t,w){setLast(t,w,true); clearTimeout(lastTimer); lastTimer=setTimeout(lastDefault,3500);}
 function renderText(){
   const n=logs.length;
   document.getElementById('kicker').textContent=day.kicker;
@@ -196,52 +258,130 @@ function renderText(){
   document.getElementById('news').innerHTML=day.news;
   lastDefault();
   const rows=document.getElementById('rows'); rows.innerHTML='';
-  document.getElementById('openh').style.display=day.next.length?'':'none';
-  if(!day.next.length) rows.innerHTML='<p class="none">Nothing else planned. The evening is yours.</p>';
-  day.next.forEach(([r,a,b])=>{
+  document.getElementById('openh').style.display=open.length?'':'none';
+  if(!open.length) rows.innerHTML='<p class="none">Nothing else planned. The evening is yours.</p>';
+  open.forEach(o=>{
     const el=document.createElement('div'); el.className='it';
-    const tm=a==null?`now<small>to ${fmt(b)}</small>`:`${fmt(a)}<small>to ${fmt(b)}</small>`;
-    el.innerHTML=`<div class="tm">${tm}</div><div class="nm">${RT[r].name}</div><button class="key" aria-label="Log ${RT[r].name}"><i></i><span>Log</span></button>`;
-    const k=el.querySelector('.key');
-    k.addEventListener('pointerdown',()=>{k.classList.add('down'); if(navigator.vibrate)navigator.vibrate(6);});
-    k.addEventListener('pointerup',()=>k.classList.remove('down'));
-    k.addEventListener('pointerleave',()=>k.classList.remove('down'));
-    k.onclick=()=>{ if(k.classList.contains('latched'))return; k.classList.add('latched'); k.querySelector('span').textContent='Done'; el.classList.add('done'); logNow(r); };
-    rows.appendChild(el);
+    const tm=o.a==null?`now<small>to ${fmt(o.b)}</small>`:`${fmt(o.a)}<small>to ${fmt(o.b)}</small>`;
+    el.innerHTML=`<div class="tm">${tm}</div><div class="nm">${RT[o.r].name}</div><button class="key" aria-label="Log ${RT[o.r].name}"><i></i><span>Log</span></button>`;
+    const k=el.querySelector('.key'); press(k);
+    k.onclick=()=>{ if(k.classList.contains('latched'))return; k.classList.add('latched'); k.querySelector('span').textContent='Done'; el.classList.add('done'); logNow(o.r); };
+    o.el=el; rows.appendChild(el);
   });
-  renderAxis();
-  document.getElementById('hero').setAttribute('aria-label',`${n} logged today. `+logs.map(describe).join('; '));
+  renderAxis(); renderNext(); renderCaps();
+  const a11y=`${n} logged today. `+logs.map(describe).join('; ');
+  document.getElementById('hero').setAttribute('aria-label',a11y);
+  document.getElementById('ember').setAttribute('aria-label',`This week: active on ${activeDays()} of the last 7 days. `+a11y);
+}
+function press(k){
+  k.addEventListener('pointerdown',()=>{k.classList.add('down'); if(navigator.vibrate)navigator.vibrate(6);});
+  ['pointerup','pointerleave','pointercancel'].forEach(e=>k.addEventListener(e,()=>k.classList.remove('down')));
 }
 function renderAxis(){
-  const idea=IDEAS[ideaIx], ax=document.getElementById('axis'); ax.innerHTML=''; ax.style.opacity=idea.axis?1:0;
+  const ax=document.getElementById('axis'); ax.innerHTML='';
   [6,9,12,15,18,21,24].forEach(h=>{ if(Math.abs(h-nowT)<1.1)return; const s=document.createElement('span'); s.style.left=((h-T0)/(T1-T0)*100)+'%'; s.textContent=String(h).padStart(2,'0'); ax.appendChild(s); });
   const s=document.createElement('span'); s.className='now'; s.style.left=((nowT-T0)/(T1-T0)*100)+'%'; s.textContent=fmt(nowT); ax.appendChild(s);
+}
+function renderCaps(){
+  const ad=activeDays();
+  document.getElementById('emberCap').textContent=`Kept going ${ad} of the last 7 days`;
+  document.getElementById('emberNum').textContent=['quiet','low','steady','steady','strong','strong','bright'][Math.round(Math.min(1,Math.max(0,(momentum()-.15)/.85))*6)];
+  const o=open.length, done=logs.length;
+  document.getElementById('tideCap').textContent=o?`${o} still open, one star each`:'Everything planned is done';
+  document.getElementById('tideNum').textContent=`${done} done`;
 }
 function logNow(r){
   const l={r,t:nowT,v:r==='water'?250:20,u:r==='water'?'ml':(r==='meal'?'meal':'min')};
   logs.push(l); lights.push(mkLight(l,performance.now()+80));
+  const ix=open.findIndex(o=>o.r===r); if(ix>=0){open[ix].doneAt=nowT; open.splice(ix,1);}
   document.getElementById('num').textContent=logs.length;
-  showLog(l); kick();
+  flash(fmt(l.t),RT[r].name+', '+amountTxt(l));
+  renderCaps(); setTargets(true); renderNext(true); kick();
 }
 
-/* ---------------------------------------------------------------
-   SHADERS. One full-width fragment pass per idea; the same uniforms
-   for all. Native: the same code as a Metal [[stitchable]] function
-   used with SwiftUI .layerEffect / .colorEffect (iOS 17), or an MTKView.
-   uL / uM meaning per idea is documented beside each scene().
-   --------------------------------------------------------------- */
+/* ===============================================================
+   4  NEXT: an instrument. The one next thing, its window on a ruled
+   scale from now, and a real key to log it. (SwiftUI Text with
+   .contentTransition(.numericText()), Canvas for the scale,
+   .sensoryFeedback(.impact) on the key.)
+   =============================================================== */
+function nextItem(){
+  const s=[...open].sort((x,y)=>(x.a??nowT)-(y.a??nowT)); return s[0]||null;
+}
+function renderNext(roll){
+  const it=nextItem(), nm=document.getElementById('nextNm'), when=document.getElementById('nextWhen'), key=document.getElementById('nextKey'), lab=document.getElementById('nextLab');
+  const apply=()=>{
+    if(!it){ lab.textContent='Next'; nm.textContent='Nothing left'; when.textContent=`${logs.length} done today. The rest is yours.`; key.hidden=true; }
+    else{
+      lab.textContent='Next'; nm.textContent=RT[it.r].name; key.hidden=false; key.classList.remove('lit');
+      key.querySelector('span').textContent='Log';
+      if(it.a==null||it.a<=nowT) when.textContent=`Open now, until ${fmt(it.b)}`;
+      else when.textContent=`${fmt(it.a)} to ${fmt(it.b)}, in ${dur(it.a-nowT)}`;
+    }
+    drawRuler(it);
+  };
+  if(roll){ nm.classList.add('out'); setTimeout(()=>{apply(); nm.classList.remove('out');},260); } else apply();
+}
+function drawRuler(it){
+  document.getElementById('ruler').style.visibility=it?'visible':'hidden';
+  const svg=document.getElementById('ruler'), W=svg.clientWidth||350, span=9, x=t=>(t-nowT)/span*W;
+  let s='';
+  const first=Math.ceil(nowT*4)/4;
+  for(let q=0;q<=span*4;q++){ const tt=first+q/4, X=x(tt); if(X>W)break;
+    const hour=Math.abs(tt-Math.round(tt))<1e-6, h=hour?10:5;
+    s+=`<line x1="${X}" x2="${X}" y1="${14-h}" y2="14" stroke="${hour?'#566074':'#2c3443'}" stroke-width="1"/>`;
+    if(hour&&X>40&&X<W-14) s+=`<text x="${X}" y="40" fill="#566074" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">${String(Math.round(tt)%24).padStart(2,'0')}</text>`;
+  }
+  s+=`<line x1="0" x2="${W}" y1="14.5" y2="14.5" stroke="#2c3443"/>`;
+  // every open item sits on the scale the same way; the next one is the bright one
+  open.forEach(o=>{ const a=Math.max(nowT,o.a??nowT), b=Math.min(nowT+span,o.b); if(b<=a)return;
+    const me=o===it; s+=`<rect x="${x(a)}" y="${me?19:21}" width="${Math.max(2,x(b)-x(a))}" height="${me?5:2}" rx="${me?2.5:1}" fill="${me?'#FFF1DC':'#3a4356'}"/>`; });
+  s+=`<line x1="0.5" x2="0.5" y1="0" y2="26" stroke="#FFF1DC" stroke-width="1.2"/><text x="0" y="40" fill="#FFF1DC" font-family="IBM Plex Mono" font-size="10">${fmt(nowT)}</text>`;
+  svg.innerHTML=s;
+}
+const nextKey=document.getElementById('nextKey'); press(nextKey);
+nextKey.onclick=()=>{ const it=nextItem(); if(!it)return; nextKey.classList.add('lit'); nextKey.querySelector('span').textContent='Done';
+  const row=it.el; if(row){const k=row.querySelector('.key'); k.classList.add('latched'); k.querySelector('span').textContent='Done'; row.classList.add('done');}
+  setTimeout(()=>logNow(it.r),180); };
+
+/* ===============================================================
+   1  EMBER: seven Cycles renders of one object (assets/ember-0..6.jpg),
+   cross-faded by the week's momentum. (SwiftUI: Image assets in a ZStack,
+   opacity from the same number; or an HEVC loop per state.)
+   =============================================================== */
+const EM=document.getElementById('ember'); const emImgs=[];
+for(let k=0;k<7;k++){const im=new Image(); im.src=`assets/ember-${k}.jpg`; im.alt=''; im.decoding='async'; EM.insertBefore(im,EM.firstChild); emImgs[k]=im;}
+function showEmber(m){ const s=Math.min(1,Math.max(0,(m-.15)/.85))*6, a=Math.floor(s), f=s-a; emImgs.forEach((im,k)=>{ im.style.opacity=k===a?1:(k===a+1?f:0); }); }
+
+/* ---- animated targets shared by the scene ideas ---- */
+const anim={m:{v:0,t:0},p:{v:0,t:0},w:[0,0,0,0].map(()=>({v:0,t:0}))};
+function setTargets(animate){
+  anim.m.t=momentum(); anim.p.t=progress();
+  const at=areaTend(); at.forEach((a,i)=>anim.w[i].t=a.w);
+  if(!animate||SHOT){anim.m.v=anim.m.t; anim.p.v=anim.p.t; anim.w.forEach(x=>x.v=x.t);}
+  placeFieldLabels();
+}
+function stepAnim(dt){ let mv=false; const go=o=>{const d=o.t-o.v; if(Math.abs(d)>1e-4){o.v+=d*Math.min(1,dt*2.6); mv=true;} else o.v=o.t;}; go(anim.m); go(anim.p); anim.w.forEach(go); return mv; }
+
+/* ===============================================================
+   SHADERS: 0 timeline (baseline), 2 dawn, 3 areas.
+   Native: Metal [[stitchable]] functions through SwiftUI .colorEffect /
+   .layerEffect (iOS 17); 3 also maps to SwiftUI MeshGradient (iOS 18).
+   =============================================================== */
 const MAXL=24;
-const HEAD=`precision highp float;
-uniform vec2 uRes; uniform float uDpr,uTime,uNowX,uBase,uTop,uReed;
-uniform vec4 uL[${MAXL}]; uniform vec4 uM[${MAXL}]; uniform vec3 uC[${MAXL}];
-uniform int uN; uniform vec3 uBg;
+const HEAD=`#extension GL_OES_standard_derivatives : enable
+precision highp float;
+uniform vec2 uRes; uniform float uDpr,uTime,uNowX,uBase,uTop,uReed,uP,uHor,uSunX;
+uniform vec4 uL[${MAXL}]; uniform vec3 uC[${MAXL}]; uniform int uN; uniform vec3 uBg;
+uniform vec4 uS[8]; uniform int uNS;
+uniform vec4 uA[4]; uniform vec3 uAC[4];
 float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
   return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float s=0.,a=.5;for(int k=0;k<4;k++){s+=a*noise(p);p=p*2.03+vec2(17.1,9.2);a*=.5;}return s;}
 `;
 const SCENES={
-/* 1. REEDS: light behind reeded glass. uL=(x, halfwidth, height, intensity). One reed = half an hour. */
+/* 0. TIMELINE (baseline): light behind reeded glass, one reed per half hour. */
 reeds:`
 vec3 field(float x,float y,float bx){
   vec3 acc=vec3(0.);
@@ -271,79 +411,77 @@ vec3 scene(float x,float y){
   c+=pow(au,6.)*(.006*calm+lum*.05)*vec3(.8,.85,1.);
   c*=mix(1.,.78,smoothstep(uNowX-2.,uNowX+6.,x));
   return c;
-}`,
-/* 2. AURORA: each log a curtain of light standing on the horizon at its hour; taller = more.
-      uL=(x, halfwidth, height, intensity), uM.z = seed. Reflected in still water below. */
-aurora:`
-vec3 aur(float x,float y){
-  vec3 acc=vec3(0.); float t=uTime*.04;
-  for(int i=0;i<${MAXL};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
-    float h=max(L.z,1.), up=max(0.,uBase-y), sd=uM[i].z*6.2831;
-    float k=min(up/h,1.2);
-    float sway=up*.05*sin(sd+t*2.+up*.02)+2.5*sin(y*.03+sd+t*4.)*k;
-    float d=max(0.,abs(x-L.x-sway)-L.y);
-    float wdt=2.6+up*.035;
-    float g=exp(-.5*d*d/(wdt*wdt));
-    float rays=.25+.75*pow(noise(vec2((x-sway)*.16+sd*10.,y*.005+t)),1.4);
-    float edge=uBase-2.-2.5*noise(vec2(x*.05+sd,t*3.));
-    float v=smoothstep(edge+1.5,edge-3.,y)*exp(-max(0.,edge-y)/(h*.45+6.))*smoothstep(h*1.25,h*.6,up)*rays+exp(-pow((y-edge)/2.,2.))*.55;
-    float halo=exp(-.5*d*d/400.)*exp(-up/(h*.4+10.))*.012;
-    acc+=uC[i]*L.w*(g*v*1.25+halo);
-  }
-  return acc;
+}
+#define NOWMARK 1
+`,
+/* 2. DAWN: one art-directed scene. The share of today's plan that is done raises the light
+      (uP 0..1): night, first light, sunrise. Each item still open is a star. */
+tide:`
+vec3 sky(float x,float y,float p){
+  float h=clamp((uHor-y)/(uHor-uTop+70.),0.,1.);
+  vec3 nTop=vec3(.0035,.005,.0095), nHor=vec3(.010,.015,.032);
+  vec3 dHor=vec3(.95,.42,.16), dMid=vec3(.20,.10,.13), dHigh=vec3(.030,.034,.075), dTop=vec3(.006,.009,.020);
+  vec3 dawn=mix(dHor,dMid,smoothstep(0.,.22,h)); dawn=mix(dawn,dHigh,smoothstep(.18,.6,h)); dawn=mix(dawn,dTop,smoothstep(.55,1.,h));
+  float l=smoothstep(0.,1.,p);
+  vec3 c=mix(mix(nHor,nTop,pow(h,.5)),dawn,l*l*(.35+.65*l));
+  vec3 day=mix(vec3(.55,.42,.30),vec3(.05,.10,.22),smoothstep(0.,.7,h));
+  c=mix(c,day,smoothstep(.86,1.,p)*.55);
+  c+=vec3(1.,.55,.25)*exp(-(uHor-y)/14.)*.06*l*step(y,uHor);
+  float d=length(vec2(x-uSunX,y-SUNY));
+  c+=vec3(1.,.58,.28)*exp(-d/110.)*.22*l*l + vec3(1.,.78,.52)*exp(-d/26.)*.45*l*l;
+  float disc=smoothstep(9.8,8.6,d)*smoothstep(uHor+.6,uHor-.6,y);
+  c=mix(c,vec3(1.,.80,.58)*(.9+.7*l),disc*smoothstep(.02,.25,p));
+  return c;
 }
 vec3 scene(float x,float y){
-  vec3 c=vec3(0.);
-  if(y<=uBase) c=aur(x,y);
-  else { float r=(y-uBase); c=aur(x+1.2*sin(y*.9+uTime),uBase-r*1.6)*.28*exp(-r/16.); }
-  c+=vec3(.0012,.0018,.0032)*smoothstep(uTop-30.,uBase,y)*step(y,uBase);
-  return c;
-}`,
-/* 3. INK: each log a drop of luminous ink released at its hour. It blooms, rises and diffuses
-      as the day goes on, so the morning has softened by evening. uL=(cx,cy,radius,intensity), uM.x=age h. */
-ink:`
-vec3 scene(float x,float y){
-  vec2 p=vec2(x,y); float t=uTime*.025;
-  vec2 w=vec2(fbm(p*.016+vec2(t,0.)),fbm(p*.016+vec2(5.2,1.3-t)))-.5;
-  vec2 w2=vec2(fbm(p*.05+w*2.5+9.),fbm(p*.05+w*2.5+3.))-.5;
-  float D=0.,Dl=0.; vec3 C=vec3(0.);
-  for(int i=0;i<${MAXL};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
-    float age=uM[i].x, r=max(L.z,1.);
-    vec2 q=p+(w*70.+w2*26.)*(.12+min(age,8.)*.11)*clamp(r/22.,.4,1.4);
-    vec2 sc=vec2(r*1.05,r*1.25);
-    vec2 d=(q-L.xy)/sc; vec2 d2=(q+vec2(-1.6,-2.4)-L.xy)/sc;
-    float m=L.w*clamp(10./r,.28,1.)*.8;
-    float k=exp(-dot(d,d)*1.3)*m, k2=exp(-dot(d2,d2)*1.3)*m;
-    D+=k; Dl+=k2; C+=uC[i]*k;
+  float p=uP; vec3 c;
+  if(y<=uHor){
+    c=sky(x,y,p);
+    for(int i=0;i<8;i++){ if(i>=uNS)break; vec4 S=uS[i]; float d=length(vec2(x,y)-S.xy);
+      c+=vec3(1.,.95,.88)*(exp(-d*d/(.9*S.z))*1.1+exp(-d/5.)*.05)*S.w; }
+  } else {
+    float dep=y-uHor;
+    float rip=(noise(vec2(x*.012,dep*.22+uTime*.05))-.5)*dep*.9;
+    c=sky(x+rip,uHor-dep*2.2,p)*.42*exp(-dep/90.);
+    float col=exp(-pow((x-uSunX)/(9.+dep*.55),2.));
+    float dash=smoothstep(.62,.8,noise(vec2(x*.09+uTime*.2,floor(dep/1.7)*1.3)));
+    c+=vec3(1.,.72,.45)*col*dash*.9*smoothstep(.05,.5,p)*exp(-dep/70.);
+    c*=smoothstep(uBase+30.,uBase-10.,y);
   }
-  float wisp=.35+1.25*pow(fbm(p*.075+w*6.+w2*3.),1.3)*1.3;
-  vec3 hue=C/max(D,1e-4);
-  float dens=1.-exp(-D*wisp*1.7);
-  float lit=clamp((D-Dl)*4.+.55,0.,1.6);
-  vec3 c=hue*dens*(.30+.85*lit)*1.15+hue*dens*dens*.35;
-  return c*smoothstep(uBase+3.,uBase-6.,y);
-}`,
-/* 4. FOCUS: each log a point of light seen through a lens. The latest is in focus; earlier ones
-      drift out of focus, so the moment you just logged is the sharpest thing on screen.
-      Height = amount. uL=(cx,cy,radius,intensity), uM.z = seed. */
-focus:`
-vec3 scene(float x,float y){
-  vec2 p=vec2(x,y); vec3 c=vec3(0.);
-  for(int i=0;i<${MAXL};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
-    float r=max(L.z,1.), dd=length(p-L.xy);
-    vec3 rr=vec3(r*1.035,r,r*.965);
-    float e=.7+r*.035;
-    vec3 disc=vec3(smoothstep(rr.r+e,rr.r-e,dd),smoothstep(rr.g+e,rr.g-e,dd),smoothstep(rr.b+e,rr.b-e,dd));
-    float rim=.62+.38*smoothstep(r*.45,r*.98,dd);
-    float tex=.9+.1*noise(p*.28+uM[i].z*91.);
-    float energy=L.w*pow(clamp(3.2/r,0.,1.),1.15)*2.2;
-    c+=uC[i]*disc*rim*tex*energy;
-    c+=uC[i]*exp(-dd*dd/(2.*pow(r*1.3+3.,2.)))*energy*.035;
-    c+=uC[i]*exp(-dd*dd/2.)*L.w*smoothstep(4.,2.,r)*1.4;
-  }
-  c+=vec3(.0012,.0018,.0032)*smoothstep(uTop-30.,uBase,y)*step(y,uBase);
+  c+=vec3(1.,.8,.6)*exp(-pow((y-uHor)/.7,2.))*(.04+.25*p*p);
   return c;
-}`
+}
+#define NOWMARK 0
+`,
+/* 3. AREAS: one colour field, like a mesh gradient. Each area of life owns a region; how brightly it
+      glows is that area against its own usual by this hour. A balanced day is an even glow; a day spent
+      on one thing floods with that colour. Never a score. uA=(cx,cy,unused,level). */
+field:`
+vec3 scene(float x,float y){
+  vec2 p=vec2(x,y); float t=uTime*.02;
+  vec2 w=vec2(fbm(p*.008+vec2(t,1.7)),fbm(p*.008+vec2(4.1,-t)))-.5;
+  vec2 q=p+w*70.;
+  vec3 c=vec3(0.); float ws=0.;
+  for(int i=0;i<4;i++){ vec4 A=uA[i];
+    vec2 d=(q-A.xy)/vec2(1.,.8);
+    float wi=1./pow(dot(d,d)+900.,1.25);
+    float lv=min(A.w,1.5);
+    c+=(uAC[i]*.20*lv*lv/(.35+lv)+vec3(.006,.008,.014))*wi; ws+=wi;
+  }
+  c/=ws;
+  // contour lines of the field's brightness: a printed-map precision over the glow
+  float s=dot(c,vec3(.3,.5,.2))*38.;
+  float fw=max(fwidth(s),1e-4);
+  float iso=1.-smoothstep(.0,1.2,abs(fract(s)-.5)*2./fw*0.5);
+  iso=1.-smoothstep(0.,1.,(.5-abs(fract(s)-.5))/fw);
+  c+=normalize(c+1e-4)*iso*.05;
+  float band=smoothstep(uTop-10.,uTop+90.,y)*smoothstep(uBase+40.,uBase-30.,y);
+  c*=band*1.1;
+  c*=.94+.12*hash(floor(p*1.5));
+  return c;
+}
+#define NOWMARK 0
+`,
 };
 const TAIL=`
 void main(){
@@ -369,17 +507,19 @@ void main(){
 
 const cv=document.getElementById('hero');
 const gl=cv.getContext('webgl',{antialias:false,alpha:false,premultipliedAlpha:false,powerPreference:'low-power'});
+gl.getExtension('OES_standard_derivatives');
 const VS=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
 function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o}
 const vs=sh(gl.VERTEX_SHADER,VS);
 const bf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
 const PROGS={};
+const UN=['uRes','uDpr','uTime','uNowX','uBase','uTop','uReed','uP','uHor','uSunX','uL','uC','uN','uBg','uS','uNS','uA','uAC'];
 function prog(id){
   if(PROGS[id])return PROGS[id];
-  const src=HEAD+'#define SHIM '+(SHOT?'0.0':'1.0')+'\n#define NOWMARK 1\n'+SCENES[id]+TAIL;
+  const sc=SCENES[id].replace(/SUNY/g,'(uHor+16.-pow(uP,1.8)*(uHor-uTop)*.7)');
+  const src=HEAD+'#define SHIM '+(SHOT?'0.0':'1.0')+'\n'+sc+TAIL;
   const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,src)); gl.linkProgram(pr);
-  const U={pr}; ['uRes','uDpr','uTime','uNowX','uBase','uTop','uReed','uL','uM','uC','uN','uBg'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
-  return PROGS[id]=U;
+  const U={pr}; UN.forEach(k=>U[k]=gl.getUniformLocation(pr,k)); return PROGS[id]=U;
 }
 
 let W=0,H=0,dpr=1;
@@ -388,91 +528,81 @@ function resize(){
   const r=cv.getBoundingClientRect(); W=r.width; H=r.height;
   cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
   gl.viewport(0,0,cv.width,cv.height);
-  kick();
+  placeFieldLabels(); if(day)drawRuler(nextItem()); kick();
 }
 const liquid=k=>k<=0?0:k>=1?1:1-Math.exp(-6.2*k)*Math.cos(4.2*k)*(1-k*.15);
-const ease=k=>k<=0?0:k>=1?1:1-Math.pow(1-k,3);
-let raf=0,lastActive=0,geo={};
+let raf=0,lastActive=0,lastT=0;
 function kick(){lastActive=performance.now(); if(!raf)raf=requestAnimationFrame(frame);}
-function layout(){
-  const hd=document.querySelector('.head'); const pt=parseFloat(getComputedStyle(hd).paddingTop);
-  const base=H-58, top=pt+60, avail=base-top; return {base,top,avail};
+function layout(){const pt=parseFloat(getComputedStyle(document.querySelector('.head')).paddingTop); const base=H-58, top=pt+60; return {base,top,avail:base-top};}
+function fieldGeom(){ const {top,avail}=layout();
+  const P=[[.2,.34],[.8,.30],[.24,.88],[.78,.86]];
+  return AREAS.map((a,i)=>({x:W*P[i][0],y:top+avail*P[i][1],r:0})); }
+function placeFieldLabels(){
+  if(!W||!day)return; const el=document.getElementById('fieldl'); const g=fieldGeom(), at=areaTend();
+  el.innerHTML=at.map((a,i)=>`<div class="lbl" style="left:${g[i].x}px;top:${g[i].y-12}px">${a.name}<b>${a.n}</b></div>`).join('');
 }
+function stars(){ const {top}=layout(); return open.map((o,i)=>{ const t=o.a??nowT; const x=W*(.08+.84*((t-6)/18)); const y=top+14+((Math.sin(i*12.9+t*3.1)*.5+.5)*48); return [x,y,1.2,1]; }); }
 function frame(){
   raf=0; if(!W)return;
-  const now=performance.now(), idea=IDEAS[ideaIx], U=prog(idea.id);
-  gl.useProgram(U.pr);
-  const ap=gl.getAttribLocation(U.pr,'p');gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
-  const xs=t=>(t-T0)/(T1-T0)*W, hourPx=W/(T1-T0);
-  const {base,top,avail}=layout();
-  let moving=false;
-  lights=lights.filter(L=>!(L.dying&&now-L.dying>700));
-  const act=lights.slice(-MAXL);
-  const aL=new Float32Array(MAXL*4), aM=new Float32Array(MAXL*4), aC=new Float32Array(MAXL*3);
-  const order=act.map((L,k)=>k);
-  geo={idea:idea.id,items:[]};
-  order.forEach(k=>{
-    const L=act[k];
-    let a=SHOT?1:Math.min(1,Math.max(0,(now-L.born)/1300)), h=liquid(a), i=Math.min(1,a*2.2);
-    if(L.dying){const d=Math.min(1,(now-L.dying)/600); h*=1-d*d; i*=1-d; moving=true;}
-    if(a<1)moving=true;
-    L.i=i;
-    const age=Math.max(0,nowT-L.t), x=xs(L.t+L.dur/2), hw=L.dur/2*hourPx;
-    let v;
-    if(idea.id==='reeds'){
+  const now=performance.now(), dt=Math.min(.05,(now-(lastT||now))/1000); lastT=now;
+  let moving=stepAnim(SHOT?1:dt);
+  const id=IDEAS[ideaIx].id;
+  if(id==='ember'){ showEmber(anim.m.v); }
+  if(id!=='ember'&&id!=='next'){
+    const U=prog(id); gl.useProgram(U.pr);
+    const ap=gl.getAttribLocation(U.pr,'p');gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+    const xs=t=>(t-T0)/(T1-T0)*W; const {base,top,avail}=layout();
+    lights=lights.filter(L=>!(L.dying&&now-L.dying>700));
+    const act=lights.slice(-MAXL), aL=new Float32Array(MAXL*4), aC=new Float32Array(MAXL*3);
+    act.forEach((L,k)=>{
+      let a=SHOT?1:Math.min(1,Math.max(0,(now-L.born)/1300)), h=liquid(a), i=Math.min(1,a*2.2);
+      if(L.dying){const d=Math.min(1,(now-L.dying)/600); h*=1-d*d; i*=1-d; moving=true;}
+      if(a<1)moving=true; L.i=i;
       const r0=Math.floor((L.t-T0)*2), r1=Math.max(r0,Math.ceil((L.t+L.dur-T0)*2)-1), rw=W/39;
-      v=[(r0+r1+1)/2*rw,(r1-r0)/2*rw,avail*L.hT*h,L.iT*i];
-    } else if(idea.id==='aurora'){
-      v=[x,hw,avail*L.hT*h,L.iT*i];
-    } else if(idea.id==='ink'){
-      const r=(5+11*Math.sqrt(Math.min(L.eq,90)/90)+Math.min(age,9)*2.4)*(0.35+0.65*ease(a));
-      const cy=base-10-r*.85;
-      v=[x,cy,r,L.iT*i];
-    } else if(idea.id==='focus'){
-      const r=2.6+Math.min(age,10)*2.5+(1-ease(a))*10;
-      const cy=base-12-(avail-34)*((L.hT-.3)/.62)*h;
-      v=[x,cy,r,L.iT*i];
-    }
-    aL.set(v,k*4); aM.set([age,a,L.seed,RT[L.log.r].neutral?1:0],k*4); aC.set(idea.tint?tintK(L.raw,idea.tint):L.c,k*3);
-    geo.items.push({log:L.log,v});
-  });
-  gl.uniform2f(U.uRes,W,H); gl.uniform1f(U.uDpr,dpr); gl.uniform1f(U.uTime,SHOT?0:now/1000);
-  gl.uniform1f(U.uNowX,xs(nowT)); gl.uniform1f(U.uBase,base); gl.uniform1f(U.uTop,top); gl.uniform1f(U.uReed,W/39);
-  gl.uniform4fv(U.uL,aL); gl.uniform4fv(U.uM,aM); gl.uniform3fv(U.uC,aC); gl.uniform1i(U.uN,act.length);
-  gl.uniform3fv(U.uBg,hex('#0B1019'));
-  gl.drawArrays(gl.TRIANGLES,0,3);
-  if(!SHOT && (moving || now-lastActive<8000)){
-    if(moving) raf=requestAnimationFrame(frame);
-    else setTimeout(()=>{if(!raf)raf=requestAnimationFrame(frame)},50);
-  } else window.__ready=true;
-}
-cv.addEventListener('click',e=>{
-  const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
-  let best=null;
-  if(geo.idea==='reeds'||geo.idea==='aurora'){
-    const t=T0+x/r.width*(T1-T0); let bd=.75; logs.forEach(l=>{const d=Math.abs(l.t-t); if(d<bd){bd=d;best=l}});
-  } else {
-    let bd=1e9; geo.items.forEach(g=>{const d=Math.hypot(x-g.v[0],y-g.v[1])-g.v[2]; if(d<bd&&d<18){bd=d;best=g.log}});
+      aL.set([(r0+r1+1)/2*rw,(r1-r0)/2*rw,avail*L.hT*h,L.iT*i],k*4); aC.set(L.c,k*3);
+    });
+    const st=stars(), aS=new Float32Array(32); st.slice(0,8).forEach((s,k)=>aS.set(s,k*4));
+    const g=fieldGeom(), aA=new Float32Array(16), aAC=new Float32Array(12);
+    AREAS.forEach((a,i)=>{aA.set([g[i].x,g[i].y,g[i].r,anim.w[i].v],i*4); aAC.set(hex(a.c),i*3);});
+    gl.uniform2f(U.uRes,W,H); gl.uniform1f(U.uDpr,dpr); gl.uniform1f(U.uTime,SHOT?0:now/1000);
+    gl.uniform1f(U.uNowX,xs(nowT)); gl.uniform1f(U.uBase,base); gl.uniform1f(U.uTop,top); gl.uniform1f(U.uReed,W/39);
+    gl.uniform1f(U.uP,anim.p.v); gl.uniform1f(U.uHor,top+avail*.66); gl.uniform1f(U.uSunX,W*.66);
+    gl.uniform4fv(U.uL,aL); gl.uniform3fv(U.uC,aC); gl.uniform1i(U.uN,act.length); gl.uniform3fv(U.uBg,hex('#0B1019'));
+    gl.uniform4fv(U.uS,aS); gl.uniform1i(U.uNS,Math.min(8,st.length)); gl.uniform4fv(U.uA,aA); gl.uniform3fv(U.uAC,aAC);
+    gl.drawArrays(gl.TRIANGLES,0,3);
   }
-  if(best)showLog(best);
+  if(!SHOT && (moving || now-lastActive<8000)){
+    if(moving) raf=requestAnimationFrame(frame); else setTimeout(()=>{if(!raf)raf=requestAnimationFrame(frame)},50);
+  } else { lastT=0; window.__ready=true; }
+}
+document.getElementById('heroBox').addEventListener('click',e=>{
+  if(e.target.closest('button'))return;
+  const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top, id=IDEAS[ideaIx].id;
+  if(id==='reeds'){ const t=T0+x/r.width*(T1-T0); let best=null,bd=.75; logs.forEach(l=>{const d=Math.abs(l.t-t); if(d<bd){bd=d;best=l}}); if(best)flash(fmt(best.t),RT[best.r].name+', '+amountTxt(best)); }
+  else if(id==='field'){ const g=fieldGeom(), at=areaTend(); let bi=0,bd=1e9; g.forEach((p,i)=>{const d=Math.hypot(x-p.x,y-p.y); if(d<bd){bd=d;bi=i}}); const a=at[bi];
+    flash(`${a.n} ${a.name.toLowerCase()}`, a.n>=a.usualNow?'at or above your usual':'usual by now: '+Math.round(a.usualNow*10)/10); }
+  else if(id==='tide'){ const st=stars(); let bi=-1,bd=22; st.forEach((s,i)=>{const d=Math.hypot(x-s[0],y-s[1]); if(d<bd){bd=d;bi=i}});
+    if(bi>=0){const o=open[bi]; flash(o.a==null?'now':fmt(o.a),RT[o.r].name+', still open');} else flash(`${logs.length} done`,`${open.length} still open`); }
+  else if(id==='ember'){ flash(`${activeDays()} of 7`,'days kept this week'); }
 });
 // prototype chrome
 const seg=document.getElementById('seg');
 IDEAS.forEach((d,k)=>{const b=document.createElement('button'); b.textContent=d.name; b.onclick=()=>setIdea(k); seg.appendChild(b);});
 function setIdea(k){
-  ideaIx=k; [...seg.children].forEach((b,j)=>b.classList.toggle('on',j===k));
-  const u=new URL(location.href); u.searchParams.set('idea',k+1); history.replaceState(null,'',u);
-  renderAxis(); kick();
+  ideaIx=k; document.body.dataset.idea=IDEAS[k].id; [...seg.children].forEach((b,j)=>b.classList.toggle('on',j===k));
+  const u=new URL(location.href); u.searchParams.set('idea',k); history.replaceState(null,'',u);
+  if(day){placeFieldLabels(); drawRuler(nextItem());} kick();
 }
 document.getElementById('data').onclick=()=>{dayIx=(dayIx+1)%DAYS.length; loadDay(dayIx,true);};
 document.getElementById('full').onclick=()=>{document.body.classList.toggle('full'); document.getElementById('full').textContent=document.body.classList.contains('full')?'Ideas':'Full'; requestAnimationFrame(resize);};
 if(document.body.classList.contains('full'))document.getElementById('full').textContent='Ideas';
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)kick()});
 window.addEventListener('resize',resize);
-loadDay(dayIx,!SHOT);
 setIdea(ideaIx);
-(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{resize(); if(SHOT)requestAnimationFrame(()=>requestAnimationFrame(()=>{window.__ready=true}));});
-window.__state=()=>({idea:IDEAS[ideaIx].id,day:dayIx,logs:logs.length});
+loadDay(dayIx,!SHOT);
+const imgsReady=Promise.all(emImgs.map(im=>im.decode?im.decode().catch(()=>{}):Promise.resolve()));
+Promise.all([document.fonts?document.fonts.ready:Promise.resolve(),imgsReady]).then(()=>{resize(); if(SHOT)requestAnimationFrame(()=>requestAnimationFrame(()=>{window.__ready=true}));});
+window.__state=()=>({idea:IDEAS[ideaIx].id,day:dayIx,logs:logs.length,open:open.length,m:momentum(),p:progress()});
 </script>
 </body>
 </html>
