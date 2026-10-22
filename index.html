@@ -465,6 +465,9 @@ svg { display: block; }
 /* live session bar */
 .livebar { position: absolute; left: 10px; right: 10px; bottom: 92px; z-index: 55; height: 60px; border-radius: 20px; background: var(--deep); color: var(--on-deep); display: flex; align-items: center; gap: 12px; padding: 0 8px 0 14px; box-shadow: 0 16px 40px -18px rgba(0,0,0,.6); animation: toastIn .5s var(--spring) both; }
 .livebar:has([data-live-first]) { height: auto; min-height: 60px; padding-top: 10px; padding-bottom: 10px; }
+/* B2: the live bar grows with its text, so at large text nothing runs over the chips or the tab bar */
+.livebar { height: auto !important; min-height: 60px; padding-top: 8px; padding-bottom: 8px; }
+.ax .livebar .lsub { white-space: normal !important; }
 .livebar .lsub:has([data-live-first]) { white-space: normal !important; }
 .livebar .live-first { display: block; color: var(--on-deep); margin-top: 2px; line-height: 1.3; }
 .livebar .pulse { width: 10px; height: 10px; border-radius: 5px; background: var(--deep-acc); animation: pulse 1.6s ease-in-out infinite; }
@@ -722,12 +725,15 @@ svg { display: block; }
 /* ---- This week ---- */
 /* L3-09: the seven days are seven equal columns, so Sunday never wraps alone */
 /* AL3-12: a filter fills only the chosen option; the others are hairline, as in the sheets' segmented controls */
-.chip.filter:not(.on) { background: transparent !important; color: var(--ink-2) !important; box-shadow: inset 0 0 0 1px var(--line-2) !important; }
+.chip.filter:not(.on) { background: transparent !important; color: rgba(19,20,23,.66) !important; box-shadow: inset 0 0 0 1px rgba(19,20,23,.18) !important; }
+/* AL5-02: filter chips sit on the page, so their off state uses the page's own ink, never the stage's */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip.filter:not(.on) { color: rgba(242,239,233,.7) !important; box-shadow: inset 0 0 0 1px rgba(242,239,233,.2) !important; } }
+:root[data-theme="dark"] .chip.filter:not(.on) { color: rgba(242,239,233,.7) !important; box-shadow: inset 0 0 0 1px rgba(242,239,233,.2) !important; }
 .chip.filter.on { background: var(--key) !important; color: var(--key-ink) !important; box-shadow: var(--key-mat) !important; }
 .xpick { padding: 0 0 8px; }
 .xpick .lgroup-h { padding: 12px 16px 4px; }
 .xopt { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 0 16px; text-align: left; font-size: calc(15px * var(--ts, 1)); color: var(--ink); }
-.xopt > svg:last-child { margin-left: auto; }
+.xopt > svg:last-child:not(:first-child) { margin-left: auto; } /* AL5-03: a leading glyph never pushes the row right */
 .xopt.on { font-weight: 640; }
 .legend.even { display: grid; column-gap: 18px; row-gap: 6px; justify-content: start; }
 .chips.weekseven { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
@@ -813,6 +819,7 @@ svg { display: block; }
 .sr { position: absolute !important; left: 0; top: 0; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 .sr > * { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: hidden; padding: 0; margin: 0; }
 .moment.entering { animation: tileIn .55s var(--spring-soft) both; }
+.route-hitg { outline: none; cursor: pointer; }
 .route-hit { fill: none; stroke: transparent; stroke-width: 44; stroke-linecap: round; stroke-linejoin: round; pointer-events: stroke; cursor: pointer; outline: none; }
 
 /* ---- step 1: devices (Lock Screen, widgets, Watch) ---- */
@@ -860,6 +867,9 @@ svg { display: block; }
 .tabbar > .tab, .tabbar > .logbtn { position: relative; z-index: 1; }
 .mi-tabind { position: absolute; left: 0; top: 3px; width: 64px; height: 44px; border-radius: 22px; background: var(--chip); opacity: 0; pointer-events: none; z-index: 0; transform-origin: 50% 50%; }
 .seg .thumb { transition: transform .44s var(--spring-soft) !important; }
+/* L5-03: at large text a five-way segment takes two rows (3 + 2), so no label is cut */
+.ax .seg.n5 { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); }
+.ax .seg.n5 .thumb { width: calc((100% - 6px) / 3) !important; height: calc((100% - 6px) / 2); bottom: auto !important; transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%)) !important; }
 
 /* sheets: the screen behind recedes under the dim; the sheet keeps its colour below its edge when pulled up */
 .stage { transition: transform .5s var(--mi-weight); transform-origin: 50% 46%; }
@@ -1186,11 +1196,20 @@ svg { display: block; }
 .ax .row[data-pattern], .ax .list .row[data-pattern]:has(> .val) { flex-wrap: wrap; row-gap: 4px; }
 .ax .row[data-pattern] .main, .ax .list .row[data-pattern]:has(> .val) .main { flex: 1 1 calc(100% - 40px); }
 /* L2-12: at large text every comparison row stacks its value under the label */
-.ax [data-sleep-vs] .kv, .ax .kv.stackax { flex-wrap: wrap; }
+.ax .kv.stackax { flex-wrap: wrap; }
+/* L2-12: at large text every row of the sleep comparison stacks, label over value, so no row wraps on its own */
+.ax [data-sleepcompare] .kv { flex-direction: column; align-items: flex-start; gap: 2px; }
+.ax [data-sleepcompare] .kv .v { text-align: left; max-width: none; }
 .ax .row[data-pattern] .chev { order: 2; }
 .ax .row[data-pattern] .val { order: 3; flex-basis: 100%; text-align: left; margin: 0; }
 .m3-legend.placed { position: relative; display: block; height: calc(16px * var(--ts, 1)); padding: 0; }
 .m3-legend.placed.keys { height: 44px; }
+.m3-legend.colvals button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; }
+.m3-legend.colvals .cn { font-style: normal; display: block; font-size: calc(11.5px * var(--ts, 1)); line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m3-legend.colvals .cv { display: block; font-size: calc(12px * var(--ts, 1)); line-height: 1.2; font-weight: 620; color: var(--on-deep); overflow-wrap: anywhere; }
+.m3-legend.colvals.placed.keys { height: calc(30px + 58px * var(--ts, 1)); }
+.ax .m3-legend.colvals .cn { font-size: 13px; letter-spacing: -.01em; }
+.ax .m3-legend.colvals.placed.keys { height: calc(46px + 58px * var(--ts, 1)); }
 .wk-flat { display: grid; grid-template-columns: repeat(7, 1fr); align-items: end; height: 64px; margin: 0 var(--gut) 8px; } .wk-flat span { display: flex; justify-content: center; align-items: flex-end; height: 100%; } .wk-flat i { display: block; width: 22px; border-radius: 8px 8px 5px 5px; background: rgba(237,241,246,.16); } .wk-flat i.on { background: oklch(.6 .14 215); }
 .wk-flat + .m3-legend, .m3-legend.wk-letters { display: grid; grid-template-columns: repeat(7, 1fr); justify-items: center; }
 .m3-legend.placed.keys button { position: absolute; top: 0; transform: translateX(-50%); width: 44px; }
@@ -1370,7 +1389,15 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 
 /* larger text: a row keeps its chevron on its own line, the small progress figure gives way instead */
 .ax .list .row:has(> .chev) { flex-wrap: nowrap; }
-.ax .list .row:has(> .chev) .main { flex: 1 1 0; }
+.ax .list .row:has(> .chev) .main { flex: 1 1 0; min-width: min-content; }
+/* L5-02: at large text a Routines row stacks its value under the name */
+.ax [data-root="routines"] .list .row:has(> .val) { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "tok main chev" "tok val chev"; column-gap: 14px; row-gap: 2px; align-items: center; }
+.ax [data-root="routines"] .list .row:has(> .val) > .tok { grid-area: tok; }
+.ax [data-root="routines"] .list .row:has(> .val) > .main { grid-area: main; min-width: 0; }
+.ax [data-root="routines"] .list .row:has(> .val) > .val { grid-area: val; text-align: left; white-space: normal; max-width: none; }
+.ax [data-root="routines"] .list .row:has(> .val) > .chev { grid-area: chev; }
+/* at large text a long value wraps instead of running over the name (Routines: "Sketching 0 of 1 this window") */
+.ax .list .row:has(> .chev) > .val { white-space: normal; min-width: 0; flex: 0 1 auto; }
 .ax .list .row > svg:not(.chev) { max-width: 52px; flex: none; }
 .stoken { width: max(64px, calc(60px * var(--ts, 1))); }
 .stoken .lb { max-width: none; }
@@ -1660,9 +1687,14 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .datestrip .dkey .st { color: var(--ink-3); font-weight: 520; }
 .qrow .qkeys { position: relative; z-index: 1; display: flex; gap: 6px; align-items: center; justify-content: flex-end; } /* L4-04: keys end on the same right edge as every other Now key */
 /* L4-03: at large text a dated or held row puts its keys on their own line, so the name and the time window get the full width */
-.ax .qrow.nrow { grid-template-columns: 36px minmax(0, 1fr); }
-.ax .qrow.nrow .qkeys { grid-column: 2 / -1; justify-self: end; margin-top: 8px; }
-.ax .qrow.nrow .act.word { max-width: none; padding: 0 16px; }
+/* L3-02: at large text a dated or held row takes the full width for its name; the date wraps under it, beside the keys */
+.ax .qrow.nrow { grid-template-areas: "tok qn qn" "tok qs keys"; row-gap: 2px; }
+.ax .qrow.nrow > .tok { grid-area: tok; }
+.ax .qrow.nrow > .qm { display: contents; }
+.ax .qrow.nrow .qn { grid-area: qn; position: relative; z-index: 1; pointer-events: none; }
+.ax .qrow.nrow .qs { grid-area: qs; position: relative; z-index: 1; pointer-events: none; align-self: center; }
+.ax .qrow.nrow .qkeys { grid-area: keys; align-self: center; gap: 6px; }
+.ax .qrow.nrow .act.word { max-width: none; padding: 0 12px; }
 /* X3-01 / L3-03: the 15 min key is a seated key like the check, never stage ink on a light plate */
 .qrow .act.word, .qrow .act.word:not(.live) { height: 44px; font-size: calc(13.5px * var(--ts, 1)); background: var(--key); color: #EEF1F6; box-shadow: var(--key-mat); }
 .qrow .qn { display: flex; align-items: center; gap: 3px; min-width: 0; }
@@ -1677,8 +1709,9 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .stoken .sglass { width: 24px; height: 28px; position: relative; clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%); border-radius: 3px 3px 8px 8px; background: linear-gradient(to bottom, oklch(.66 .14 var(--h)), oklch(.52 .15 var(--h))); box-shadow: inset 0 0 0 1.5px oklch(.42 .1 var(--h) / .6); }
 .stoken .sglass::before { content: ""; position: absolute; left: 0; right: 0; top: 1px; height: 4px; border-radius: 50%; background: oklch(.84 .09 var(--h)); }
 /* OP4-03: in dark mode the empty part of the glass is clear, with only the hairline; the liquid carries the tone */
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .qrow .tok.tumbler { background: oklch(.62 .06 var(--h) / .16) !important; box-shadow: inset 0 0 0 1.5px oklch(.72 .08 var(--h) / .6) !important; } }
-:root[data-theme="dark"] .qrow .tok.tumbler { background: oklch(.62 .06 var(--h) / .16) !important; box-shadow: inset 0 0 0 1.5px oklch(.72 .08 var(--h) / .6) !important; }
+/* dark: the empty glass has a full hairline on all four sides; the clip-path used to cut the inset shadow at the slanted sides */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .qrow .tok.tumbler { background: oklch(.62 .06 var(--h) / .16) !important; box-shadow: none !important; } :root:not([data-theme="light"]) .qrow .tok.tumbler::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: oklch(.74 .08 var(--h) / .75); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 46' preserveAspectRatio='none'%3E%3Cpath d='M.8 .8H41.2L37.7 37.5Q36.8 45.2 30 45.2H12Q5.2 45.2 4.3 37.5Z' fill='none' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 46' preserveAspectRatio='none'%3E%3Cpath d='M.8 .8H41.2L37.7 37.5Q36.8 45.2 30 45.2H12Q5.2 45.2 4.3 37.5Z' fill='none' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; } }
+:root[data-theme="dark"] .qrow .tok.tumbler { background: oklch(.62 .06 var(--h) / .16) !important; box-shadow: none !important; } :root[data-theme="dark"] .qrow .tok.tumbler::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: oklch(.74 .08 var(--h) / .75); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 46' preserveAspectRatio='none'%3E%3Cpath d='M.8 .8H41.2L37.7 37.5Q36.8 45.2 30 45.2H12Q5.2 45.2 4.3 37.5Z' fill='none' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 46' preserveAspectRatio='none'%3E%3Cpath d='M.8 .8H41.2L37.7 37.5Q36.8 45.2 30 45.2H12Q5.2 45.2 4.3 37.5Z' fill='none' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
 /* AL4-04: Settled tokens are plain jewels, no ring and no badge */
 .stoken .disc, .stoken .disc:not(.x) { box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 6px 14px -10px rgba(0,0,0,.45) !important; }
 .stoken .disc .badge { display: none; }
@@ -1690,6 +1723,8 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .sug-top[data-suggest-open]{min-height:44px;align-items:center}
 .ax .headchips .hchip{min-width:44px;justify-content:center}
 .dateline1{display:flex;align-items:center;gap:8px;width:calc(100% - 2 * var(--gut));margin:10px var(--gut) 0;min-height:44px;padding:0 4px;color:var(--ink-2);font-size:calc(14px * var(--ts,1));text-align:left}.dateline1 .dl1-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dateline1 b{color:var(--ink);font-weight:600}
+.ax .dateline1 .dl1-t { white-space: normal; padding: 6px 0; }
+.scroll[data-scroll="today"] { overflow-anchor: none; } /* OP4-04: the app anchors rows itself; the browser must not shift the page when a row leaves */ /* B1 at large text: the dateline wraps instead of running off the screen */
 /* record stones: a day under each stone */ .recs-days{position:relative;height:calc(30px * var(--ts,1));margin:-8px 0 2px}.recs-days em{font-style:normal}.recs-days i{font-style:normal}.ax .recs-days .mo{display:none}.recs-days > span{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;font-size:calc(10.5px * var(--ts,1));line-height:1.25;color:var(--ink-3);white-space:nowrap}.recs-days b{font-weight:620;color:var(--ink-2)}.recs-cap.one{justify-content:center;margin-top:4px}.ax .recs-days > span{font-size:calc(9.5px * var(--ts,1))}
 /* L4-01 */ .recs-flat{display:flex;justify-content:space-between;align-items:flex-end;height:120px;margin:24px var(--gut) 8px}.recs-flat .rb{width:44px;height:100%;display:flex;align-items:flex-end;justify-content:center;padding:0}.recs-flat .rb i{display:block;width:22px;border-radius:11px 11px 6px 6px;background:oklch(.55 .14 var(--h,250))}.recs-flat .rb.dim i{background:var(--ink-3);opacity:.55}
 /* OP-12 */ .recs-cap{display:flex;justify-content:space-between;gap:10px;margin:-6px var(--gut) 0;font-size:calc(12px * var(--ts,1));color:var(--ink-2)}.recs-cap span:nth-child(2){text-align:center;flex:1}.recs-cap span:first-child,.recs-cap span:last-child{white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -2094,7 +2129,7 @@ class Year extends Stage {
     this.stones.forEach((s, i) => {
       live = spring(s.lift, s.m === fi ? .3 : 0, 120, 14, dt) || live;
       const k = clamp(this.enter.x * 1.5 - i / 12 * .5, 0, 1.2);
-      s.holder.position.y = .44 + s.lift.x + (1 - Math.min(1, k)) * 1.2; s.mesh.scale.setScalar(Math.max(.001, Math.min(1, k)) * (s.mesh.userData.size || 1) * (1 + s.lift.x * 2.2));
+      s.holder.position.y = .262 * (s.mesh.userData.size || 1) + s.lift.x + (1 - Math.min(1, k)) * 1.2; /* AL5-04: seated on its shadow */ s.mesh.scale.setScalar(Math.max(.001, Math.min(1, k)) * (s.mesh.userData.size || 1) * (1 + s.lift.x * 2.2));
       s.mesh.rotation.y = s.base + (RM ? 0 : now * (s.m === fi ? .5 : .08)); s.mesh.rotation.x = this.lean.y.x * .3;
     });
     return live;
@@ -2105,7 +2140,7 @@ class Year extends Stage {
 class Columns extends Stage {
   build() {
     this.fit = { d: 6.4, y: .62, tilt: .4, aspect: 2.0 }; this.idle = true; const g = this.g = new T.Group(); this.root.add(g); this.cols = [];
-    const L = this.data.cols; const n = L.length; const gap = Math.min(.86, 4.4 / Math.max(1, n));
+    const L = this.data.cols; const n = L.length; const gap = this.data.wide ? Math.min(1.3, 6.2 / Math.max(1, n)) : Math.min(.86, 4.4 / Math.max(1, n));
     L.forEach((c, i) => {
       const x = (i - (n - 1) / 2) * gap; const z = -Math.abs(i - (n - 1) / 2) * .16; const H = 1.5, r = Math.min(.34, gap * .4);
       const shell = new T.Mesh(new T.CylinderGeometry(r, r, H, 6, 1), new T.MeshPhysicalMaterial({ color: 0xe8eef8, roughness: .04, transparent: true, opacity: .2, flatShading: true, clearcoat: 1, envMapIntensity: 2, depthWrite: false }));
@@ -2148,7 +2183,9 @@ class Slots extends Stage {
       const x = (col - (nr - 1) / 2) * gap; const z = big ? 0 : -Math.pow(Math.abs(col - (nr - 1) / 2) / Math.max(1, nr / 2), 2) * .7 + (rows > 1 ? (row - .5) * gap * 1.5 : 0);
       const plinth = new T.Mesh(new T.CylinderGeometry(r * 1.05, r * 1.15, .08, 24), plinthM); plinth.position.set(x, .04, z); plinth.receiveShadow = true; g.add(plinth);
       const h = sl.h == null ? 1 : big ? Math.max(.2, sl.h * 2.4) /* BD-11: a real height range, from zero */ : Math.max(.25, sl.h);
-      const m = new T.Mesh(cut(r), sl.on ? (this.data.matte || sl.dim ? matte : sl.hue != null ? stoneMat(sl.hue) : lit) : clear); m.castShadow = !!sl.on; m.position.set(x, .1 + r * .95 * h, z); m.scale.set(1, h, 1); m.renderOrder = sl.on ? 0 : 2; m.userData.pick = sl.pick != null ? sl.pick : i; if (sl.on && this.opts.onPick) this.picks.push(m); g.add(m);
+      /* AL5-01: a record stone keeps one shape; its length is the height of a standing stone seated on the plinth (uniform cross-section, never a stretched pebble) */
+      const rr = r * .6, H = big ? Math.max(2 * rr, r * 1.9 * h) : 0; const geo = big ? new T.CapsuleGeometry(rr, Math.max(0, H - 2 * rr), 8, 24) : cut(r);
+      const m = new T.Mesh(geo, sl.on ? (this.data.matte || sl.dim ? matte : sl.hue != null ? stoneMat(sl.hue) : lit) : clear); m.castShadow = !!sl.on; if (big) m.position.set(x, .08 + H / 2, z); else { m.position.set(x, .1 + r * .95 * h, z); m.scale.set(1, h, 1); } m.renderOrder = sl.on ? 0 : 2; m.userData.pick = sl.pick != null ? sl.pick : i; if (sl.on && this.opts.onPick) this.picks.push(m); g.add(m);
       this.items.push({ m, i, y0: m.position.y, s: sp(0), on: !!sl.on });
     });
     this.mats = { lit, matte, clear }; this.hueMats = {};
@@ -2193,7 +2230,7 @@ class Dial extends Stage {
         // one thin layer per routine kept that day, in its own hue; an amount routine is only a hairline
         const m = new T.Group(); m.position.set(Math.sin(t) * R0, 0, -Math.cos(t) * R0); m.rotation.y = -t; let y = 0;
         const L2 = (R1 - R0) * .82;
-        (sl.layers.length > 3 ? [...sl.layers.slice(0, 3), { hue: null, thin: false }] : sl.layers).forEach(ly => { const th = ly.thin ? .016 : .055; const geo = new T.BoxGeometry(wArc, th, L2); geo.translate(0, y + th / 2, -L2 / 2); const lm = new T.Mesh(geo, this.layerMat(ly.hue)); lm.castShadow = true; lm.userData.pick = sl.id; m.add(lm); if (sl.id != null) this.picks.push(lm); y += th + .006; });
+        sl.layers.forEach(ly => { const th = .052; /* OP-15: one even layer per routine kept, so a taller block always means more kept */ const geo = new T.BoxGeometry(wArc, th, L2); geo.translate(0, y + th / 2, -L2 / 2); const lm = new T.Mesh(geo, this.layerMat(ly.hue)); lm.castShadow = true; lm.userData.pick = sl.id; m.add(lm); if (sl.id != null) this.picks.push(lm); y += th + .006; });
         if (sl.rare != null) { const cap = new T.Mesh(new T.SphereGeometry(Math.min(.09, wArc * .42), 20, 14), stoneMat(sl.rare, { roughness: .18, clearcoat: 1 })); cap.position.set(0, y + .07, -L2 * .55); cap.castShadow = true; m.add(cap); }
         g.add(m); this.blocks.push({ m, id: sl.id, hgt: 1, s: sp(0), lift: sp(0), i, grp: true }); return;
       }
@@ -2791,6 +2828,7 @@ const ITEMS0 = [{
 }, {
   id: 'stretch',
   name: 'Stretching',
+  short: 'Stretch',
   kind: 'routine',
   measure: 'session',
   hue: 122,
@@ -5322,7 +5360,15 @@ function consequence(db, it, ev, opts = {}) {
   if (c === 'day') return `today`;
   return '';
 }
-const RHYTHM = it => ['date', 'call', 'friends'].includes(it.id) || it.lens === 'rhythm';
+const RHYTHM = it => it.lens ? it.lens === 'rhythm' && it.cadence && it.cadence.type !== 'day' : ['date', 'call', 'friends'].includes(it.id);
+const LENS_OPTS = [{
+  v: 'count',
+  l: 'Count'
+}, {
+  v: 'rhythm',
+  l: 'Rhythm'
+}];
+const lensOk = it => isRoutine(it) && it.cadence && ['week', 'month', 'everyN'].includes(it.cadence.type);
 function naturalState(db, it, ev) {
   const tg = ev.tg;
   const c = it.cadence.type;
@@ -5862,6 +5908,19 @@ const heldText = l => {
   const n = l.map(x => x.it.short || x.it.name);
   return !n.length ? '' : n.length === 1 ? `${n[0]} held` : n.length === 2 ? `${n[0]} and ${n[1]} held` : `${n[0]}, ${n[1]} and ${n.length - 2} more held`;
 };
+function monthBest(db, a, b) {
+  const hl = highlightsFor(db, a, b);
+  const day = d => fmtDay(d, {
+    noDow: true
+  });
+  const bst = hl.filter(h => h.kind === 'best').sort((p, q) => q.d - p.d)[0];
+  if (bst) return `Fastest 5 km, ${day(bst.d)}`;
+  const ab = hl.find(h => h.kind === 'first' && h.w);
+  if (ab) return `First run abroad, ${day(ab.d)}`;
+  const ev = hl.find(h => h.kind === 'event' && h.title && h.title.length <= 24);
+  if (ev) return `${ev.title}, ${day(ev.d)}`;
+  return '';
+}
 function monthFact(db, m) {
   const a = monthStart(m),
     b = Math.min(monthEnd(m), db.today);
@@ -6491,7 +6550,7 @@ const INKS = {
 };
 function Tx({
   c = 3,
-  size = 11,
+  size = 12,
   weight = 500,
   anchor = 'start',
   children,
@@ -6520,8 +6579,12 @@ function Seg({
   const idx = Math.max(0, options.findIndex(o => o.v === value));
   const n = options.length;
   return React.createElement("div", {
-    className: "seg",
-    style: style,
+    className: cx('seg', n >= 5 && 'n5'),
+    style: {
+      ...style,
+      '--c': idx % 3,
+      '--r': Math.floor(idx / 3)
+    },
     role: "tablist",
     "aria-label": label
   }, React.createElement("div", {
@@ -6957,7 +7020,7 @@ function Bars({
     c: 2,
     x: pl + span.i0 * bw + 3,
     y: pt - 15,
-    size: 10.5,
+    size: 12,
     weight: 600
   }, span.label)), bnd && React.createElement("g", {
     "data-usual-band": true
@@ -7065,7 +7128,7 @@ function Bars({
     x: W - pr - 2,
     y: Math.max(11, y(bnd[1]) - 4),
     anchor: "end",
-    size: 10,
+    size: 12,
     weight: 600,
     stroke: deep ? '#0B1019' : 'var(--surface)',
     strokeWidth: 3,
@@ -7077,7 +7140,7 @@ function Bars({
     x: pl + i * bw + bw / 2,
     y: H - 6,
     anchor: "middle",
-    size: 10.5,
+    size: 12,
     weight: cur === i ? 650 : 500
   }, d.l) : null)), cur != null && data[cur] && (idx != null || !say || cur !== ref0 && !selProg) && React.createElement(Ctip, {
     pct: clamp((pl + cur * bw + bw / 2) / W * 100, 22, 78)
@@ -7167,7 +7230,7 @@ function Lines({
     x: k === 0 ? 2 : W - 2,
     y: pt - 12,
     anchor: k === 0 ? 'start' : 'end',
-    size: 10.5,
+    size: 12,
     weight: 600,
     style: {
       fill: p.color
@@ -7178,14 +7241,14 @@ function Lines({
     x: k === 0 ? pl - 5 : W - pr + 5,
     y: (j === 0 ? pt : H - pb) + 4,
     anchor: k === 0 ? 'end' : 'start',
-    size: 10
+    size: 12
   }, p.fmtAxis ? p.fmtAxis(v) : v))), xLabel && [0, Math.floor((n - 1) / 2), n - 1].map(i => React.createElement(Tx, {
     key: 'x' + i,
     c: ink3,
     x: X(i),
     y: H - 6,
     anchor: i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle',
-    size: 10.5
+    size: 12
   }, xLabel(i))), marks && marks.map((m, i) => React.createElement("circle", {
     key: 'm' + i,
     cx: X(m.i),
@@ -7260,7 +7323,7 @@ function DotStrip({
     x: X(t),
     y: H - 6,
     anchor: i === 0 ? 'start' : i === 2 ? 'end' : 'middle',
-    size: 10.5
+    size: 12
   }, fmt(t)))), groups.map((g, gi) => {
     const r = rngFor('ds' + gi + g.vals.length);
     const cy = 10 + gi * rowH + rowH / 2 - 6;
@@ -7286,7 +7349,7 @@ function DotStrip({
       x: W - pr,
       y: cy - 16,
       anchor: "end",
-      size: 11,
+      size: 12,
       weight: 600,
       c: 2
     }, g.name, ", ", g.vals.length));
@@ -7357,7 +7420,7 @@ function ZoneBar({
   }, "min")), React.createElement("div", {
     style: {
       color: deep ? 'var(--on-deep-3)' : 'var(--ink-3)',
-      fontSize: fs(11)
+      fontSize: fs(12)
     }
   }, z.hi > 900 ? `${z.lo}+` : `${z.lo || '<'}${z.lo ? '–' : ''}${z.hi}`)))));
 }
@@ -7484,23 +7547,38 @@ function Route({
       cursor: 'pointer'
     },
     onClick: () => pick(sg)
-  })), onSel && segs.map(sg => React.createElement("path", {
-    key: 'h' + sg.s,
-    className: "route-hit",
-    d: segD(sg),
-    onClick: () => pick(sg),
-    role: "button",
-    tabIndex: 0,
-    "aria-pressed": sel === sg.s,
-    "aria-label": `Kilometre ${sg.s + 1}${sg.s === nS - 1 && w.rem ? ` (last ${w.rem.toFixed(1)} km)` : ''}: ${fmtPace(w.splits[sg.s])} per km`,
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        pick(sg);
+  })), onSel && segs.map(sg => {
+    const mp = P(pts[Math.round((sg.a + sg.b) / 2)]);
+    return React.createElement("g", {
+      key: 'h' + sg.s,
+      className: "route-hitg",
+      onClick: () => pick(sg),
+      role: "button",
+      tabIndex: 0,
+      "aria-pressed": sel === sg.s,
+      "aria-label": `Kilometre ${sg.s + 1}${sg.s === nS - 1 && w.rem ? ` (last ${w.rem.toFixed(1)} km)` : ''}: ${fmtPace(w.splits[sg.s])} per km`,
+      onKeyDown: e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          pick(sg);
+        }
+      },
+      "data-route-hit": sg.s
+    }, React.createElement("path", {
+      className: "route-hit",
+      d: segD(sg)
+    }), React.createElement("rect", {
+      x: mp[0] - 22,
+      y: mp[1] - 22,
+      width: 44,
+      height: 44,
+      rx: 22,
+      fill: "transparent",
+      style: {
+        pointerEvents: 'all'
       }
-    },
-    "data-route-hit": sg.s
-  })), markers && segs.slice(0, -1).map(sg => {
+    }));
+  }), markers && segs.slice(0, -1).map(sg => {
     const [x, y] = P(pts[sg.b]);
     return React.createElement("g", {
       key: 'k' + sg.s,
@@ -7953,22 +8031,9 @@ function ItemObject({
       },
       label: lab,
       fallback: flat
-    }), xs && xs.length === recs.length ? React.createElement("div", {
-      className: "recs-days",
-      "aria-hidden": "true",
-      "data-recs-days": true
-    }, recs.map((e, i) => {
-      const d = dayOf(e.t);
-      return React.createElement("span", {
-        key: e.id,
-        style: {
-          left: `${(xs[i] * 100).toFixed(2)}%`
-        }
-      }, React.createElement("b", null, d === db.today ? 'Today' : DOW3[dow(d)]), React.createElement("em", null, dom(d), React.createElement("i", {
-        className: "mo"
-      }, " ", MON3[monthOf(d)])));
-    })) : React.createElement("div", {
-      className: "recs-cap"
+    }), React.createElement("div", {
+      className: "recs-cap",
+      "data-recs-ends": true
     }, React.createElement("span", null, fmtDay(first, {
       noDow: true
     })), React.createElement("span", null), React.createElement("span", null, last === db.today ? 'Today' : fmtDay(last, {
@@ -8061,6 +8126,10 @@ function YearObject({
     held: []
   }).held) || monthFact(db, front) || 'A quieter month')));
 }
+const colVal = (db, it) => {
+  const ev = currentEval(db, it);
+  return rowVal(db, it, ev).replace(/ today$/, '');
+};
 function DayColumns({
   db,
   list
@@ -8075,9 +8144,12 @@ function DayColumns({
     };
   }).slice(0, 7);
   const data = useMemo(() => ({
-    cols
+    cols,
+    wide: true
   }), [JSON.stringify(cols)]);
   const [xs, setXs] = useState(null);
+  const placed = xs && xs.length === cols.length;
+  const cw = placed && xs.length > 1 ? Math.min(...xs.slice(1).map((v, i) => v - xs[i])) : .2;
   if (!cols.length) return null;
   return React.createElement(React.Fragment, null, React.createElement(Hero3D, {
     kind: "columns",
@@ -8097,37 +8169,42 @@ function DayColumns({
     },
     label: `Today’s ${plural(cols.length, 'daily routine')}, one column each, filled to where today stands. Tap one to open it`
   }), React.createElement("div", {
-    className: cx('m3-legend', xs && xs.length === cols.length && 'placed keys'),
+    className: cx('m3-legend colvals', xs && xs.length === cols.length && 'placed keys'),
     "data-cols-legend": true,
     style: xs && xs.length === cols.length ? {
       color: 'var(--on-deep-2)'
     } : {
       color: 'var(--on-deep-2)',
-      maxWidth: cols.length * 58,
+      maxWidth: cols.length * 64,
       margin: '0 auto'
     }
   }, cols.map((c, i) => {
     const it = db.byId[c.id];
+    const val = colVal(db, it);
     return React.createElement("button", {
       key: c.id,
       onClick: e => openItem(S, it, e),
-      "aria-label": `Open ${it.name}`,
+      "aria-label": `${it.name}, ${val}. Open`,
+      "data-colval": it.id,
       style: {
         ...(xs && xs.length === cols.length ? {
-          left: `${(xs[i] * 100).toFixed(2)}%`
+          left: `${(xs[i] * 100).toFixed(2)}%`,
+          width: `calc(${(cw * 100).toFixed(2)}% - 6px)`
         } : {
           flex: 1
         }),
         minHeight: 44,
         minWidth: 44,
-        display: 'grid',
-        placeItems: 'center',
         color: 'inherit'
       }
     }, React.createElement(Icon, {
       n: it.private ? 'lock' : it.glyph,
       s: 18
-    }));
+    }), React.createElement("i", {
+      className: "cn"
+    }, it.short || it.name, it.isNew ? ', new' : ''), React.createElement("b", {
+      className: "cv tnum"
+    }, val));
   })), list.length > cols.length && React.createElement("div", {
     style: {
       textAlign: 'center',
@@ -8332,7 +8409,7 @@ function DialObject({
     fallback: children
   }, kind === 'month' && React.createElement("div", {
     className: "m3-dialcap"
-  }, data.daysWith ? React.createElement(React.Fragment, null, React.createElement("b", null, MON3[monthOf(data.a)]), React.createElement("span", null, data.filter ? data.filter.short || data.filter.name : data.fact || '')) : React.createElement("span", null, "Nothing yet")));
+  }, data.daysWith ? React.createElement(React.Fragment, null, React.createElement("b", null, MON3[monthOf(data.a)]), React.createElement("span", null, data.filter ? data.filter.short || data.filter.name : `${plural(data.daysWith, 'day')} kept`)) : React.createElement("span", null, "Nothing yet")));
 }
 function PeriodFigure({
   it,
@@ -8559,13 +8636,17 @@ function monthDiscData(db, m, filterId) {
         o.unknown = false;
       } else {
         o.n = L.n[d] || 0;
-        o.f = o.n ? .62 : 0;
         o.unknown = o.n === 0;
         const kept = rings.filter(it => countingEntries(db, it, d, d).length);
-        o.layers = kept.slice(0, 6).map(it => ({
+        o.kept = kept.length;
+        o.f = o.n ? .28 + .06 * Math.min(12, kept.length) : 0;
+        o.layers = (kept.length > 12 ? [...kept.slice(0, 11), null] : kept).map(it => it ? {
           hue: it.hue,
           thin: it.measure === 'quantity'
-        }));
+        } : {
+          hue: null,
+          thin: false
+        });
         const rare = kept.find(it => it.cadence.type === 'month' || it.cadence.type === 'everyN' && it.cadence.n >= 14);
         o.rare = rare ? rare.hue : null;
       }
@@ -8576,7 +8657,9 @@ function monthDiscData(db, m, filterId) {
   const daysWith = days.filter(x => !x.future && x.n > 0).length;
   const alive = db.items.filter(it => isRoutine(it) && it.created <= Math.min(b, db.today) && !(it.retired != null && it.retired < a) && !(isPausedOn(it, a) && isPausedOn(it, Math.min(b, db.today)))).length;
   const hm = !f && b >= 0 ? monthHeld(db, m) : null;
-  const fact = hm ? heldText(hm.held.slice(0, 1)) || monthFact(db, m) : '';
+  const best = !f && b >= 0 ? monthBest(db, a, Math.min(b, db.today)) : '';
+  const held = hm ? heldText(hm.held.slice(0, 1)) : '';
+  const fact = best || held || (hm ? monthFact(db, m) : '');
   return {
     a,
     b,
@@ -9104,7 +9187,8 @@ const notStarted = (db, it, ev) => it.cadence.type === 'none' ? !(db.byItemDay[i
 function QuietRow({
   x,
   holding,
-  primary
+  primary,
+  showFirst
 }) {
   const S = useStore();
   const {
@@ -9190,7 +9274,7 @@ function QuietRow({
     n: "down",
     s: 12,
     w: 2.4
-  }), "to ", holding.dest)))), primary && it.first && !live && notStarted(S.db, it, ev) && React.createElement("div", {
+  }), "to ", holding.dest)))), showFirst && it.first && !live && notStarted(S.db, it, ev) && React.createElement("div", {
     className: "qs qfirst",
     "data-first-step": true
   }, "First step: ", it.first), !q && holding && holding.cls === 'completing' ? React.createElement("span", {
@@ -9264,20 +9348,20 @@ function LiveCue({
   const m = ((live.pausedAt || Date.now()) - live.started) / 60000;
   if (plan) return m < plan ? React.createElement("span", {
     "data-live-cue": true
-  }, ", a first ", fmtDur(plan), ", ", fmtDur(Math.max(1, Math.ceil(plan - m))), " left") : React.createElement("span", {
+  }, " \xB7 ", fmtDur(Math.max(1, Math.ceil(plan - m))), " left") : React.createElement("span", {
     "data-live-cue": true
-  }, ", ", fmtDur(plan), " done");
+  }, " \xB7 ", fmtDur(plan), " done");
   if (first && m < 2) return React.createElement("span", {
     "data-live-first": true,
     className: "live-first"
   }, "First step: ", first);
   return usual && m > usual ? React.createElement("span", {
     "data-live-cue": true
-  }, ", past your usual ", fmtDur(usual)) : usual && m >= 5 ? React.createElement("span", {
+  }, " \xB7 past your usual ", fmtDur(usual)) : usual && m >= 5 ? React.createElement("span", {
     "data-live-cue": true
-  }, ", about ", fmtDur(Math.max(1, Math.round(usual - m))), " left of your usual ", fmtDur(usual)) : usual ? React.createElement("span", {
+  }, " \xB7 ", fmtDur(Math.max(1, Math.round(usual - m))), " left") : usual ? React.createElement("span", {
     "data-live-cue": true
-  }, ", usually ", fmtDur(usual)) : null;
+  }, " \xB7 usually ", fmtDur(usual)) : null;
 }
 function useMoments(db) {
   const S = useStore();
@@ -9725,6 +9809,9 @@ const holdOpts = (today, now = 0, db = null) => {
   return [['When work ends', now < 17 * 60 + 30 ? today : today + 1, 'when work ends', 17 * 60 + 30], ['When I get home', now < 18 * 60 + 30 ? today : today + 1, 'when you get home', 18 * 60 + 30], ...(ev ? [[`After ${ev.title}`, today, `after ${ev.title}`, ev.b]] : []), ['This weekend', wk ? today : nextDow(today, 6), 'at the weekend', 10 * 60], ['Next time I open Meridian', today + 1, 'next time you open Meridian', 0], ['Keep it visible', today, 'now, and it stays in view', 0], ['Tomorrow morning', today + 1, 'tomorrow morning', 8 * 60], ['Next week', weekStart(today) + 7, 'next week', 8 * 60], ['In a month', today + 30, 'in a month', 8 * 60]];
 };
 function heldWhen(db, x) {
+  if (x.status !== 'started' && x.bring != null && x.bring < db.today - 1) return `Back since ${fmtDay(x.bring, {
+    noDow: true
+  })}, still here`;
   if (x.status === 'seen' || x.bring < db.today) {
     const n = nextSame(db, x);
     return `Back since ${fmtDay(x.bring, {
@@ -9759,13 +9846,12 @@ const dueOpts = today => [['This Friday', nextDow(today - 1, 5)], ['Next week', 
 function intentLine(db, x) {
   if (x.status === 'done') return 'Done';
   if (x.status === 'letgo') return 'Let go';
-  if (x.kind === 'hold' && x.status !== 'started' && x.bring != null && x.bring < db.today - 1) return 'Quiet now, still here';
-  if (x.kind === 'hold') return x.bring <= db.today ? x.status === 'seen' ? `Came back ${relDay(x.bring, db.today)}` : 'Back today' : heldWhen(db, x);
+  if (x.kind === 'hold') return (x.status === 'started' ? 'Started, ' : '') + heldWhen(db, x);
   const rp = x.repeat ? `, ${repeatWord(x)}` : '';
   if (x.due < db.today) return `Passed ${fmtDay(x.due, {
     noDow: true
   })}`;
-  return (x.status === 'started' ? 'Started, ' : '') + (x.due === db.today ? 'Due today' : `By ${fmtDay(x.due)}`) + rp;
+  return (x.status === 'started' ? 'Started, ' : '') + (x.due === db.today ? 'Due today' : `By ${fmtDay(x.due)}`) + rp + (x.due - db.today <= 7 ? `, ${lastCallTxt(x)}${x.due === db.today ? '' : ' on the day'}` : '');
 }
 function IntentMoment({
   x
@@ -10501,7 +10587,7 @@ function SuggestionsPage() {
     className: "sec"
   }, React.createElement("div", {
     className: "sec-h"
-  }, React.createElement("h2", null, "Ideas you haven\u2019t set up"), React.createElement("span", {
+  }, React.createElement("h2", null, "New ideas, if you feel like it"), React.createElement("span", {
     className: "aside"
   }, "opt-in")), React.createElement("div", {
     className: "list"
@@ -12820,15 +12906,10 @@ function LinkWSheet({
     }),
     "data-linkw": true
   }, (() => {
-    const since = S.db.workouts.filter(w => w.d >= it.created);
-    const types = Object.keys(WORKOUT_TYPES).filter(t => since.some(w => w.type === t));
-    const all = S.db.workouts.length,
-      early = all - since.length;
+    const all = S.db.workouts.length;
     return React.createElement(React.Fragment, null, React.createElement("p", {
       className: "t-s"
-    }, "Every workout your Watch records from ", fmtDay(it.created, {
-      noDow: true
-    }), " on counts toward ", it.name, types.length ? `: ${types.map(t => WORKOUT_TYPES[t].name.toLowerCase()).join(', ')}` : '', ", each once."), React.createElement("p", {
+    }, "Every Watch workout counts, each once."), React.createElement("p", {
       className: "t-xs",
       style: {
         marginTop: 12
@@ -12875,7 +12956,7 @@ function LinkWSheet({
     "data-linkw": true
   }, React.createElement("p", {
     className: "t-s"
-  }, "Watch workouts of these kinds also count toward ", it.name, ", each once."), React.createElement("div", {
+  }, "These kinds count too, each once."), React.createElement("div", {
     className: "chips",
     style: {
       marginTop: 14
@@ -13622,17 +13703,19 @@ function resultSeries(db, it) {
 }
 function summarize(it, data) {
   const closed = data.filter(d => !d.p.open);
-  const met = closed.filter(d => d.p.state === 'met' || d.p.state === 'within' || d.p.state === 'recorded').length;
-  const part = closed.filter(d => d.p.state === 'partial' || d.p.state === 'above').length;
-  const unk = closed.filter(d => d.state === 'unknown').length;
-  const aside = closed.filter(d => d.p.state === 'set-aside' || d.p.state === 'paused').length;
-  const none = closed.filter(d => d.state === 'none').length;
+  const cat = d => d.p.state === 'set-aside' || d.p.state === 'paused' ? 'aside' : d.state === 'unknown' ? 'unk' : d.state === 'none' ? 'none' : d.p.state === 'met' || d.p.state === 'within' || d.p.state === 'recorded' ? 'met' : d.p.state === 'partial' || d.p.state === 'above' ? 'part' : 'unk';
+  const c = {
+    met: 0,
+    part: 0,
+    unk: 0,
+    aside: 0,
+    none: 0
+  };
+  closed.forEach(d => {
+    c[cat(d)]++;
+  });
   return {
-    met,
-    part,
-    unk,
-    aside,
-    none,
+    ...c,
     n: closed.length
   };
 }
@@ -13910,7 +13993,9 @@ function HeroControls({
     key: a,
     className: cx('preset', a === S.lastAmount(it) && 'on'),
     style: {
-      minWidth: 60
+      minWidth: 52,
+      flex: '1 1 0',
+      padding: '0 4px'
     },
     onClick: e => S.act.log(it.id, a, {}, {
       e
@@ -14622,7 +14707,7 @@ function GrowthSection({
   }), React.createElement(Tx, {
     x: X(p.a) + 4,
     y: pt + 12,
-    size: 10
+    size: 12
   }, "paused"))), React.createElement("path", {
     d: path + `L${X(n - 1)},${H - pb}L${X(0)},${H - pb}Z`,
     fill: "var(--acc)",
@@ -14639,7 +14724,7 @@ function GrowthSection({
       key: m,
       x: X(i) + 2,
       y: H - 6,
-      size: 10
+      size: 12
     }, MON3[m].slice(0, 1)) : null;
   }), marks.map((m, k) => m.i >= 0 && m.i < n && React.createElement("g", {
     key: k,
@@ -14996,7 +15081,32 @@ function SettingsSection({
       k: 'target',
       id: it.id
     })
-  }), !obs && React.createElement(Row, {
+  }), !obs && lensOk(it) && React.createElement("div", {
+    className: "row indent",
+    "data-lens-row": true
+  }, React.createElement("div", {
+    className: "tok"
+  }, React.createElement(Icon, {
+    n: "sliders",
+    s: 20
+  })), React.createElement("div", {
+    className: "main"
+  }, React.createElement("div", {
+    className: "ttl"
+  }, "How progress shows"), React.createElement("div", {
+    className: "sub"
+  }, RHYTHM(it) ? 'When you last did it' : 'How many so far')), React.createElement(Seg, {
+    options: LENS_OPTS,
+    value: RHYTHM(it) ? 'rhythm' : 'count',
+    onChange: v => S.updateItem(it.id, {
+      lens: v
+    }),
+    style: {
+      width: 168,
+      flex: 'none'
+    },
+    label: "How progress shows"
+  })), !obs && React.createElement(Row, {
     icon: "bell",
     title: "Reminder",
     sub: it.reminder ? it.reminder.text : undefined,
@@ -15096,10 +15206,13 @@ function SettingsSection({
     className: "ttl"
   }, "I note it every time"), React.createElement("div", {
     className: "sub"
-  }, it.everyTime ? 'On' : 'Off')), React.createElement(Switch, {
+  }, it.everyTime ? it.everyTimeFrom != null ? `On since ${fmtDay(it.everyTimeFrom, {
+    noDow: true
+  })}` : 'On' : 'Off')), React.createElement(Switch, {
     on: !!it.everyTime,
     onChange: v => S.updateItem(it.id, {
-      everyTime: v
+      everyTime: v,
+      everyTimeFrom: v ? S.db.today : null
     }),
     label: "I note it every time"
   })), it.measure === 'quantity' && React.createElement("div", {
@@ -16753,7 +16866,7 @@ function RecentRunsStrip({
     style: {
       flex: 1,
       textAlign: 'center',
-      fontSize: fs(10.5)
+      fontSize: fs(12)
     }
   }, dom(r.d)))), React.createElement("div", {
     className: "t-xs",
@@ -16871,7 +16984,7 @@ function EfficiencyChart({
     x: pl - 5,
     y: pt + (H - pt - pb) * i / 2 + 4,
     anchor: "end",
-    size: 10
+    size: 12
   }, fmtPace(v))), ps.map((p, i) => React.createElement("g", {
     key: i
   }, React.createElement("rect", {
@@ -16885,7 +16998,7 @@ function EfficiencyChart({
     x: (X(p.from) + X(p.to)) / 2,
     y: pt + 14,
     anchor: "middle",
-    size: 10,
+    size: 12,
     c: 2
   }, "paused", p.note ? `, ${p.note.toLowerCase()}` : ''))), React.createElement("rect", {
     x: X(monthStart(6)),
@@ -16898,7 +17011,7 @@ function EfficiencyChart({
     x: (X(monthStart(6)) + X(monthEnd(7))) / 2,
     y: H - pb - 6,
     anchor: "middle",
-    size: 10,
+    size: 12,
     c: 3
   }, "hot weeks"), runs.map(r => React.createElement("circle", {
     key: r.id,
@@ -16926,11 +17039,11 @@ function EfficiencyChart({
     key: 'm' + m.m,
     x: X(monthStart(m.m)) + 2,
     y: H - 6,
-    size: 10
+    size: 12
   }, MON3[m.m].slice(0, 1))), React.createElement(Tx, {
     x: pl,
     y: 12,
-    size: 10.5,
+    size: 12,
     weight: 600,
     c: 2
   }, "faster \u2191")), cm && React.createElement(Ctip, {
@@ -17701,7 +17814,7 @@ function Hypnogram({
     key: s.k,
     x: 0,
     y: pt + i * rowH + 14,
-    size: 10.5,
+    size: 12,
     c: "deep3"
   }, s.n)), STAGES.map((s, i) => React.createElement("line", {
     key: 'g' + i,
@@ -17727,14 +17840,14 @@ function Hypnogram({
   }), React.createElement(Tx, {
     x: 0,
     y: hrY((hrLo + hrHi) / 2) + 4,
-    size: 10.5,
+    size: 12,
     c: "deep3"
   }, "HR"), ticks.map(t => React.createElement(Tx, {
     key: t,
     x: X(t),
     y: H - 3,
     anchor: "middle",
-    size: 10,
+    size: 12,
     c: "deep3"
   }, fmtHM(t))), at && React.createElement("line", {
     x1: 0,
@@ -18274,8 +18387,9 @@ function MonthView({
       justifyContent: 'space-between'
     }
   }, React.createElement("div", null, React.createElement("div", {
-    className: "eyebrow"
-  }, f ? `Only ${f.name}` : `2026, ${plural(data.alive, 'routine')} alive`), React.createElement("h1", {
+    className: "eyebrow",
+    "data-monthhead": true
+  }, f ? `Only ${f.name}` : data.fact || '2026'), React.createElement("h1", {
     className: "t-hero",
     style: {
       marginTop: 4
@@ -18338,7 +18452,7 @@ function MonthView({
       y: 166,
       anchor: "middle",
       c: 3,
-      size: 11.5
+      size: 12
     }, `days with ${f.short || f.name}`)) : React.createElement("g", null, React.createElement(Tx, {
       x: 150,
       y: 146,
@@ -18351,8 +18465,8 @@ function MonthView({
       y: 166,
       anchor: "middle",
       c: 3,
-      size: 11.5
-    }, plural(data.alive, 'routine'), " alive")) : React.createElement("g", null, React.createElement(Tx, {
+      size: 12
+    }, `${plural(data.daysWith, 'day')} kept`)) : React.createElement("g", null, React.createElement(Tx, {
       x: 150,
       y: 154,
       anchor: "middle",
@@ -19041,13 +19155,13 @@ function ObStones({
   }));
 }
 const OB_YEAR = {
-  months: [272, 150, 215, 44, 150, 330, 215, 76, 150, 272, 20, 215].map((hue, m) => ({
+  months: [.35, .5, .42, .7, .55, .3, .8, .62, .45, 1, .58, .4].map((size, m) => ({
     m,
-    fut: false,
-    cur: false,
-    ctx: false,
-    hue,
-    size: [.35, .5, .42, .7, .55, .3, .8, .62, .45, 1, .58, .4][m]
+    fut: m > 9,
+    cur: m === 9,
+    ctx: m < 9,
+    hue: 215,
+    size
   }))
 };
 function Onboarding({
@@ -19096,7 +19210,8 @@ function Onboarding({
       style: {
         width: 10 + 14 * x.size,
         height: 10 + 14 * x.size,
-        background: `oklch(.55 .14 ${x.hue})`
+        background: x.fut ? 'transparent' : x.cur ? `oklch(.55 .14 ${x.hue})` : 'oklch(.62 .012 250)',
+        boxShadow: x.fut ? 'inset 0 0 0 1px var(--line-2)' : 'none'
       }
     }), React.createElement("b", null, MON3[x.m].slice(0, 1)))))
   })), React.createElement("h1", {
@@ -19980,7 +20095,7 @@ function knownWithout(db, it, d) {
   if (noneMarks(db, it, d, d).length) return true;
   const cv = coverage(it);
   if (cv === 'watch') return watchWorn(db, d);
-  if (cv === 'every') return recordingDays(db).has(d);
+  if (cv === 'every') return (it.everyTimeFrom == null || d >= it.everyTimeFrom) && recordingDays(db).has(d);
   return false;
 }
 const COV_TEXT = {
@@ -20623,7 +20738,9 @@ function inputSummary(list) {
   const nm = (p.from && p.from.name || '').replace(/^./, c => c.toLowerCase());
   const A = p.A.length,
     B = p.B.length;
-  const ab = `${plural(A, 'day')} with${nm ? ' ' + nm : ''}, ${B ? `${B} without` : 'none without'}`;
+  const ab = `${plural(A, 'day')} with${nm ? ' ' + nm : ''}, ${B} without`;
+  if (A && !B) return `${plural(A, 'day')} with${nm ? ' ' + nm : ''}; no days recorded without it to compare yet`;
+  if (B && !A) return `${plural(B, 'day')} recorded without${nm ? ' ' + nm : ''}; none with it to compare yet`;
   return A + B ? !A || !B ? `${ab}, so it can’t be compared` : p.state === 'unknowable' ? `Not knowable at the current pace: ${ab}` : `${p.label}: ${ab} so far` : 'Nothing to compare yet';
 }
 function findPattern(db, id, opts, ex) {
@@ -20771,10 +20888,11 @@ function AnalysisPage({
     className: "ttl"
   }, "I note it every time"), React.createElement("div", {
     className: "sub"
-  }, "Then a day you used Meridian without it counts as \u201C", inp.bName.replace('noted as ', ''), "\u201D. Only say yes if it\u2019s true.")), React.createElement(Switch, {
+  }, "From today, a day you use Meridian without it counts as \u201C", inp.bName.replace('noted as ', ''), "\u201D. Earlier days stay unknown.")), React.createElement(Switch, {
     on: !!db.byId[inp.itemId].everyTime,
     onChange: v => S.updateItem(inp.itemId, {
-      everyTime: v
+      everyTime: v,
+      everyTimeFrom: v ? db.today : null
     }),
     label: "I note it every time"
   })))), React.createElement("div", {
@@ -22454,9 +22572,9 @@ function SyncSection() {
     "data-sync": true
   }, React.createElement("div", {
     className: "sec-h"
-  }, React.createElement("h2", null, "Bringing data in"), React.createElement("span", {
+  }, React.createElement("h2", null, "Bringing data in"), off && React.createElement("span", {
     className: "aside"
-  }, off ? 'offline' : 'on its own')), off && React.createElement("div", {
+  }, "offline")), off && React.createElement("div", {
     className: "callout",
     style: {
       marginTop: 0
@@ -24566,6 +24684,8 @@ const winTxt = x => x && x.win ? `${fmtHM(x.win[0])}–${fmtHM(x.win[1])}` : '';
 const winDay = (d, today) => d === today ? 'Today' : d === today + 1 ? 'Tomorrow' : d - today <= 6 ? DOW3[dow(d)] : fmtDay(d, {
   noDow: true
 });
+const lastCallMin = x => x.win ? Math.max(x.win[0], x.win[1] - 45) : 18 * 60;
+const lastCallTxt = x => x.status === 'started' ? 'last call off, you’re on it' : `last call ${fmtHM(lastCallMin(x))}`;
 const dueWord = (db, x) => {
   if (x.win) {
     if (x.due === db.today && db.nowMin >= x.win[0] && db.nowMin < x.win[1]) return `Now, until ${fmtHM(x.win[1])}`;
@@ -25250,7 +25370,7 @@ function DeadlineRow({
     className: "qn"
   }, x.title), React.createElement("div", {
     className: "qs"
-  }, React.createElement("b", null, dueWord(db, x)), x.repeat ? `, ${repeatWord(x)}` : '', x.status === 'started' ? ', started' : '')), React.createElement("div", {
+  }, React.createElement("b", null, dueWord(db, x)), x.repeat ? `, ${x.repeat === 'week' && dueWord(db, x).startsWith(DOW3[dow(x.due)]) ? 'weekly' : repeatWord(x)}` : '', x.status === 'started' ? ', started' : '', x.due === db.today ? `, ${lastCallTxt(x)}` : '')), React.createElement("div", {
     className: "qkeys"
   }, React.createElement("button", {
     className: "act word",
@@ -25660,6 +25780,31 @@ function TodayScreen() {
     pend: {}
   });
   const timers = useRef([]);
+  const [anchorPad, setAnchorPad] = useState(0);
+  const prevShown = useRef([]);
+  const anchorLeave = ids => {
+    const sc = ref.current;
+    if (!sc) return;
+    let hs = 0;
+    ids.forEach(id => {
+      const r = sc.querySelector(`[data-tile="${id}"]`);
+      if (r) hs += r.getBoundingClientRect().height + 32;
+    });
+    const need = Math.ceil(hs - (sc.scrollHeight - sc.clientHeight - sc.scrollTop));
+    if (need > 0) setAnchorPad(p => p + need);
+  };
+  useEffect(() => {
+    if (!anchorPad) return;
+    const sc = ref.current;
+    if (!sc) return;
+    const on = () => {
+      if (sc.scrollTop + sc.clientHeight < sc.scrollHeight - anchorPad - 1) setAnchorPad(0);
+    };
+    sc.addEventListener('scroll', on, {
+      passive: true
+    });
+    return () => sc.removeEventListener('scroll', on);
+  }, [anchorPad]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   useEffect(() => MI.pull(ref.current), []);
   useEffect(() => {
@@ -25686,6 +25831,7 @@ function TodayScreen() {
     timers.current.push(setTimeout(() => {
       const c = MI.captureDone(ref.current, id);
       if (c) mi.current.pend[id] = c;
+      anchorLeave([id]);
       setHold(h => {
         const n = {
           ...h
@@ -25723,15 +25869,18 @@ function TodayScreen() {
       });
       return n;
     });
-    timers.current.push(setTimeout(() => setHold(h => {
-      const n = {
-        ...h
-      };
-      gone.forEach(id => {
-        if (n[id] && n[id].cls === 'lingering') delete n[id];
+    timers.current.push(setTimeout(() => {
+      anchorLeave(gone);
+      setHold(h => {
+        const n = {
+          ...h
+        };
+        gone.forEach(id => {
+          if (n[id] && n[id].cls === 'lingering') delete n[id];
+        });
+        return n;
       });
-      return n;
-    }), 1200));
+    }, 1200));
   }, [inplayKey]);
   const heroKind = useRef(pick.kind);
   useEffect(() => {
@@ -25773,7 +25922,12 @@ function TodayScreen() {
   });
   const ints = (db.intents || []).filter(x => ['held', 'started'].includes(x.status));
   const deadlines = ints.filter(x => x.kind === 'deadline' && x.due >= db.today && x.due - db.today <= 3).sort((a, b) => a.due - b.due);
-  const dateKeys = ints.filter(x => x.kind === 'deadline' && !x.repeat && x.due - db.today >= 4 && x.due - db.today <= 7).sort((a, b) => a.due - b.due);
+  const justDone = x => {
+    if (!x.repeat) return false;
+    const per = x.repeat === 'week' ? 7 : x.repeat === 'month' ? 28 : x.every || 14;
+    return (x.log || []).some(l => l.k === 'done' && dayOf(l.t) > x.due - per);
+  };
+  const dateKeys = ints.filter(x => x.kind === 'deadline' && !justDone(x) && x.due - db.today >= 4 && x.due - db.today <= 7).sort((a, b) => a.due - b.due);
   const arrived = ints.filter(x => holdArrived(db, x)).sort((a, b) => a.bring - b.bring);
   const held = arrived.slice(0, 1);
   const heldN = (db.intents || []).filter(x => ['held', 'started', 'seen'].includes(x.status)).length;
@@ -25781,7 +25935,13 @@ function TodayScreen() {
   const [allNow, setAllNow] = useState(false);
   const NOW_MAX = 4;
   const roomy = x => RHYTHM(x.it) && x.ev && x.it.cadence.type === 'week' && x.ev.b - db.today + 1 >= 4 && !x.holding && x.it.cadence.type !== 'none';
-  const routinesO = [...routines.filter(x => !roomy(x)), ...routines.filter(roomy)];
+  const freeze = routines.filter(x => x.holding),
+    rest0 = routines.filter(x => !x.holding);
+  const routinesO = [...rest0.filter(x => !roomy(x)), ...rest0.filter(roomy)];
+  freeze.map(x => [x, prevShown.current.indexOf(x.it.id)]).sort((a, b) => a[1] - b[1]).forEach(([x, i]) => routinesO.splice(i < 0 ? routinesO.length : Math.min(i, routinesO.length), 0, x));
+  useEffect(() => {
+    prevShown.current = routinesO.map(x => x.it.id);
+  });
   const dh = [...deadlines.map(x => ({
     k: 'd',
     x,
@@ -25800,6 +25960,7 @@ function TodayScreen() {
   const nowRows = dh.length && wi > 0 ? [dh[0], rr[wi], ...dh.slice(1), ...rr.filter((_, i) => i !== wi)] : [...dh, ...rr];
   const holdingAt = nowRows.findIndex(r => r.k === 'r' && r.x.holding);
   const nowShown = allNow || nowRows.length <= NOW_MAX + 1 ? nowRows : nowRows.slice(0, Math.max(NOW_MAX, holdingAt + 1));
+  const firstI = nowShown.findIndex(r => r.k === 'r' && r.x.it.first && !r.x.holding && !(S.live && S.live.id === r.x.it.id) && notStarted(db, r.x.it, r.x.ev));
   const laterSorted = useMemo(() => [...later].filter(x => !hold[x.it.id]).sort((a, b) => (a.ev.b ?? 9999) - (b.ev.b ?? 9999) || b.score - a.score), [later, hold]);
   const ctxToday = model.ctxToday.filter(c => c.type !== 'away');
   const n = db.sleep[db.today];
@@ -25927,7 +26088,8 @@ function TodayScreen() {
     key: r.key,
     x: r.x,
     holding: r.x.holding,
-    primary: i === 0 && r.x.it.measure !== 'quantity'
+    primary: i === 0 && r.x.it.measure !== 'quantity',
+    showFirst: i === firstI
   }))) : React.createElement("p", {
     className: "t-s nownone",
     "data-now-none": true
@@ -25985,7 +26147,8 @@ function TodayScreen() {
       onClick: e => S.act.log(it.id, 0, {
         kind: 'none'
       }, {
-        e
+        e,
+        tonight: true
       }),
       "data-evening-none": it.id
     }, "No ", it.short ? it.short.toLowerCase() : it.name.toLowerCase()))) : null;
@@ -26055,6 +26218,12 @@ function TodayScreen() {
     w: 2.4
   }), "Add a routine")), React.createElement("div", {
     className: "pad-tab"
+  }), anchorPad > 0 && React.createElement("div", {
+    style: {
+      height: anchorPad
+    },
+    "data-anchorpad": true,
+    "aria-hidden": "true"
   })), React.createElement("div", {
     className: cx('rootbar', scrolled && 'solid')
   }, React.createElement("div", {
@@ -26297,7 +26466,7 @@ function RoutinesRoot() {
     s: 18,
     w: 2.4
   }), "New routine")), groups.map(([c, label]) => {
-    const list = active.filter(it => it.cadence.type === c);
+    const list = active.filter(it => it.cadence.type === c).filter((it, i) => q || c !== 'day' || i >= 7);
     if (!list.length) return null;
     return React.createElement("div", {
       key: c,
@@ -26311,7 +26480,7 @@ function RoutinesRoot() {
       style: {
         fontSize: fs(17)
       }
-    }, label)), React.createElement("div", {
+    }, c === 'day' && !q ? 'More every day' : label)), React.createElement("div", {
       className: "list stag"
     }, list.map(row)));
   }), paused.length > 0 && React.createElement("div", {
@@ -26464,6 +26633,7 @@ function rowVal(db, it, ev) {
     return ev.v ? `${ev.v} ${perShort(db, it)}` : ev.confirmed ? `0 ${perShort(db, it)}, confirmed` : `None logged ${perShort(db, it)}`;
   }
   if (ev.state === 'met') return 'Settled';
+  if (RHYTHM(it)) return naturalState(db, it, ev).head;
   if (tg.cmp === 'none') return it.measure === 'event' || it.measure === 'serving' || it.measure === 'report' ? `${ev.v || 0} this week` : `${fmtDur(currentWeekMinutes(db, it))} this week`;
   if (it.measure === 'quantity') return `${fmtAmount(it, ev.v, {
     L: ev.v >= 1000
@@ -26478,15 +26648,16 @@ function rowSub(db, it, ev) {
   const c0 = cadenceText(it, ev.tg);
   const c = /^Observation, no target$/.test(c0) ? '' : c0;
   if (ev.tg.cmp === 'none') {
-    if (it.measure === 'event') return `${c ? c + ', ' : ''}${ev.v ? plural(ev.v, 'time') + ' this week' : 'Nothing this week'}`;
+    if (it.measure === 'event') return c ? `${c}, ${ev.v ? plural(ev.v, 'time') + ' this week' : 'none logged this week'}` : ev.v ? plural(ev.v, 'time') + ' this week' : 'None logged this week';
     if (it.measure === 'serving') {
       const n = (db.byItemDay[it.id]?.[db.today] || []).length;
-      return `${c ? c + ', ' : ''}${n ? n + ' today' : 'Nothing today'}`;
+      return c ? `${c}, ${n ? n + ' today' : 'none logged today'}` : n ? n + ' today' : 'None logged today';
     }
     if (it.measure === 'report') return `Your words, ${itemStateLine(db, it).replace(/, in your words$/, '')}`;
     return `${c}, ${fmtDur(currentWeekMinutes(db, it))} this week`;
   }
-  if (it.kind === 'observation') return `${c}, ${ev.v} this week${ev.confirmed ? ', confirmed' : ''}`;
+  if (it.kind === 'observation') return `${c}, ${ev.v ? `${ev.v} this week` : ev.confirmed ? '0 this week, confirmed' : 'none logged this week'}`;
+  if (RHYTHM(it) && ev.state !== 'met') return naturalState(db, it, ev).head;
   const t = ev.state === 'met' ? 'settled' : progressText(db, it, ev);
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
@@ -26769,8 +26940,11 @@ function IntentSheet({
     className: "t-xs",
     style: {
       marginTop: 8
-    }
-  }, "Its last call comes as the window opens.")), kind === 'deadline' && React.createElement(React.Fragment, null, React.createElement("div", {
+    },
+    "data-lastcall": true
+  }, "Last call ", fmtHM(lastCallMin({
+    win
+  })), ", before the window closes.")), kind === 'deadline' && React.createElement(React.Fragment, null, React.createElement("div", {
     className: "eyebrow",
     style: {
       margin: '20px 0 8px'
@@ -27011,6 +27185,7 @@ function CreateRoutine({
   const [step, setStep] = useState(0);
   const [name, setName] = useState(init && init.name || '');
   const [measure, setMeasure] = useState(null);
+  const [lens, setLens] = useState(null);
   const [cad, setCad] = useState('month');
   const [n, setN] = useState(4);
   const [nU, setNU] = useState('days');
@@ -27265,7 +27440,11 @@ function CreateRoutine({
       presets: measure === 'quantity' ? unit === 'ml' ? [150, 250, 330, 500] : unit === 'km' ? [1, 2, 5, 10] : [5, 10, 20, 30] : measure === 'reps' ? [5, 10, 15, 20] : undefined,
       def: measure === 'quantity' ? unit === 'ml' ? 250 : unit === 'km' ? 2 : 10 : measure === 'reps' ? 10 : undefined
     };
-    if (notice && every) it.everyTime = true;
+    if (notice && every) {
+      it.everyTime = true;
+      it.everyTimeFrom = S.db.today;
+    }
+    if (lens && cad !== 'day' && !notice) it.lens = lens;
     S.act.createItem(it);
     close();
     S.haptic(notice ? 'soft' : 'success');
@@ -27820,7 +27999,23 @@ function CreateRoutine({
     key: f,
     className: cx('chip small', fits.includes(f) && 'on'),
     onClick: () => setFits(x => x.includes(f) ? x.filter(y => y !== f) : [...x, f])
-  }, f))), (measure === 'session' || measure === 'duration') && React.createElement(React.Fragment, null, React.createElement("div", {
+  }, f))), cad !== 'day' && cad !== 'none' && !notice && React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "eyebrow",
+    style: {
+      margin: '18px 0 8px'
+    }
+  }, "How progress shows"), React.createElement(Seg, {
+    options: LENS_OPTS,
+    value: lens || 'count',
+    onChange: setLens,
+    label: "How progress shows"
+  }), React.createElement("p", {
+    className: "t-xs",
+    style: {
+      marginTop: 6
+    },
+    "data-create-lens": true
+  }, (lens || 'count') === 'rhythm' ? 'Shows when you last did it, not a tally.' : 'Shows how many so far.')), (measure === 'session' || measure === 'duration') && React.createElement(React.Fragment, null, React.createElement("div", {
     className: "eyebrow",
     style: {
       margin: '18px 0 8px'
@@ -29466,21 +29661,21 @@ function FeelPage() {
     x: W / 2,
     y: 22,
     anchor: "middle",
-    size: 10.5
+    size: 12
   }, "high energy"), React.createElement(Tx, {
     x: W / 2,
     y: W - 12,
     anchor: "middle",
-    size: 10.5
+    size: 12
   }, "low energy"), React.createElement(Tx, {
     x: 12,
     y: W / 2 - 6,
-    size: 10.5
+    size: 12
   }, "unpleasant"), React.createElement(Tx, {
     x: W - 12,
     y: W / 2 - 6,
     anchor: "end",
-    size: 10.5
+    size: 12
   }, "pleasant"), list.map((e, i) => {
     const x = (e.x + 1) / 2 * (W - 40) + 20,
       y = (1 - (e.y + 1) / 2) * (W - 40) + 20;
@@ -30614,7 +30809,7 @@ function ConnectionsPage() {
   }, hOff ? React.createElement(Row, {
     icon: "health",
     title: "Apple Health",
-    sub: "Not connected, nothing is read",
+    sub: "Not connected",
     val: "Off",
     onClick: () => {
       S.act.setPref('health', true);
@@ -30630,7 +30825,6 @@ function ConnectionsPage() {
   }) : React.createElement(Row, {
     icon: "health",
     title: "Apple Health",
-    sub: `Reads what you allow below${som ? ', writes State of Mind' : ', writes nothing'}`,
     val: "On"
   }), React.createElement(Row, {
     icon: "watch",
@@ -30660,7 +30854,7 @@ function ConnectionsPage() {
     className: "ttl"
   }, l), React.createElement("div", {
     className: "sub"
-  }, hOff ? 'Off, needs Apple Health, which isn’t connected' : hk['no_' + k] ? 'Off: nothing new comes in; what’s here stays' : sub)), React.createElement(Switch, {
+  }, hOff ? 'Needs Apple Health' : sub)), React.createElement(Switch, {
     on: !hOff && !hk['no_' + k],
     onChange: v => {
       if (hOff) {
@@ -30692,7 +30886,7 @@ function ConnectionsPage() {
     className: "ttl"
   }, "Medication"), React.createElement("div", {
     className: "sub"
-  }, medOn ? `${plural(db.meds.filter(m => m.src === 'health').length, 'record')}, Meridian can’t change them` : 'Off: only what you log in Meridian')), React.createElement(Switch, {
+  }, medOn ? plural(db.meds.filter(m => m.src === 'health').length, 'record') : 'Off')), React.createElement(Switch, {
     on: medOn,
     onChange: v => meds.forEach(m => S.updateItem(m.id, {
       health: v
@@ -30718,7 +30912,7 @@ function ConnectionsPage() {
     className: "ttl"
   }, "State of Mind"), React.createElement("div", {
     className: "sub"
-  }, som ? 'Each check-in in How you feel is also saved to Apple Health' : 'Off: check-ins stay in Meridian only')), React.createElement(Switch, {
+  }, som ? 'Each check-in is also saved to Apple Health' : 'Off')), React.createElement(Switch, {
     on: som,
     onChange: v => setHk('stateOfMind', v),
     label: "Write State of Mind"
@@ -30745,7 +30939,7 @@ function ConnectionsPage() {
   }, "Read my calendar"), React.createElement("div", {
     className: "sub",
     "data-cal-state": cst.cal || ''
-  }, cst.cal === 'busy' ? 'Connecting… iOS asks once for access' : cst.cal === 'error' ? db.prefs.simOffline ? 'Couldn’t connect: no connection. Nothing was read; try again when you’re online.' : 'Couldn’t connect: access wasn’t granted. Nothing was read, and nothing changed.' : db.prefs.calendar ? 'On, trips can suggest a context' : 'Off, nothing is read')), cst.cal === 'busy' ? React.createElement("span", {
+  }, cst.cal === 'busy' ? 'Connecting… iOS asks once for access' : cst.cal === 'error' ? db.prefs.simOffline ? 'Couldn’t connect: no connection. Nothing was read; try again when you’re online.' : 'Couldn’t connect: access wasn’t granted. Nothing was read, and nothing changed.' : db.prefs.calendar ? 'Trips can suggest a context' : 'Not connected')), cst.cal === 'busy' ? React.createElement("span", {
     className: "t-xs",
     style: {
       flex: 'none'
@@ -31427,10 +31621,13 @@ function DevicesPage() {
   const byWord = d => d === db.today ? 'Today' : d === db.today + 1 ? 'Tomorrow' : d - db.today <= 6 ? `By ${DOW3[dow(d)]}` : `By ${fmtDay(d, {
     noDow: true
   })}`;
-  const age = React.createElement("span", {
-    className: "wage tnum",
-    "data-widget-age": true
-  }, fmtHM(db.nowMin));
+  const ageOf = id => {
+    const t = db.entries.reduce((m, e) => (!id || e.item === id) && e.t <= db.T && e.t > m ? e.t : m, 0);
+    return t ? React.createElement("span", {
+      className: "wage tnum",
+      "data-widget-age": true
+    }, fmtTime(t)) : null;
+  };
   return React.createElement(Page, {
     back: back,
     title: "Outside the app",
@@ -31500,21 +31697,7 @@ function DevicesPage() {
     onClick: e => S.startIntent(hold, 15, e),
     "data-lock-act": "start"
   }, "Start 15 min"), React.createElement("button", {
-    onClick: () => {
-      S.intent.update(hold.id, {
-        status: 'done'
-      });
-      S.toast({
-        title: 'Done',
-        sub: hold.title,
-        neutral: true,
-        glyph: 'check',
-        hue: 0,
-        undo: () => S.intent.update(hold.id, {
-          status: 'held'
-        })
-      });
-    },
+    onClick: e => intentDone(S, hold, e),
     "data-lock-act": "done"
   }, "Already done"))) : nextUp ? React.createElement("div", {
     className: "lnote"
@@ -31532,7 +31715,12 @@ function DevicesPage() {
   }, React.createElement("span", null, "MERIDIAN"), React.createElement("span", null, dl.win ? dueWord(db, dl) : byWord(dl.due))), React.createElement("b", null, dl.title), React.createElement("div", {
     className: "lacts"
   }, React.createElement("button", {
-    onClick: e => S.startIntent(dl, 15, e),
+    onClick: e => {
+      if (dl.status !== 'started') S.intent.update(dl.id, {
+        status: 'started'
+      });
+      S.startIntent(dl, 15, e);
+    },
     "data-lock-dl": "start"
   }, "I\u2019m on it"), React.createElement("button", {
     onClick: e => intentDone(S, dl, e),
@@ -31573,7 +31761,7 @@ function DevicesPage() {
     n: "drop",
     s: 14,
     w: 2
-  }), nm(water), age), React.createElement("div", {
+  }), nm(water), ageOf(water.id)), React.createElement("div", {
     style: {
       marginTop: 'auto',
       paddingTop: 14
@@ -31605,7 +31793,7 @@ function DevicesPage() {
       fontSize: fs(12),
       display: 'flex'
     }
-  }, "Next up", age), React.createElement("div", {
+  }, "Next up", ageOf(null)), React.createElement("div", {
     className: "t-m",
     style: {
       marginTop: 6,
@@ -31662,7 +31850,7 @@ function DevicesPage() {
         fontSize: fs(12),
         display: 'flex'
       }
-    }, "Held for later", age), React.createElement("button", {
+    }, "Held for later"), React.createElement("button", {
       style: {
         display: 'block',
         textAlign: 'left',
@@ -32943,7 +33131,7 @@ function RemindersAppSection() {
   }, "Read dated reminders"), React.createElement("div", {
     className: "sub",
     "data-remapp-state": rst.r || ''
-  }, rst.r === 'busy' ? 'Reading dated reminders…' : rst.r === 'error' ? 'Couldn’t read Reminders just now. Nothing was imported; try again.' : on ? `On, ${lists.join(', ')}, shown under “By a date” on Today` : 'Off, nothing is read from Reminders')), rst.r === 'busy' ? React.createElement("span", {
+  }, rst.r === 'busy' ? 'Reading dated reminders…' : rst.r === 'error' ? 'Couldn’t read Reminders just now. Nothing was imported; try again.' : on ? `${lists.join(', ')}, shown on Today` : 'Not connected')), rst.r === 'busy' ? React.createElement("span", {
     className: "t-xs",
     style: {
       flex: 'none'
@@ -33586,7 +33774,7 @@ function App() {
       ...t,
       hint: null
     };
-    if (t.y != null && screenRef.current) {
+    if (t.y != null && !t.top && screenRef.current) {
       const H = screenRef.current.offsetHeight;
       const toastTop = H - 96 - 74;
       if (t.y + 24 > toastTop) t = {
@@ -33681,13 +33869,17 @@ function App() {
     log: (itemId, v, extra = {}, opts = {}) => {
       const pt = point(opts.e);
       const yy = pt ? pt.y : null;
+      const tgt = opts.e && opts.e.target;
+      const fromNow = !!(tgt && tgt.closest && tgt.closest('[data-inplay], [data-evening-close]'));
       const toastL = opts.silent ? () => {} : opts.note ? t => showToast({
         ...t,
         y: yy,
+        top: fromNow || t.top,
         sub: `${opts.note}, ${t.sub}`
       }) : t => showToast({
         ...t,
-        y: yy
+        y: yy,
+        top: fromNow || t.top
       });
       const it = db.byId[itemId];
       if (!it) return null;
@@ -33740,10 +33932,13 @@ function App() {
       if (extra.kind === 'none') {
         haptic('soft', opts.e);
         const pw = noneWord(it);
+        const ttl = opts.tonight ? `No ${(it.short || it.name).toLowerCase()} tonight` : it.kind === 'observation' ? `${it.short || it.name}: none ${dayOf(t) < ndb.today ? `on ${fmtDay(dayOf(t), {
+          noDow: true
+        })}` : 'today'}` : `${it.short || it.name}: ${pw}${dayOf(t) < ndb.today ? ` (${fmtDay(dayOf(t), {
+          noDow: true
+        })})` : ''}`;
         toastL({
-          title: `${it.short || it.name}: ${pw}${dayOf(t) < ndb.today ? ` (${fmtDay(dayOf(t), {
-            noDow: true
-          })})` : ''}`,
+          title: ttl,
           sub: fmtTime(t),
           undo,
           neutral: true,
@@ -34552,7 +34747,7 @@ function App() {
     }), anySheet && 'nobar'),
     style: hueStyle({
       hue: t.hue || 0
-    }, liveIt ? {
+    }, t.top ? null : liveIt ? {
       bottom: 160 + (t.lift || 0)
     } : t.lift ? {
       bottom: 96 + t.lift
@@ -34599,7 +34794,7 @@ function App() {
   }, t.act2.label), t.undo && React.createElement("button", {
     className: "undo",
     onClick: () => {
-      if (!t.out) t.undo();
+      if (!t.out && Date.now() - t.n > 350) t.undo();
     },
     "data-undo": t.out ? undefined : true,
     tabIndex: t.out ? -1 : undefined
