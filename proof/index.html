@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B1019">
+<title>Meridian Today: Light Through Glass</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.0.16/index.css">
+<style>
+:root{
+  --bg:#0B1019; --plate:#111725; --plate-hi:#161d2d; --hair:rgba(255,255,255,.07);
+  --t1:#F2F4F8; --t2:#9AA3B5; --t3:#5E6779; --now:#FFF1DC;
+  --safe-t:max(env(safe-area-inset-top),14px); --safe-b:max(env(safe-area-inset-bottom),10px);
+  --hero:calc(var(--safe-t) + 292px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--t1);height:100%;overflow-x:hidden}
+body{font-family:-apple-system,"SF Pro Text","Inter Variable",system-ui,sans-serif;font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+.screen{position:relative;min-height:100%;padding-bottom:calc(var(--safe-b) + 84px)}
+#hero{position:absolute;left:0;top:0;width:100%;height:var(--hero);display:block;touch-action:manipulation}
+.head{position:relative;z-index:2;padding:calc(var(--safe-t) + 6px) 20px 0;display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}
+.head .k{font-size:13px;color:var(--t2);font-weight:500;letter-spacing:.01em}
+.head h1{font-size:30px;font-weight:600;letter-spacing:-.025em;margin-top:2px}
+.avatar{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3a4357,#1a2030);border:1px solid var(--hair);margin-top:6px;display:grid;place-items:center;font-size:13px;color:var(--t2);font-weight:600}
+.axis{position:absolute;left:0;width:100%;top:calc(var(--hero) - 34px);height:16px;z-index:2;pointer-events:none}
+.axis span{position:absolute;transform:translateX(-50%);font-size:11px;color:var(--t3);font-weight:500;letter-spacing:.02em}
+.axis span.now{color:var(--now);font-weight:600}
+.below{position:relative;z-index:2;margin-top:calc(var(--hero) - var(--safe-t) - 52px);padding:0 20px}
+.sum{display:flex;align-items:flex-end;gap:12px}
+.sum .n{font-size:64px;font-weight:250;letter-spacing:-.045em;line-height:.9;font-variation-settings:"wght" 250}
+.sum .u{padding-bottom:5px}
+.sum .u b{display:block;font-size:17px;font-weight:500;color:var(--t1)}
+.sum .u i{display:block;font-style:normal;font-size:13px;color:var(--t2);margin-top:2px;min-height:16px;transition:color .2s}
+.chip{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:12px;color:var(--t2);padding:6px 10px;border-radius:99px;background:var(--plate);border:1px solid var(--hair)}
+.chip:empty{display:none}
+.sect{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 10px}
+.sect h2{font-size:15px;font-weight:500;color:var(--t2)}
+.sect button{all:unset;font-size:13px;color:var(--t2);padding:6px 12px;border-radius:99px;background:var(--plate);border:1px solid var(--hair);cursor:pointer}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:14px;height:62px;padding:0 10px 0 16px;border-radius:20px;background:linear-gradient(180deg,var(--plate-hi),var(--plate));border:1px solid var(--hair);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 6px 16px -10px rgba(0,0,0,.6)}
+.row .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.row .nm{flex:1;font-size:16px;font-weight:500}
+.row .w{font-size:13px;color:var(--t2)}
+.row .go{all:unset;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12);background:radial-gradient(circle at 50% 30%,#1f2738,#121826);cursor:pointer;transition:transform .12s}
+.row .go:active{transform:scale(.92)}
+.row .go svg{width:16px;height:16px;stroke:var(--t2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.row.done{opacity:.45}.row.done .go{background:#e9edf3}.row.done .go svg{stroke:#0B1019}
+.empty{font-size:14px;color:var(--t2);padding:18px 16px;border-radius:20px;background:var(--plate);border:1px solid var(--hair)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:8px 22px calc(var(--safe-b) + 6px);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(11,16,25,0),rgba(11,16,25,.94) 34%)}
+.tabs a{font-size:10px;color:var(--t3);text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:4px;width:52px;font-weight:500}
+.tabs a.on{color:var(--t1)}
+.tabs a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6}
+.tabs .key{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 50% 28%,#fff,#dfe4ec);box-shadow:0 8px 20px -6px rgba(0,0,0,.7),inset 0 -2px 0 rgba(0,0,0,.12);display:grid;place-items:center}
+.tabs .key svg{width:22px;height:22px;stroke:#0B1019;stroke-width:2.2;fill:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="screen">
+  <canvas id="hero" role="img" aria-label=""></canvas>
+  <header class="head">
+    <div><div class="k" id="kicker">Thursday 22 October</div><h1>Today</h1></div>
+    <div class="avatar">M</div>
+  </header>
+  <div class="axis" id="axis"></div>
+  <main class="below">
+    <div class="sum">
+      <div class="n" id="num">8</div>
+      <div class="u"><b id="unit">done today</b><i id="cap">Last at 13:50</i></div>
+    </div>
+    <div class="chip" id="news"></div>
+    <div class="sect"><h2>Up next</h2><button id="swap" type="button">Different data</button></div>
+    <div class="rows" id="rows"></div>
+  </main>
+  <nav class="tabs">
+    <a class="on" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>Today</a>
+    <a href="#"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9"/></svg>Routines</a>
+    <span class="key"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></span>
+    <a href="#"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16"/></svg>Time</a>
+    <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>You</a>
+  </nav>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA: one source feeds the light field, the number, the caption,
+   the rows and the accessibility text.
+   --------------------------------------------------------------- */
+const RT = {
+  meditation:{c:'#9fc2ff',name:'Meditation'}, water:{c:'#5fd0e0',name:'Water'}, meal:{c:'#ffb76a',name:'Meal'},
+  sketching:{c:'#ff8576',name:'Sketching'}, reading:{c:'#c3a2ff',name:'Reading'}, run:{c:'#ff8a5c',name:'Run'},
+  stretch:{c:'#7fe8a8',name:'Stretch'}, journaling:{c:'#8f9cff',name:'Journaling'}, medication:{c:'#c9ced8',name:'Medication',neutral:true},
+};
+const hm=(h,m)=>h+m/60;
+const DAYS=[
+ {kicker:'Thursday 22 October',now:hm(14,20),news:'Run yesterday · 6.2 km',
+  logs:[['meditation',hm(7,10),12,'min'],['water',hm(8,32),300,'ml'],['meal',hm(8,45),1,'breakfast'],['medication',hm(9,0),1,'dose'],
+        ['sketching',hm(10,0),25,'min'],['water',hm(11,15),250,'ml'],['meal',hm(12,40),1,'lunch'],['water',hm(13,50),300,'ml']],
+  next:[['stretch','18:00 – 19:00'],['reading','21:00 – 22:30'],['water','open until 22:00']]},
+ {kicker:'Sunday 18 October',now:hm(11,5),news:'',
+  logs:[['water',hm(9,40),250,'ml']],
+  next:[['meal','12:00 – 14:00'],['reading','21:00 – 23:00']]},
+ {kicker:'Tuesday 20 October',now:hm(21,40),news:'Slept 7 h 40',
+  logs:[['meditation',hm(6,50),15,'min'],['run',hm(7,30),34,'min'],['water',hm(8,10),400,'ml'],['medication',hm(8,15),1,'dose'],['meal',hm(8,30),1,'breakfast'],
+        ['water',hm(10,5),250,'ml'],['water',hm(10,40),250,'ml'],['water',hm(10,55),200,'ml'],['meal',hm(12,30),1,'lunch'],['sketching',hm(15,0),40,'min'],
+        ['water',hm(15,50),300,'ml'],['meal',hm(18,45),1,'dinner'],['stretch',hm(19,10),15,'min'],['medication',hm(20,0),1,'dose'],['reading',hm(21,0),30,'min'],['journaling',hm(21,15),10,'min']],
+  next:[]},
+ {kicker:'Saturday 17 October',now:hm(17,30),news:'',
+  logs:[['meal',hm(10,30),1,'brunch'],['water',hm(10,45),500,'ml'],['reading',hm(11,0),50,'min'],['sketching',hm(14,10),90,'min'],['water',hm(16,0),300,'ml']],
+  next:[['meal','18:30 – 20:30'],['stretch','20:00 – 21:00']]},
+];
+const T0=5, T1=24.5;                       // 19.5 hours on screen = 39 half-hour reeds
+const fmt=t=>{const h=Math.floor(t+1e-6),m=Math.round((t-h)*60);return String(h%24).padStart(2,'0')+':'+String(m).padStart(2,'0')};
+const amountEq=l=>l.u==='min'?l.v:l.u==='ml'?l.v/20:l.r==='medication'?8:20;
+const describe=l=>`${fmt(l.t)} · ${RT[l.r].name}${l.u==='min'?' · '+l.v+' min':l.u==='ml'?' · '+l.v+' ml':l.u==='dose'?' · taken':' · '+l.u}`;
+const hex=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)/255).map(v=>Math.pow(v,2.2)); // to linear
+
+// every light is daylight white with a quiet tint of its routine: equal weight, no rainbow
+const WARM=hex('#fff0dc');
+const tint=rt=>{const c=hex(rt.c), k=rt.neutral?0:TINT; return c.map((v,i)=>WARM[i]*(1-k)+v*k);};
+const Q=new URLSearchParams(location.search);
+const SHOT=Q.has('shot');
+const TINT=+(Q.get('tint')||.45);
+let dayIx=+(Q.get('sample')||0)%DAYS.length;
+let day, logs, nowT;
+let lights=[];                               // {t,dur,hTarget,iTarget,c,h,i,born,neutral}
+
+function loadDay(i,animate){
+  day=DAYS[i]; nowT=day.now;
+  logs=day.logs.map(([r,t,v,u])=>({r,t,v,u}));
+  const old=lights; const now=performance.now();
+  old.forEach(L=>{L.dying=now});
+  lights=old.filter(L=>animate&&L.i>0.01).concat(logs.map((l,k)=>mkLight(l, animate? now+260+k*55 : -1e9)));
+  renderText(); kick();
+}
+function mkLight(l,born){
+  const eq=Math.min(amountEq(l),90);
+  return {log:l,t:l.t,dur:l.u==='min'?l.v/60:0,
+    hT:0.30+0.62*Math.sqrt(eq/90),           // plume height: bigger log, taller light
+    iT:RT[l.r].neutral?0.55:1.0,             // medication: quiet neutral light, no colour
+    c:tint(RT[l.r]), born};
+}
+function renderText(){
+  const n=logs.length, past=logs.filter(l=>l.t<=nowT), last=past.at(-1);
+  document.getElementById('kicker').textContent=day.kicker;
+  document.getElementById('num').textContent=n;
+  document.getElementById('unit').textContent=n===1?'done today':'done today';
+  setCap(last?`Last at ${fmt(last.t)} · ${RT[last.r].name}`:'Nothing yet');
+  document.getElementById('news').textContent=day.news;
+  const rows=document.getElementById('rows'); rows.innerHTML='';
+  if(!day.next.length){rows.innerHTML='<div class="empty">Nothing left planned. The rest of the day is yours.</div>'}
+  day.next.forEach(([r,w],k)=>{
+    const el=document.createElement('div'); el.className='row';
+    el.innerHTML=`<span class="dot" style="background:${RT[r].c};box-shadow:0 0 10px ${RT[r].c}66"></span><span class="nm">${RT[r].name}</span><span class="w">${w}</span><button class="go" aria-label="Log ${RT[r].name}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`;
+    el.querySelector('.go').onclick=()=>{ if(el.classList.contains('done'))return; el.classList.add('done'); logNow(r); };
+    rows.appendChild(el);
+  });
+  const ax=document.getElementById('axis'); ax.innerHTML='';
+  [6,9,12,15,18,21,24].forEach(h=>{ if(Math.abs(h-nowT)<1.1)return; const s=document.createElement('span'); s.style.left=((h-T0)/(T1-T0)*100)+'%'; s.textContent=String(h).padStart(2,'0'); ax.appendChild(s); });
+  const s=document.createElement('span'); s.className='now'; s.style.left=((nowT-T0)/(T1-T0)*100)+'%'; s.textContent=fmt(nowT); ax.appendChild(s);
+  document.getElementById('hero').setAttribute('aria-label',`${n} logged today. `+logs.map(describe).join('; '));
+}
+let capTimer;
+function setCap(t,flash){const c=document.getElementById('cap'); c.textContent=t; c.style.color=flash?'var(--t1)':''; clearTimeout(capTimer); if(flash)capTimer=setTimeout(()=>renderCapDefault(),3200);}
+function renderCapDefault(){const past=logs.filter(l=>l.t<=nowT), last=past.at(-1); setCap(last?`Last at ${fmt(last.t)} · ${RT[last.r].name}`:'Nothing yet');}
+function logNow(r){
+  const l={r,t:nowT,v:r==='water'?250:20,u:r==='water'?'ml':(r==='meal'?'meal':'min')};
+  logs.push(l); lights.push(mkLight(l,performance.now()+80));
+  document.getElementById('num').textContent=logs.length;
+  setCap('Logged · '+describe(l),true); kick();
+  if(navigator.vibrate)navigator.vibrate(12);
+}
+
+/* ---------------------------------------------------------------
+   RENDER: one full-width fragment shader. Each log is a light source
+   behind a sheet of reeded glass; each reed is half an hour. The
+   reeds refract (with dispersion), the lights read as soft columns.
+   Native: SwiftUI .layerEffect / .colorEffect with the same Metal
+   shader (iOS 17), or a single MTKView.
+   --------------------------------------------------------------- */
+const MAXL=24;
+const cv=document.getElementById('hero');
+const gl=cv.getContext('webgl',{antialias:false,alpha:false,premultipliedAlpha:false,powerPreference:'low-power'});
+const VS=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
+const FS=`precision highp float;
+uniform vec2 uRes;      // css px
+uniform float uDpr, uTime, uNowX, uBase, uTop, uFade, uReed, uHourPx;
+uniform vec4 uL[${MAXL}];   // x(px), halfDur(px), height(px), intensity
+uniform vec3 uC[${MAXL}];
+uniform int uN;
+uniform vec3 uBg;
+float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
+// light emitted behind the glass at (x,y), with extra horizontal blur bx
+vec3 field(float x,float y,float bx){
+  vec3 acc=vec3(0.);
+  for(int i=0;i<${MAXL};i++){
+    if(i>=uN)break;
+    vec4 L=uL[i]; if(L.w<0.002)continue;
+    float d=max(0.,abs(x-L.x)-L.y);
+    float s=sqrt(9.+bx*bx);
+    float g=exp(-.5*d*d/(s*s));
+    float halo=exp(-.5*d*d/(9.*s*s));
+    float h=L.z, top=uBase-h;
+    float soft=8.+h*.3;
+    float col=smoothstep(top-soft,top+soft,y)*step(y,uBase);
+    float grad=.18+.82*pow(clamp((y-top)/max(h,1.),0.,1.),2.2);
+    float core=exp(-pow((y-uBase)/5.,2.));
+    float refl=step(uBase,y)*exp(-(y-uBase)/14.)*.32;
+    float v=col*grad*g + core*g*.9 + refl*g + halo*.03*smoothstep(top-60.,uBase,y)*exp(-max(0.,y-uBase)/10.);
+    acc+=uC[i]*L.w*v;
+  }
+  return acc;
+}
+void main(){
+  vec2 px=vec2(gl_FragCoord.x, uRes.y*uDpr-gl_FragCoord.y)/uDpr;
+  float x=px.x, y=px.y;
+  float w=uReed;
+  float fi=floor(x/w);
+  float u=(x-(fi+.5)*w)/(.5*w);           // -1..1 across a reed
+  float cx=(fi+.5)*w;
+  // cylindrical lens: each reed shows a widened, flipped slice of what is behind it
+  float M=.9, bx=w*.3;
+  float shimmer=SHIMMER*sin(y*.045+uTime*.6+fi*1.9)*.6;
+  vec3 c;
+  c.r=field(cx-u*w*M*1.06+shimmer,y,bx).r;
+  c.g=field(cx-u*w*M        +shimmer,y,bx).g;
+  c.b=field(cx-u*w*M*.94+shimmer,y,bx).b;
+  // light scattering inside the glass: a wide, low glow around busy stretches of the day
+  c+=field(x,y,34.)*.08*smoothstep(uTop-40.,uBase,y);
+  // reed shading: crease shadow, a fine specular line, fresnel at the edges
+  float au=abs(u);
+  float crease=mix(.4,1.,smoothstep(1.,.72,au));
+  c*=crease;
+  vec3 local=field(cx,y,w*2.);
+  float lum=dot(local,vec3(.3,.5,.2));
+  float spec=exp(-pow((u+.42)/.10,2.));
+  float calm=smoothstep(uTop-50.,uTop+70.,y);
+  float topLight=(.022*exp(-(y-uTop)/160.)+.008)*calm;
+  c+=spec*(vec3(.75,.82,1.)*topLight+local*.18);
+  c+=pow(au,6.)*(.006*calm+lum*.05)*vec3(.8,.85,1.);
+  // future reeds a touch cooler and deeper; never red, never empty-looking
+  float fut=smoothstep(uNowX-2.,uNowX+6.,x);
+  c*=mix(1.,.78,fut);
+  // tone map (filmic shoulder, keeps hue), then sit on the page colour
+  c=1.-exp(-c*1.5);
+  vec3 bg=uBg*(1.+.18*smoothstep(uBase+40.,uTop-40.,y));
+  vec3 col=bg+c*(1.-bg);
+  // now: a crisp hairline in front of the glass (a mark, not a light), with a bead on the sill
+  float dn=abs(x-uNowX);
+  float line=(1.-smoothstep(.35,1.1,dn))*pow(smoothstep(uTop+20.,uBase,y),1.3)*step(y,uBase);
+  float bead=1.-smoothstep(2.2,3.4,length(vec2(dn,y-uBase-.5)));
+  float beadGlow=exp(-dot(vec2(dn,y-uBase),vec2(dn,y-uBase))/40.)*.35;
+  col=mix(col,vec3(1.,.94,.84),line*.7);
+  col+=vec3(1.,.85,.62)*beadGlow;
+  col=mix(col,vec3(1.,.95,.88),bead);
+  // sill: a hairline where the light stands
+  col+=vec3(.9,.95,1.)*.05*exp(-pow((y-uBase-1.)/.6,2.));
+  // fade the sheet into the page
+  float f=smoothstep(uRes.y,uRes.y-uFade,y);
+  col=mix(uBg,col,f);
+  // linear -> sRGB and dither so dark gradients never band
+  col=pow(clamp(col,0.,1.),vec3(1./2.2));
+  col+=(hash(gl_FragCoord.xy+fract(uTime))-.5)/255.;
+  gl_FragColor=vec4(col,1.);
+}`;
+function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o}
+const pr=gl.createProgram();
+gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));
+gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS.replace(/SHIMMER/g,SHOT?'0.0':'1.0')));
+gl.linkProgram(pr);gl.useProgram(pr);
+const bf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+const ap=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+const U={};['uRes','uDpr','uTime','uNowX','uBase','uTop','uFade','uReed','uHourPx','uL','uC','uN','uBg'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
+gl.uniform3fv(U.uBg,hex('#0B1019'));
+
+let W=0,H=0,dpr=1,safeT=0;
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,3);
+  const r=cv.getBoundingClientRect(); W=r.width; H=r.height;
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  gl.viewport(0,0,cv.width,cv.height);
+  safeT=parseFloat(getComputedStyle(document.querySelector('.head')).paddingTop)-6;
+  kick();
+}
+// liquid ease: rises, overshoots a little, settles (no bounce, no spring pop)
+const liquid=k=>k<=0?0:k>=1?1:1-Math.exp(-6.2*k)*Math.cos(4.2*k)*(1-k*.15);
+let raf=0, lastActive=0;
+function kick(){lastActive=performance.now(); if(!raf)raf=requestAnimationFrame(frame);}
+function frame(tms){
+  raf=0;
+  const now=performance.now(), xs=t=>(t-T0)/(T1-T0)*W, hourPx=W/(T1-T0);
+  const base=H-58, top=safeT+64, avail=base-top;
+  let moving=false;
+  lights=lights.filter(L=>!(L.dying&&now-L.dying>700));
+  const arr=new Float32Array(MAXL*4), col=new Float32Array(MAXL*3);
+  // equal treatment: every log is the same kind of light; height = amount, never capped in count
+  lights.slice(-MAXL).forEach((L,k)=>{
+    let a=SHOT?1:Math.min(1,Math.max(0,(now-L.born)/1300)), h=liquid(a), i=Math.min(1,a*2.2);
+    if(L.dying){const d=Math.min(1,(now-L.dying)/600); h*=1-d*d; i*=1-d; moving=true;}
+    if(a<1)moving=true;
+    // a log lights the half-hour reed it falls in (a session lights every reed it spans)
+    const r0=Math.floor((L.t-T0)*2), r1=Math.max(r0,Math.ceil((L.t+L.dur-T0)*2)-1), rw=W/39;
+    arr.set([(r0+r1+1)/2*rw,(r1-r0)/2*rw,avail*L.hT*h,L.iT*i],k*4);
+    col.set(L.c,k*3);
+  });
+  gl.uniform2f(U.uRes,W,H); gl.uniform1f(U.uDpr,dpr); gl.uniform1f(U.uTime,SHOT?0:now/1000);
+  gl.uniform1f(U.uNowX,xs(nowT)); gl.uniform1f(U.uBase,base); gl.uniform1f(U.uTop,top);
+  gl.uniform1f(U.uFade,56); gl.uniform1f(U.uReed,W/39); gl.uniform1f(U.uHourPx,hourPx);
+  gl.uniform4fv(U.uL,arr); gl.uniform3fv(U.uC,col); gl.uniform1i(U.uN,Math.min(lights.length,MAXL));
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  // after things settle, keep a slow shimmer at ~20 fps for 8 s, then stop drawing entirely
+  if(!SHOT && (moving || now-lastActive<8000)){
+    if(moving) raf=requestAnimationFrame(frame);
+    else setTimeout(()=>{if(!raf)raf=requestAnimationFrame(frame)},50);
+  } else window.__ready=true;
+}
+cv.addEventListener('click',e=>{
+  const r=cv.getBoundingClientRect(), t=T0+(e.clientX-r.left)/r.width*(T1-T0);
+  let best=null,bd=.75; logs.forEach(l=>{const d=Math.abs(l.t-t); if(d<bd){bd=d;best=l}});
+  if(best)setCap(describe(best),true);
+});
+document.getElementById('swap').onclick=()=>{dayIx=(dayIx+1)%DAYS.length; loadDay(dayIx,true);};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)kick()});
+window.addEventListener('resize',resize);
+loadDay(dayIx,!SHOT);
+(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{resize(); if(SHOT)requestAnimationFrame(()=>{window.__ready=true});});
+</script>
+</body>
+</html>
