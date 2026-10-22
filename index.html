@@ -1471,8 +1471,8 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .tc-t { margin-top: 5px; font-size: calc(17px * var(--ts, 1)); font-weight: 620; line-height: 1.25; letter-spacing: -.01em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .tc-s { margin-top: auto; padding-top: 2px; font-size: calc(13px * var(--ts, 1)); color: var(--on-deep-2); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .tc-s b { color: var(--on-deep); font-weight: 650; }
-.tc-pm { margin-top: 6px; display: grid; gap: 3px; }
-.tc-pr { display: grid; grid-template-columns: minmax(0, 34%) minmax(0, 1fr) auto; align-items: center; column-gap: 10px; font-size: calc(12.5px * var(--ts, 1)); color: var(--on-deep-2); }
+.tc-pm { margin-top: 6px; display: grid; grid-template-columns: fit-content(46%) minmax(40px, 1fr) auto; align-items: center; column-gap: 10px; row-gap: 3px; } /* one grid for both rows, so both ranges share one track and one scale */
+.tc-pr { display: contents; font-size: calc(12.5px * var(--ts, 1)); color: var(--on-deep-2); }
 .tc-pr .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tc-pr .v { color: var(--on-deep); font-weight: 600; min-width: 4.2em; text-align: right; }
 .tc-pr .rng { position: relative; height: 10px; border-radius: 6px; background: rgba(237,241,246,.05); }
@@ -1484,6 +1484,9 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .tc-nights i, .tc-week i { flex: 1; border-radius: 3px; background: rgba(237,241,246,.28); }
 .tc-nights i.on { background: oklch(.8 .09 272); }
 .tc-week i { background: oklch(.84 .1 190 / .6); }
+.tc-week i.now { background: none; box-shadow: inset 0 0 0 1.5px oklch(.84 .1 190 / .7); }
+.tc-week i.sick { height: 45%; background: repeating-linear-gradient(135deg, rgba(237,241,246,.22) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--on-deep-line); }
+.tc-week i.aside { height: 22%; background: rgba(237,241,246,.16); }
 .tc-nights i.gap, .tc-week i.gap { height: 3px; background: none; box-shadow: inset 0 0 0 1px var(--on-deep-line); }
 .tc-dots { margin-top: 8px; }
 .tc-dots i { background: var(--on-deep-line); }
@@ -1594,9 +1597,9 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .lr-open { position: absolute; inset: 0; -webkit-tap-highlight-color: transparent; }
 .lrow > :not(.lr-open):not(.lr-key):not(.sr) { pointer-events: none; position: relative; }
 .lrow .tok { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: transparent; box-shadow: inset 0 0 0 1.5px oklch(.62 .09 var(--h, 200) / .45); color: var(--h-ink); }
-.lr-m { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.lr-m { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; }
 .lr-n { font-size: calc(15px * var(--ts, 1)); font-weight: 560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; max-width: 60%; }
-.lr-s { font-size: calc(13px * var(--ts, 1)); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
+.lr-s { font-size: calc(13px * var(--ts, 1)); color: var(--ink-3); min-width: 0; font-variant-numeric: tabular-nums; }
 .lr-key { position: relative; z-index: 1; min-width: 44px; height: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: calc(13.5px * var(--ts, 1)); font-weight: 650; color: var(--h-ink); background: transparent; }
 .lr-key::before { content: ''; position: absolute; inset: 4px 0; z-index: -1; border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line-2, var(--line)); }
 .lr-key:active { transform: scale(.95); }
@@ -1811,6 +1814,8 @@ button.kv { min-height: 44px; }
 .laterwrap .lkey.more { background: transparent !important; color: var(--page-ink2) !important; font-weight: 600; box-shadow: inset 0 0 0 1px var(--page-line2) !important; }
 .sug-hold { margin: 22px var(--gut) 0; color: var(--ink-3); }
 .toast.top { bottom: auto; top: 54px; }
+/* X8-01: with a session running, a bottom toast stands above the live bar instead of covering it */
+body:has(.livebar) .toast:not(.top):not(.nobar) { bottom: 172px; }
 /* EG-02 / AL2-02: milestones and memories are plain lines on one plate */
 .tline { margin: 0 var(--gut); border-radius: 22px; background: var(--surface); box-shadow: var(--mat); padding: 4px 16px; }
 .tln-row { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 12px 0; align-items: first baseline; font-size: calc(15px * var(--ts, 1)); }
@@ -5188,6 +5193,7 @@ function msTitle(it, m) {
   if (it.measure === 'confirmation' && it.cadence.type === 'day') return `${plural(m.v, 'day')} of ${nm}`;
   const w = unitWord(it, 2);
   if (w && nm.toLowerCase().includes(w.replace(/s$/, ''))) return `${m.label} logged`;
+  if (it.measure === 'passive') return `${m.label} of ${nm.toLowerCase()}, from your Watch`;
   return `${nm}: ${m.label}`;
 }
 function unitWord(it, n = 2) {
@@ -5981,24 +5987,31 @@ function monthHeld(db, m) {
 }
 function monthFor(db, it, m, fh) {
   const a = monthStart(m),
-    b = Math.min(monthEnd(m), db.today),
+    b0 = Math.min(monthEnd(m), db.today),
     open = monthEnd(m) > db.today;
-  if (b < a || it.created > b) return 'Not part of it yet';
+  if (b0 < a || it.created > b0) return 'Not part of it yet';
+  const ret = it.retired != null && it.retired < b0 ? it.retired : null;
+  if (ret != null && ret < a) return retiredWord(it);
+  const b = ret != null ? ret : b0;
   const ent = countingEntries(db, it, Math.max(a, 0), b);
   const days = [...new Set(ent.map(e => dayOf(e.t)))].sort((p, q) => p - q);
   const aside = contextIn(db, a, b).some(c => ['away', 'vacation'].includes(c.type) && Math.min(c.to, b) - Math.max(c.from, a) + 1 >= (b - a + 1) / 2);
   let pausedN = 0;
   for (let d = Math.max(a, it.created); d <= b; d++) if (isPausedOn(it, d)) pausedN++;
   const allPaused = pausedN > 0 && pausedN >= b - Math.max(a, it.created) + 1;
-  if (!days.length) return allPaused || pausedN && isPausedOn(it, b) ? 'Paused' : aside ? 'Set aside' : open ? 'Nothing logged yet' : 'Nothing logged';
+  const retT = ret != null ? `retired ${fmtDay(ret, {
+    noDow: true
+  })}` : '';
+  if (!days.length) return ret != null ? retT.charAt(0).toUpperCase() + retT.slice(1) : allPaused || pausedN && isPausedOn(it, b) ? 'Paused' : aside ? 'Set aside' : open ? 'Nothing logged yet' : 'Nothing logged';
   const byDay = ['quantity', 'reps', 'passive'].includes(it.measure) || it.cadence.type === 'day';
   const cnt = days.length <= 2 ? `Logged on ${days.map(d => fmtDay(d, {
     noDow: true
   })).join(' and ')}` : byDay ? `On ${days.length} days${open ? ' so far' : ''}` : `${ent.length} times${open ? ' so far' : ''}`;
   const lead = !open && fh && fh.share >= .75 ? 'Held, ' : '';
   const tail = aside && !fh ? ', set aside' : pausedN ? isPausedOn(it, b) ? ', then paused' : ', paused part of it' : '';
-  return lead + (lead ? cnt.charAt(0).toLowerCase() + cnt.slice(1) : cnt) + tail;
+  return lead + (lead ? cnt.charAt(0).toLowerCase() + cnt.slice(1) : cnt) + tail + (retT ? ', ' + retT : '');
 }
+const retiredWord = it => `Retired${it.retiredNote ? ', ' + it.retiredNote.charAt(0).toLowerCase() + it.retiredNote.slice(1).replace(/\.$/, '') : ''}`;
 const heldText = l => {
   const n = l.map(x => x.it.short || x.it.name);
   return !n.length ? '' : n.length === 1 ? `${n[0]} held` : n.length === 2 ? `${n[0]} and ${n[1]} held` : `${n[0]}, ${n[1]} and ${n.length - 2} more held`;
@@ -7082,7 +7095,8 @@ function Bars({
   const bnd = band && others.length >= 6 ? [quart(others.map(k => k.d.v), .25), quart(others.map(k => k.d.v), .75)] : null;
   const bfmt = bf || (v => fmt(v, {}));
   const selProg = band && sel != null && data[sel] && data[sel].inProgress;
-  const say = lead !== undefined ? lead : selProg ? nb(`${data[sel].tip || data[sel].l}: ${bfmt(data[sel].v)} so far, still in progress`) : bnd && ref0 != null ? (() => {
+  const selAside = band && sel != null && data[sel] && data[sel].state === 'set-aside';
+  const say = lead !== undefined ? lead : selAside ? nb(`${data[sel].tip || data[sel].l} · set aside${data[sel].ctx ? ` (${data[sel].ctx})` : ''} · ${bfmt(data[sel].v || 0)} logged`) : selProg ? nb(`${data[sel].tip || data[sel].l}: ${bfmt(data[sel].v)} so far, still in progress`) : bnd && ref0 != null ? (() => {
     const d = data[ref0];
     const r = d.v < Math.round(bnd[0]) ? 'below usual' : d.v > Math.round(bnd[1]) ? 'above usual' : 'usual';
     return nb(`${d.tip || d.l} · ${bfmt(d.v)} · ${r}`);
@@ -7268,18 +7282,30 @@ function Bars({
     stroke: deep ? 'var(--on-deep-2)' : 'var(--ink-2)',
     strokeWidth: "1.25",
     strokeDasharray: "3 3"
-  }), bnd && React.createElement(Tx, {
-    c: ink3,
-    x: W - pr - 2,
-    y: Math.max(11, y(bnd[1]) - 4),
-    anchor: "end",
-    size: 12,
-    weight: 600,
-    stroke: deep ? '#0B1019' : 'var(--surface)',
-    strokeWidth: 3,
-    paintOrder: "stroke",
-    "data-usual-label": true
-  }, nb(`usual ${bfmt(Math.round(bnd[0]))}–${bfmt(Math.round(bnd[1]))}`)), showLabels && data.map((d, i) => i % labelEvery === 0 || cur === i ? React.createElement(Tx, {
+  }), bnd && (() => {
+    const lw = 128,
+      ly = Math.max(11, y(bnd[1]) - 4);
+    const topIn = (x0, x1) => Math.min(H, ...data.map((d, i) => {
+      const bx = pl + i * bw;
+      return bx + bw > x0 && bx < x1 && d.v > 0 ? y(Math.min(d.v, max)) : H;
+    }));
+    const tR = topIn(W - pr - lw, W - pr),
+      tL = topIn(pl, pl + lw);
+    const hit = t => t < ly + 3;
+    const [lx, an, yy] = !hit(tR) ? [W - pr - 2, 'end', ly] : !hit(tL) ? [pl + 2, 'start', ly] : [W - pr - 2, 'end', Math.max(11, tR - 5)];
+    return React.createElement(Tx, {
+      c: ink3,
+      x: lx,
+      y: yy,
+      anchor: an,
+      size: 12,
+      weight: 600,
+      stroke: deep ? '#0B1019' : 'var(--surface)',
+      strokeWidth: 3,
+      paintOrder: "stroke",
+      "data-usual-label": true
+    }, nb(`usual ${bfmt(Math.round(bnd[0]))}–${bfmt(Math.round(bnd[1]))}`));
+  })(), showLabels && data.map((d, i) => i % labelEvery === 0 || cur === i ? React.createElement(Tx, {
     key: i,
     c: cur === i ? deep ? 'deep' : 1 : ink3,
     x: pl + i * bw + bw / 2,
@@ -8775,7 +8801,7 @@ function monthDiscData(db, m, filterId) {
       d,
       ctx: c ? c.type : null,
       future: d > db.today,
-      before: f ? d < f.created : false
+      before: f ? d < f.created || f.retired != null && d > f.retired : false
     };
     if (!o.future) {
       if (f) {
@@ -9325,6 +9351,7 @@ function useActFor(it) {
   const live = S.live && S.live.id === it.id;
   const onAct = e => {
     if (live) {
+      if (S.liveFresh()) return;
       S.endLive();
       return;
     }
@@ -11191,7 +11218,14 @@ function laterState(db, x) {
     why
   } = x;
   const tg = ev.tg;
-  if (it.measure === 'passive') return ev.v ? `${fmtDur(ev.v)}, Watch` : 'Watch';
+  if (it.measure === 'passive') {
+    if (ev.v) return `${fmtDur(ev.v)} so far, Watch`;
+    const l = lastEntry(db, it);
+    if (!l) return 'nothing from the Watch yet';
+    const ld = dayOf(l.t);
+    const tot = sum(countingEntries(db, it, ld, ld).map(e => e.v || 0));
+    return tot ? `${fmtDur(tot)} ${relDay(ld, db.today)}, Watch` : 'nothing from the Watch yet';
+  }
   if (why === 'none') return noneWord(it);
   if (why && why.startsWith('usual:')) return '';
   if (tg.cmp === 'none') return '';
@@ -11208,7 +11242,7 @@ function laterState(db, x) {
     L: tg.v >= 1000
   })}`;
   if (it.measure === 'reps') return ev.v ? `${ev.v} of ${tg.v} reps` : `aim ${tg.v} reps`;
-  if (tg.v > 1) return ev.v ? `${ev.v}/${tg.v}` : `aim ${tg.v}`;
+  if (tg.v > 1) return ev.v ? `${ev.v} of ${tg.v}` : `aim ${tg.v}`;
   return it.cadence.type === 'month' ? 'this month' : it.cadence.type === 'week' ? 'this week' : '';
 }
 const MEASURE_GROUPS = [{
@@ -14162,7 +14196,7 @@ function HeroControls({
     "data-hero-preset": a
   }, m === 'reps' ? '+' : '', a))));else if (m === 'session' || m === 'duration') c = row(React.createElement(React.Fragment, null, React.createElement("button", {
     className: cx('btn', live ? '' : 'acc'),
-    onClick: e => live ? S.endLive() : S.startLive(it, e),
+    onClick: e => live ? S.liveFresh() || S.endLive() : S.startLive(it, e),
     "data-hero-start": true
   }, React.createElement(Icon, {
     n: live ? 'stop' : 'play',
@@ -16918,7 +16952,10 @@ function Related({
   if (c0) rows.push(React.createElement(Row, {
     key: "c",
     icon: "context",
-    title: `On a ${(c0.label || CTX_STYLE[c0.type].name).toLowerCase()} day`,
+    title: c0.type === 'away' ? 'While away from the app' : c0.type === 'sick' ? 'On a sick day' : c0.label ? `During ${c0.label}` : {
+      travel: 'While travelling',
+      vacation: 'On holiday'
+    }[c0.type] || `During ${CTX_STYLE[c0.type].name.toLowerCase()}`,
     sub: fmtRange(c0.from, c0.to),
     onClick: () => S.nav.push({
       k: 'day',
@@ -18313,6 +18350,20 @@ function TimeRoot() {
     };
   }, [db, heldBy]);
   const ctxs = db.contexts.filter(c => ['travel', 'sick', 'away', 'vacation'].includes(c.type) && !c.planned && c.from <= db.today);
+  const fy = useMemo(() => {
+    if (!f || f.id === 'running' || (f.linkW || []).includes('run')) return null;
+    const end = f.retired != null ? Math.min(f.retired, db.today) : db.today;
+    const ent = countingEntries(db, f, 0, end);
+    const per = months.map(m => m <= monthOf(end) ? countingEntries(db, f, monthStart(m), Math.min(monthEnd(m), end)).length : 0);
+    const mx = Math.max(...per);
+    return {
+      n: ent.length,
+      days: new Set(ent.map(e => dayOf(e.t))).size,
+      byDay: ['quantity', 'reps', 'passive'].includes(f.measure) || f.cadence.type === 'day',
+      held: heldBy.filter(h => h && h.held.some(x => x.it.id === f.id)).length,
+      top: mx > 0 ? per.indexOf(mx) : null
+    };
+  }, [db, f, heldBy]);
   return React.createElement(RootPage, {
     title: "Time",
     eyebrow: "2026",
@@ -18426,7 +18477,34 @@ function TimeRoot() {
   }, React.createElement("h2", null, "The year so far")), React.createElement("div", {
     className: "card",
     "data-yearfacts": true
-  }, year.top && React.createElement("div", {
+  }, fy ? React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "kv",
+    "data-yearfacts-filter": true
+  }, React.createElement("span", {
+    className: "k"
+  }, "Logged so far"), React.createElement("span", {
+    className: "v"
+  }, fy.n ? fy.byDay ? `On ${plural(fy.days, 'day')}` : plural(fy.n, 'time') : 'Nothing logged')), fy.held > 0 && React.createElement("div", {
+    className: "kv"
+  }, React.createElement("span", {
+    className: "k"
+  }, "Held"), React.createElement("span", {
+    className: "v"
+  }, plural(fy.held, 'month'))), fy.top != null && React.createElement("div", {
+    className: "kv"
+  }, React.createElement("span", {
+    className: "k"
+  }, "Most in"), React.createElement("span", {
+    className: "v"
+  }, MONTHS[fy.top], monthOf(db.today) === fy.top ? ', so far' : '')), f.retired != null && f.retired <= db.today && React.createElement("div", {
+    className: "kv"
+  }, React.createElement("span", {
+    className: "k"
+  }, "Retired"), React.createElement("span", {
+    className: "v"
+  }, fmtDay(f.retired, {
+    noDow: true
+  })))) : React.createElement(React.Fragment, null, year.top && React.createElement("div", {
     className: "kv"
   }, React.createElement("span", {
     className: "k"
@@ -18454,7 +18532,7 @@ function TimeRoot() {
     className: "k"
   }, "Run so far"), React.createElement("span", {
     className: "v"
-  }, Math.round(year.km), " km")), ctxs.length > 0 && React.createElement("div", {
+  }, Math.round(year.km), " km"))), ctxs.length > 0 && React.createElement("div", {
     style: {
       marginTop: 12,
       display: 'flex',
@@ -20038,8 +20116,8 @@ function computePatterns0(db, opts) {
       title: 'Days you moved → that night’s sleep',
       ...v,
       ...P,
-      aName: 'after moving',
-      bName: 'no workout',
+      aName: 'with a workout',
+      bName: 'without one',
       unit: 'min',
       fmt: v2 => fmtDur(v2),
       diff: median(A) - median(B),
@@ -22193,7 +22271,7 @@ function WeeksPage({
       "data-week-away": true
     }, React.createElement("span", {
       className: "fig fig-xl"
-    }, wkN || '—'), React.createElement("span", null, wkN ? `${wkN === 1 ? 'workout' : 'workouts'} from your Watch this week. ` : '', run.n > 1 ? `${nm}, ${plural(run.n, 'week')} set aside, ${fmtRange(Math.max(0, run.a), run.b + 6)}` : `${nm}, set aside`));
+    }, wkN || '—'), React.createElement("span", null, wkN ? `${wkN === 1 ? 'workout' : 'workouts'} from your Watch this week. ` : '', `${nm}, ${fmtRange(Math.max(0, c.from), c.to)}. ${run.n > 1 ? `${plural(run.n, 'whole week')} set aside` : 'This week is set aside'}`));
   })() : React.createElement(WeekColumns, {
     wcols: wcols,
     ws: ws,
@@ -25184,9 +25262,9 @@ function TodayCard({
     dot = null;
   if (m.kind === 'pattern') {
     const p = m.p;
-    const unitW = p.ctxOff === 1 ? 'nights' : 'days';
+    const unitW = p.perRecord ? 'results' : 'days';
     const nn = p.A.length + p.B.length;
-    kick = `Observation: ${p.to.name.toLowerCase()}`;
+    kick = p.to.name;
     dot = p.to.hue;
     mini = React.createElement(PatternMini, {
       p: p
@@ -25249,21 +25327,24 @@ function TodayCard({
   } else if (m.kind === 'week') {
     const days = weekModel(db, m.ws);
     const mx = Math.max(4, ...days.map(d => d.routines.length));
-    kick = `Week ${weekNo(m.ws)}, ${fmtRange(m.ws, m.ws + 6)}`;
-    title = 'Last week, played back';
+    const wOpen = m.ws + 6 >= db.today;
+    const rest = d => d.ctx.includes('sick') ? 'sick' : d.ctx.some(c => ['away', 'vacation', 'travel'].includes(c)) ? 'aside' : null;
+    kick = `Week ${weekNo(m.ws)}, ${fmtRange(m.ws, wOpen ? db.today : m.ws + 6)}${wOpen ? ', so far' : ''}`;
+    title = wOpen ? 'This week so far, played back' : 'Last week, played back';
     dot = 220;
     mini = React.createElement("div", {
       className: "tc-week",
       "aria-hidden": "true"
-    }, days.map(d => React.createElement("i", {
+    }, days.filter(d => !d.future).map(d => React.createElement("i", {
       key: d.d,
-      className: cx(!d.routines.length && 'gap'),
+      className: cx(!d.routines.length && (rest(d) || 'gap'), wOpen && d.d === db.today && 'now'),
       style: d.routines.length ? {
         height: `${30 + 70 * d.routines.length / mx}%`
       } : null
     })));
+    const nSick = days.filter(d => !d.future && rest(d) === 'sick').length;
     open = () => S.openWeekClose(m.ws);
-    label = `${kick}. Play last week back, about 20 seconds`;
+    label = `${kick}.${nSick ? ` ${plural(nSick, 'sick day')}, resting.` : ''} Play ${wOpen ? 'this week so far' : 'last week'} back, about 20 seconds`;
   } else if (m.kind === 'back') {
     const c = m.c;
     kick = `Back after ${plural(Math.round((c.to - c.from + 1) / 7), 'week')}`;
@@ -25859,7 +25940,9 @@ function LaterLine({
   const amt = sess ? null : chipAmount(S, it);
   const [, h] = useTapHold(e => {
     if (sess) {
-      if (live) S.endLive();else S.startLive(it, e);
+      if (live) {
+        if (!S.liveFresh()) S.endLive();
+      } else S.startLive(it, e);
     } else chipLog(S, it, e);
   }, () => S.sheet.open({
     k: 'log',
@@ -25918,10 +26001,33 @@ function LaterRail({
 }) {
   const [all, setAll] = useState(false);
   const MAX = 5;
-  const ord = list.map(x => ({
+  const S = useStore();
+  const seen = useRef(null);
+  const tab = S.nav.tab;
+  useEffect(() => {
+    if (tab !== 'today') seen.current = null;
+  }, [tab]);
+  useEffect(() => {
+    const v = () => {
+      if (document.hidden) seen.current = null;
+    };
+    document.addEventListener('visibilitychange', v);
+    return () => document.removeEventListener('visibilitychange', v);
+  }, []);
+  const ord0 = list.map(x => ({
     x,
     w: laterWhen(x)
   })).sort((a, b) => WHEN_O.indexOf(a.w[0]) - WHEN_O.indexOf(b.w[0]) || a.w[1] - b.w[1]);
+  const pos = seen.current || {};
+  const ord = ord0.map((o, i) => ({
+    o,
+    k: pos[o.x.it.id] ?? 1000 + i
+  })).sort((a, b) => WHEN_O.indexOf(a.o.w[0]) - WHEN_O.indexOf(b.o.w[0]) || a.k - b.k).map(z => z.o);
+  useEffect(() => {
+    const m = {};
+    ord.forEach((o, i) => m[o.x.it.id] = i);
+    seen.current = m;
+  });
   const shown = all || ord.length <= MAX + 1 ? ord : ord.slice(0, MAX);
   const groups = WHEN_O.map(k => [k, shown.filter(o => o.w[0] === k)]).filter(g => g[1].length);
   return React.createElement("div", {
@@ -28792,12 +28898,12 @@ function YouRoot() {
     className: "main"
   }, React.createElement("div", {
     className: "ttl"
-  }, "News on Today"), React.createElement("div", {
+  }, "Cards under the day"), React.createElement("div", {
     className: "sub"
-  }, "One line under the object")), React.createElement(Switch, {
+  }, "Observations, the week played back and welcome-back notes. Your dates, held things, last night and fresh workouts always show.")), React.createElement(Switch, {
     on: S.momentsOn,
     onChange: S.setMomentsOn,
-    label: "News on Today"
+    label: "Cards under the day: observations, the week played back and welcome-back notes"
   })), React.createElement("div", {
     className: "row",
     "data-dayline-toggle": true
@@ -34806,12 +34912,16 @@ function App() {
     startIntent: (x, plan, e) => {
       if (live) {
         if (live.intent === x.id) return;
+        const st0 = x.status;
         switchLive({
           id: 'intent:' + x.id,
           intent: x.id,
           started: Date.now(),
           plan
-        }, x.title, e);
+        }, x.title, e, () => setIntents(l => l.map(y => y.id === x.id ? {
+          ...y,
+          status: st0
+        } : y)));
         return;
       }
       setLive({
@@ -34830,6 +34940,7 @@ function App() {
       });
     },
     endLive: () => endLiveNow(),
+    liveFresh: () => !!live && !live.pausedAt && Date.now() - live.started < 1200,
     openWeekClose: ws => setWeekClose({
       ws,
       n: Date.now()
@@ -34883,7 +34994,7 @@ function App() {
       }), 80);
     }
   };
-  function switchLive(next, nextName, e) {
+  function switchLive(next, nextName, e, undoNext) {
     const prev = live;
     const now = Date.now();
     const started = prev.pausedAt ? prev.started + (now - prev.pausedAt) : prev.started;
@@ -34937,6 +35048,7 @@ function App() {
       hue: 0,
       undo: () => {
         undoPrev();
+        if (undoNext) undoNext();
         setLive(prev);
         showToast({
           title: `Undone, back to ${prevName}`,
