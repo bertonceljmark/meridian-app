@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0B1019">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<style>.status,.island,.homebar{display:none!important}html,body{height:100%;background:#0B1019}.mobile{position:fixed;top:0;right:0;bottom:0;left:0}.mobile .screen{width:100%!important;height:100%!important}@media (display-mode: standalone){.mobile{top:-54px}}</style>
+<style>.status,.island,.homebar{display:none!important}html,body{height:100%;background:#0B1019}.mobile{position:fixed;top:0;right:0;bottom:0;left:0}.mobile .screen{width:100%!important;height:100%!important}@media (display-mode: standalone){.mobile{top:calc(env(safe-area-inset-top,0px) - 54px)}}</style>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
@@ -1453,6 +1453,41 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .thero-link { grid-area: link; align-self: end; margin: 0 calc(var(--gut) - 12px) -4px 0; min-height: 44px; padding: 0 10px 0 14px; display: inline-flex; align-items: center; gap: 2px; font-weight: 620; font-size: calc(15px * var(--ts, 1)); color: var(--on-deep); border-radius: 22px; }
 .thero[data-today-hero="week"] .thero-link { margin-top: 4px; }
 .thero.entering .thero-obj { animation: rise .7s var(--out) both; }
+/* 3h: the cards under the Today hero; same height, the next one peeks, page dots under them */
+.tcards { margin-top: 12px; }
+.tc-m { margin-top: 3px; font-size: calc(14px * var(--ts, 1)); color: var(--on-deep-2); }
+.stagebox:has(.tc-dots) { padding-bottom: 10px; }
+.tc-track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 var(--gut); scroll-padding: 0 var(--gut); overscroll-behavior-x: contain; }
+.tc-track::-webkit-scrollbar { display: none; }
+.tcard { flex: none; width: calc(100% - 30px); scroll-snap-align: start; position: relative; height: calc(120px * var(--ts, 1)); box-sizing: border-box; display: flex; flex-direction: column; padding: 11px 14px 12px 16px; border-radius: 20px; background: rgba(237,241,246,.07); box-shadow: inset 0 0 0 1px rgba(205,220,245,.10); color: var(--on-deep); overflow: hidden; }
+.tc-track.one .tcard { width: 100%; }
+.tcard > :not(.tc-open):not(.tc-x) { pointer-events: none; position: relative; }
+.tc-open { position: absolute; inset: 0; border-radius: inherit; -webkit-tap-highlight-color: transparent; }
+.tc-open:active { background: rgba(237,241,246,.05); }
+.tc-x { position: absolute; top: 0; right: 0; width: 44px; height: 44px; display: grid; place-items: center; color: var(--on-deep-3); border-radius: 22px; z-index: 1; }
+.tc-k { display: flex; align-items: center; gap: 7px; padding-right: 28px; min-height: 20px; font-size: calc(13px * var(--ts, 1)); font-weight: 560; color: var(--on-deep-2); white-space: nowrap; }
+.tc-kt { overflow: hidden; text-overflow: ellipsis; }
+.tc-k .dot { flex: none; width: 7px; height: 7px; border-radius: 4px; background: oklch(.84 .1 var(--h, 190)); box-shadow: 0 0 0 3px oklch(.84 .1 var(--h, 190) / .18); }
+.tc-t { margin-top: 5px; font-size: calc(17px * var(--ts, 1)); font-weight: 620; line-height: 1.25; letter-spacing: -.01em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tc-s { margin-top: auto; padding-top: 2px; font-size: calc(13px * var(--ts, 1)); color: var(--on-deep-2); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tc-s b { color: var(--on-deep); font-weight: 650; }
+.tc-pm { margin-top: 6px; display: grid; gap: 3px; }
+.tc-pr { display: grid; grid-template-columns: minmax(0, 34%) minmax(0, 1fr) auto; align-items: center; column-gap: 10px; font-size: calc(12.5px * var(--ts, 1)); color: var(--on-deep-2); }
+.tc-pr .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-pr .v { color: var(--on-deep); font-weight: 600; min-width: 4.2em; text-align: right; }
+.tc-pr .rng { position: relative; height: 10px; border-radius: 6px; background: rgba(237,241,246,.05); }
+.tc-pr .ln { position: absolute; top: 3px; height: 4px; border-radius: 2px; min-width: 4px; }
+.tc-pr .md { position: absolute; top: 0; width: 10px; height: 10px; margin-left: -5px; border-radius: 5px; }
+.tc-pr.a .ln { background: oklch(.84 .1 190 / .55); } .tc-pr.a .md { background: oklch(.86 .1 190); }
+.tc-pr.b .ln { background: rgba(237,241,246,.24); } .tc-pr.b .md { background: var(--on-deep-2); }
+.tc-nights, .tc-week { margin-top: 8px; height: 26px; display: flex; align-items: flex-end; gap: 5px; }
+.tc-nights i, .tc-week i { flex: 1; border-radius: 3px; background: rgba(237,241,246,.28); }
+.tc-nights i.on { background: oklch(.8 .09 272); }
+.tc-week i { background: oklch(.84 .1 190 / .6); }
+.tc-nights i.gap, .tc-week i.gap { height: 3px; background: none; box-shadow: inset 0 0 0 1px var(--on-deep-line); }
+.tc-dots { margin-top: 8px; }
+.tc-dots i { background: var(--on-deep-line); }
+.tc-dots i.on { background: var(--on-deep-2); }
 .newsline { display: flex; align-items: center; margin: 16px var(--gut) 0; border-radius: 22px; box-shadow: inset 0 0 0 1px rgba(205,220,245,.14); }
 .newsline .nl-main { flex: 1; min-width: 0; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 2px 6px 16px; text-align: left; color: var(--on-deep); font-size: calc(15px * var(--ts, 1)); font-weight: 580; line-height: 1.3; }
 .newsline .nl-t { flex: 1; min-width: 0; }
@@ -1550,6 +1585,23 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 /* ---- the one suggestion ---- */
 .sug-lead .sug-acts .btn.sec2 { padding: 0 16px; }
 .sug-rest { margin: 0 var(--gut); }
+/* 3h: Later as a light rail: no card, hairlines, lighter keys than Now */
+.lrail { margin: 0 var(--gut); }
+.lr-g + .lr-g { margin-top: 10px; }
+.lr-h { font-size: calc(12.5px * var(--ts, 1)); font-weight: 600; color: var(--ink-3); letter-spacing: .01em; margin: 0 0 2px; }
+.lrow { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; column-gap: 10px; min-height: 48px; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.lr-g .lrow:last-child { border-bottom: 0; }
+.lr-open { position: absolute; inset: 0; -webkit-tap-highlight-color: transparent; }
+.lrow > :not(.lr-open):not(.lr-key):not(.sr) { pointer-events: none; position: relative; }
+.lrow .tok { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: transparent; box-shadow: inset 0 0 0 1.5px oklch(.62 .09 var(--h, 200) / .45); color: var(--h-ink); }
+.lr-m { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.lr-n { font-size: calc(15px * var(--ts, 1)); font-weight: 560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; max-width: 60%; }
+.lr-s { font-size: calc(13px * var(--ts, 1)); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
+.lr-key { position: relative; z-index: 1; min-width: 44px; height: 36px; padding: 0 12px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: calc(13.5px * var(--ts, 1)); font-weight: 650; color: var(--h-ink); background: transparent; box-shadow: inset 0 0 0 1px var(--line-2, var(--line)); }
+.lr-key:active { transform: scale(.95); }
+.lr-key.live { background: var(--ink); color: var(--bg); box-shadow: none; }
+.lrow > svg { color: var(--ink-3); margin-right: 10px; }
+.lr-more { margin: 4px 0 0 -6px; }
 .linkkey { display: inline-flex; align-items: center; min-height: 44px; margin: 4px calc(var(--gut) - 6px) 0; padding: 0 6px; font-weight: 600; font-size: calc(14.5px * var(--ts, 1)); color: var(--ink-2); }
 
 /* ---- L-03: a collapsed bar keeps the back key to its chevron, so a long title never runs into it ---- */
@@ -5925,6 +5977,26 @@ function monthHeld(db, m) {
     all
   };
 }
+function monthFor(db, it, m, fh) {
+  const a = monthStart(m),
+    b = Math.min(monthEnd(m), db.today),
+    open = monthEnd(m) > db.today;
+  if (b < a || it.created > b) return 'Not part of it yet';
+  const ent = countingEntries(db, it, Math.max(a, 0), b);
+  const days = [...new Set(ent.map(e => dayOf(e.t)))].sort((p, q) => p - q);
+  const aside = contextIn(db, a, b).some(c => ['away', 'vacation'].includes(c.type) && Math.min(c.to, b) - Math.max(c.from, a) + 1 >= (b - a + 1) / 2);
+  let pausedN = 0;
+  for (let d = Math.max(a, it.created); d <= b; d++) if (isPausedOn(it, d)) pausedN++;
+  const allPaused = pausedN > 0 && pausedN >= b - Math.max(a, it.created) + 1;
+  if (!days.length) return allPaused || pausedN && isPausedOn(it, b) ? 'Paused' : aside ? 'Set aside' : open ? 'Nothing logged yet' : 'Nothing logged';
+  const byDay = ['quantity', 'reps', 'passive'].includes(it.measure) || it.cadence.type === 'day';
+  const cnt = days.length <= 2 ? `Logged on ${days.map(d => fmtDay(d, {
+    noDow: true
+  })).join(' and ')}` : byDay ? `On ${days.length} days${open ? ' so far' : ''}` : `${ent.length} times${open ? ' so far' : ''}`;
+  const lead = !open && fh && fh.share >= .75 ? 'Held, ' : '';
+  const tail = aside && !fh ? ', set aside' : pausedN ? isPausedOn(it, b) ? ', then paused' : ', paused part of it' : '';
+  return lead + (lead ? cnt.charAt(0).toLowerCase() + cnt.slice(1) : cnt) + tail;
+}
 const heldText = l => {
   const n = l.map(x => x.it.short || x.it.name);
   return !n.length ? '' : n.length === 1 ? `${n[0]} held` : n.length === 2 ? `${n[0]} and ${n[1]} held` : `${n[0]}, ${n[1]} and ${n.length - 2} more held`;
@@ -5966,7 +6038,7 @@ function monthNotes(db) {
       out[m] = `Started ${(st.short || st.name).toLowerCase()}`;
       continue;
     }
-    const ws = db.workouts.filter(w => w.d >= a && w.d <= b && w.place);
+    const ws = db.workouts.filter(w => w.d >= a && w.d <= b && w.place && !w.indoor);
     if (ws.length) {
       out[m] = `Ran in ${ws[0].place}`;
       continue;
@@ -8195,7 +8267,9 @@ function YearObject({
   }), React.createElement("div", {
     className: "m3-cap",
     "aria-live": "polite"
-  }, React.createElement("b", null, MONTHS[front]), React.createElement("span", null, fut ? 'Still ahead' : notes[front] || (front === monthOf(db.today) ? monthSoFar(data[front], held && held[front]) : null) || heldText((held && held[front] || {
+  }, React.createElement("b", null, MONTHS[front]), React.createElement("span", null, fut ? 'Still ahead' : data[front] && data[front].filter ? monthFor(db, data[front].filter, front, (held && held[front] || {
+    all: []
+  }).all.find(x => x.it.id === data[front].filter.id)) : notes[front] || (front === monthOf(db.today) ? monthSoFar(data[front], held && held[front]) : null) || heldText((held && held[front] || {
     held: []
   }).held) || monthFact(db, front) || 'A quieter month')));
 }
@@ -18329,8 +18403,8 @@ function TimeRoot() {
     const h = heldBy[m];
     const fh = f ? h.all.find(x => x.it.id === f.id) : null;
     const open = m === monthOf(db.today);
-    const sub = open ? f ? fh && fh.met ? 'Some of the time so far' : 'Nothing yet this month' : [plateNotes[m], monthSoFar(data[m], h)].filter(Boolean)[0] : f ? fh ? fh.share >= .75 ? 'Held' : fh.met ? 'Some of the time' : 'A quiet month for it' : 'Not part of it yet' : [plateNotes[m], heldText(h.held)].filter(Boolean)[0] || (data[m].daysWith ? 'A quieter month' : 'Nothing recorded');
-    const fact = monthFact(db, m);
+    const fact = f && f.id !== 'running' && !(f.linkW || []).includes('run') ? '' : monthFact(db, m);
+    const sub = f ? monthFor(db, f, m, fh) : open ? [plateNotes[m], monthSoFar(data[m], h)].filter(Boolean)[0] : [plateNotes[m], heldText(h.held)].filter(Boolean)[0] || (data[m].daysWith ? 'A quieter month' : fact ? 'Only your Watch recorded' : 'Nothing recorded');
     return React.createElement(Row, {
       key: m,
       title: MONTHS[m],
@@ -21994,15 +22068,20 @@ function WeeksPage({
       d
     };
   });
-  const awayWk = w => db.contexts.some(c => ['away', 'vacation'].includes(c.type) && c.from <= Math.max(0, w) && c.to >= Math.min(db.today, w + 6));
-  const wkBars = wsList.map((w, i) => ({
-    l: i % 4 === 0 ? String(weekNo(Math.max(0, w))) : '',
-    tip: awayWk(w) ? `Week ${weekNo(Math.max(0, w))}: away` : `Week ${weekNo(Math.max(0, w))}`,
-    v: awayWk(w) ? 0 : weekMin(w),
-    state: awayWk(w) ? 'unknown' : 'met',
-    w,
-    inProgress: w + 6 > db.today
-  }));
+  const awayC = w => db.contexts.find(c => ['away', 'vacation'].includes(c.type) && c.from <= Math.max(0, w) && c.to >= Math.min(db.today, w + 6));
+  const awayWk = w => !!awayC(w);
+  const wkBars = wsList.map((w, i) => {
+    const c = awayC(w);
+    return {
+      l: i % 4 === 0 ? String(weekNo(Math.max(0, w))) : '',
+      tip: `Week ${weekNo(Math.max(0, w))}`,
+      v: weekMin(w),
+      state: c ? 'set-aside' : 'met',
+      ctx: c ? (c.label || CTX_STYLE[c.type].name).toLowerCase() : undefined,
+      w,
+      inProgress: w + 6 > db.today
+    };
+  });
   const L = dayLoad(db);
   const away = awayWk(ws);
   const run = (() => {
@@ -22103,12 +22182,17 @@ function WeeksPage({
   }, React.createElement(Icon, {
     n: "right",
     s: 20
-  }))))), away ? React.createElement("div", {
-    className: "week-away",
-    "data-week-away": true
-  }, React.createElement("span", {
-    className: "fig fig-xl"
-  }, "\u2014"), React.createElement("span", null, run.n > 1 ? `${plural(run.n, 'week')} away, little recorded, ${fmtRange(Math.max(0, run.a), run.b + 6)}` : weekHeadline(db, ws))) : React.createElement(WeekColumns, {
+  }))))), away ? (() => {
+    const wkN = db.workouts.filter(w => w.d >= ws && w.d <= we).length;
+    const c = awayC(ws);
+    const nm = c.label || CTX_STYLE[c.type].name;
+    return React.createElement("div", {
+      className: "week-away",
+      "data-week-away": true
+    }, React.createElement("span", {
+      className: "fig fig-xl"
+    }, wkN || '—'), React.createElement("span", null, wkN ? `${wkN === 1 ? 'workout' : 'workouts'} from your Watch this week. ` : '', run.n > 1 ? `${nm}, ${plural(run.n, 'week')} set aside, ${fmtRange(Math.max(0, run.a), run.b + 6)}` : `${nm}, set aside`));
+  })() : React.createElement(WeekColumns, {
     wcols: wcols,
     ws: ws,
     days: days
@@ -22254,7 +22338,28 @@ function WeeksPage({
     height: 120,
     band: true,
     bf: v => fmtHours(v)
-  }))));
+  }), wkBars.some(b => b.state === 'set-aside') && React.createElement("div", {
+    className: "legend",
+    style: {
+      display: 'flex',
+      gap: 14,
+      flexWrap: 'wrap',
+      marginTop: 10
+    },
+    "data-weeks-legend": true
+  }, React.createElement("span", null, React.createElement("i", {
+    style: {
+      background: 'oklch(.6 .14 var(--h, 245))'
+    }
+  }), "minutes moved"), React.createElement("span", {
+    "data-legend-aside": true
+  }, React.createElement("i", {
+    style: {
+      height: 5,
+      background: 'var(--ink-4)',
+      opacity: .55
+    }
+  }), "away, set aside", wkBars.some(b => b.state === 'set-aside' && b.v > 0) ? ', muted where the Watch logged' : '')))));
 }
 const EARLY_YEARS = [2024, 2025];
 const yMonthLens = y => y % 4 === 0 ? [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] : MDAYS;
@@ -24485,9 +24590,12 @@ function systemTextScale() {
   function carousel(track, dots) {
     if (!track) return () => {};
     let d = null,
-      raf = 0,
-      lastI = Math.round(track.scrollLeft / Math.max(1, track.clientWidth - 30));
-    const step = () => Math.max(1, track.clientWidth - 30);
+      raf = 0;
+    const step = () => {
+      const c = track.firstElementChild;
+      return c ? Math.max(1, c.offsetWidth + (parseFloat(getComputedStyle(track).columnGap) || 0)) : Math.max(1, track.clientWidth - 30);
+    };
+    let lastI = Math.round(track.scrollLeft / step());
     const stretch = () => {
       if (!dots) return;
       const f = track.scrollLeft / step();
@@ -24978,39 +25086,301 @@ function WeekStones({
     label: `This week as seven stones, one a day, lit where something was kept and taller where more was. ${said}`
   }));
 }
-function FreshWorkout({
-  w
+function useTodayCards(db, w, nowHeldId) {
+  const S = useStore();
+  const moments = useMoments(db);
+  const pats = useMemo(() => db.today >= 120 && db.scen !== 'fresh' && S.momentsOn ? computePatterns(db).filter(p => p.state === 'holds' && patFig(p) && p.A && p.B && p.A.length >= 3 && p.B.length >= 3) : [], [db, S.momentsOn]);
+  return useMemo(() => {
+    const k = kd => moments.filter(m => kd.includes(m.kind));
+    const holds = k(['intent']).filter(m => m.x.kind === 'hold' && m.x.id !== nowHeldId);
+    const out = [...k(['back', 'passed']), ...k(['intent']).filter(m => m.x.kind !== 'hold'), ...holds.map(m => ({
+      ...m,
+      kind: 'hold'
+    }))];
+    if (w) out.push({
+      id: 'fw' + w.id,
+      kind: 'fresh',
+      w
+    });
+    const n = db.sleep[db.today];
+    if (n && db.nowMin < 12 * 60) out.push({
+      id: 'night' + db.today,
+      kind: 'night',
+      n
+    });
+    out.push(...k(['sick', 'day1', 'half', 'week']));
+    pats.forEach(p => out.push({
+      id: 'p' + p.id,
+      kind: 'pattern',
+      p
+    }));
+    return out.filter(m => !S.dismissed.has(m.id));
+  }, [moments, pats, w, nowHeldId, db, S.dismissed]);
+}
+const pVal = (p, v) => p.unit === 'min' ? fmtDur(Math.round(v)) : p.unit === 'clock' ? fmtHM(Math.round(v)) : p.unit === 'bpm' ? `${Math.round(v)} bpm` : String(Math.round(v));
+function PatternMini({
+  p
+}) {
+  const s = [p.A, p.B].map(L => ({
+    lo: quantile(L, .25),
+    md: median(L),
+    hi: quantile(L, .75)
+  }));
+  const lo = Math.min(s[0].lo, s[1].lo),
+    hi = Math.max(s[0].hi, s[1].hi),
+    span = Math.max(1e-6, hi - lo);
+  const x = v => `${4 + 92 * (v - lo) / span}%`;
+  return React.createElement("div", {
+    className: "tc-pm",
+    "aria-hidden": "true"
+  }, [[p.aName, s[0], 'a'], [p.bName, s[1], 'b']].map(([nm, q, c]) => React.createElement("div", {
+    key: c,
+    className: cx('tc-pr', c)
+  }, React.createElement("span", {
+    className: "nm"
+  }, nm), React.createElement("span", {
+    className: "rng"
+  }, React.createElement("i", {
+    className: "ln",
+    style: {
+      left: x(q.lo),
+      width: `calc(${x(q.hi)} - ${x(q.lo)})`
+    }
+  }), React.createElement("i", {
+    className: "md",
+    style: {
+      left: x(q.md)
+    }
+  })), React.createElement("span", {
+    className: "v tnum"
+  }, pVal(p, q.md)))));
+}
+function TodayCard({
+  m,
+  i,
+  n
 }) {
   const S = useStore();
   const db = S.db;
-  const run = w.type === 'run';
-  const arrived = S.arrivedW === w.id;
-  const open = e => S.nav.push({
-    k: 'workout',
-    id: w.id,
-    morph: MI.morphFrom(e.currentTarget)
-  });
-  const when = arrived ? 'Just in' : relDay(w.d, db.today) === 'yesterday' && minOf(w.t) >= 19 * 60 ? 'Last night' : relDay(w.d, db.today).replace(/^./, c => c.toUpperCase());
-  const what = w.dist ? `${w.dist.toFixed(1)} km ${run ? 'run' : WORKOUT_TYPES[w.type].name.toLowerCase()}` : `${fmtDur(w.dur)} ${WORKOUT_TYPES[w.type].name.toLowerCase()}`;
-  const f = runFact(db, w);
-  const tail = f || (w.dist ? `${fmtPace(w.secs / w.dist)} /km` : w.avgHR ? `${w.avgHR} bpm avg` : '');
-  return React.createElement("button", {
-    className: "thero-fresh",
+  const hide = e => {
+    e.stopPropagation();
+    S.dismiss(m.id);
+    S.toast({
+      title: 'Hidden for now',
+      neutral: true,
+      glyph: 'close',
+      hue: 0,
+      undo: () => S.undismiss(m.id)
+    });
+  };
+  let kick,
+    title,
+    sub,
+    mini = null,
+    open,
+    label,
+    dot = null;
+  if (m.kind === 'pattern') {
+    const p = m.p;
+    const unitW = p.ctxOff === 1 ? 'nights' : 'days';
+    const nn = p.A.length + p.B.length;
+    kick = `Observation: ${p.to.name.toLowerCase()}`;
+    dot = p.to.hue;
+    mini = React.createElement(PatternMini, {
+      p: p
+    });
+    sub = React.createElement(React.Fragment, null, React.createElement("b", null, patFig(p)), " \xB7 ", nn, " ", unitW, " on record \xB7 a hint, not proof");
+    open = () => {
+      S.nav.setTab('time');
+      S.nav.push({
+        k: 'pattern',
+        id: p.id
+      }, 'time');
+    };
+    label = `Observation, ${p.to.name}: ${p.aName}, median ${pVal(p, median(p.A))}; ${p.bName}, median ${pVal(p, median(p.B))}. Difference ${patFig(p)}, from ${nn} ${unitW} with a record. A hint, not proof. Open the pattern`;
+  } else if (m.kind === 'fresh') {
+    const w = m.w;
+    const run = w.type === 'run';
+    const arrived = S.arrivedW === w.id;
+    kick = arrived ? 'Just in' : relDay(w.d, db.today) === 'yesterday' && minOf(w.t) >= 19 * 60 ? 'Last night' : relDay(w.d, db.today).replace(/^./, c => c.toUpperCase());
+    title = w.dist ? `${w.dist.toFixed(1)} km ${run ? 'run' : WORKOUT_TYPES[w.type].name.toLowerCase()}` : `${fmtDur(w.dur)} ${WORKOUT_TYPES[w.type].name.toLowerCase()}`;
+    const meta = [w.dist ? `${fmtPace(w.secs / w.dist)} /km` : `${fmtDur(w.dur)}`, w.avgHR ? `${w.avgHR} bpm average` : null].filter(Boolean).join(', ');
+    sub = runFact(db, w) || null;
+    mini = React.createElement("div", {
+      className: "tc-m tnum"
+    }, meta);
+    open = e => S.nav.push({
+      k: 'workout',
+      id: w.id,
+      morph: MI.morphFrom(e.currentTarget.parentNode)
+    });
+    label = `${kick}: ${title}, ${meta}${sub ? ', ' + sub : ''}. Open the report`;
+    dot = 190;
+  } else if (m.kind === 'night') {
+    const nt = m.n;
+    const usual = nightVsUsual(db, nt);
+    kick = 'Last night';
+    title = `${fmtDur(nt.asleep)} asleep`;
+    dot = 272;
+    const L = [];
+    for (let d = db.today - 6; d <= db.today; d++) L.push({
+      d,
+      n: db.sleep[d]
+    });
+    const mx = Math.max(480, ...L.map(x => x.n ? x.n.asleep : 0));
+    mini = React.createElement("div", {
+      className: "tc-nights",
+      "aria-hidden": "true"
+    }, L.map(x => React.createElement("i", {
+      key: x.d,
+      className: cx(!x.n && 'gap', x.d === db.today && 'on'),
+      style: x.n ? {
+        height: `${Math.max(12, 100 * x.n.asleep / mx)}%`
+      } : null
+    })));
+    sub = `${fmtHM(nt.onset)} to ${fmtHM(nt.wake)}${usual ? `, ${usual === 'your usual time' ? 'asleep about your usual time' : 'asleep ' + usual}` : ''}`;
+    open = () => S.nav.push({
+      k: 'sleep',
+      d: db.today
+    });
+    label = `Last night: ${fmtDur(nt.asleep)} asleep, ${sub}. Open the night`;
+  } else if (m.kind === 'week') {
+    const days = weekModel(db, m.ws);
+    const mx = Math.max(4, ...days.map(d => d.routines.length));
+    kick = `Week ${weekNo(m.ws)}, ${fmtRange(m.ws, m.ws + 6)}`;
+    title = 'Last week, played back';
+    dot = 220;
+    mini = React.createElement("div", {
+      className: "tc-week",
+      "aria-hidden": "true"
+    }, days.map(d => React.createElement("i", {
+      key: d.d,
+      className: cx(!d.routines.length && 'gap'),
+      style: d.routines.length ? {
+        height: `${30 + 70 * d.routines.length / mx}%`
+      } : null
+    })));
+    open = () => S.openWeekClose(m.ws);
+    label = `${kick}. Play last week back, about 20 seconds`;
+  } else if (m.kind === 'back') {
+    const c = m.c;
+    kick = `Back after ${plural(Math.round((c.to - c.from + 1) / 7), 'week')}`;
+    title = backHead(db, c);
+    dot = 190;
+    sub = `${fmtRange(c.from, c.to)} is set aside, not missed.`;
+    open = () => {
+      S.nav.setTab('time');
+      S.nav.push({
+        k: 'month',
+        m: monthOf(c.from)
+      }, 'time');
+    };
+    label = `${kick}. ${title}. ${sub} See those weeks in Time`;
+  } else if (m.kind === 'hold') {
+    kick = 'Back, as you asked';
+    title = m.x.title;
+    sub = m.x.bringLabel ? `You held it for ${m.x.bringLabel}` : null;
+    open = () => S.sheet.open({
+      k: 'intentact',
+      id: m.x.id
+    });
+    label = `${kick}: ${title}. Done, later or let go`;
+  } else {
+    kick = m.kind === 'passed' || m.kind === 'intent' ? 'A date passed' : m.kind === 'sick' ? 'Sick' : m.kind === 'half' ? 'Six months in' : 'Day one';
+    title = m.kind === 'intent' ? m.x.title : m.kind === 'passed' ? m.xs.map(x => x.title).join(', ') : m.kind === 'sick' ? 'Routines rest. Nothing is expected of you.' : m.kind === 'half' ? 'Half a year of your own routines' : 'Start with one thing';
+    sub = m.kind === 'intent' ? `Was ${fmtDay(m.x.due, {
+      noDow: true
+    })}. Done, a new date, or let it go` : m.kind === 'passed' ? 'Done, a new date, or let them go' : null;
+    open = () => S.sheet.open({
+      k: 'news',
+      ids: [m.id]
+    });
+    label = `${kick}: ${title}. Open`;
+  }
+  return React.createElement("div", {
+    className: "tcard",
+    role: "group",
+    "aria-roledescription": "card",
+    "aria-label": `${i + 1} of ${n}`,
+    "data-tcard": m.kind,
+    "data-tcard-id": m.id
+  }, React.createElement("button", {
+    className: "tc-open",
     onClick: open,
-    "aria-label": `${when}: ${what}${tail ? ', ' + tail : ''}. Open the report`,
-    "data-fresh-workout": w.id
-  }, React.createElement("span", {
+    "aria-label": label,
+    "data-tcard-open": true
+  }), React.createElement("div", {
+    className: "tc-k"
+  }, dot != null && React.createElement("span", {
     className: "dot",
-    "aria-hidden": "true"
+    style: {
+      '--h': dot
+    }
   }), React.createElement("span", {
-    className: "tf-t"
-  }, React.createElement("span", {
-    className: "tf-w"
-  }, when, ": "), React.createElement("b", null, what), tail ? `, ${tail}` : ''), React.createElement(Icon, {
-    n: "right",
-    s: 15,
-    w: 2.2
-  }));
+    className: "tc-kt"
+  }, kick)), title && React.createElement("div", {
+    className: "tc-t"
+  }, title), mini, sub && React.createElement("div", {
+    className: "tc-s"
+  }, sub), React.createElement("button", {
+    className: "tc-x",
+    onClick: hide,
+    "aria-label": `Hide: ${kick}`,
+    "data-tcard-x": true
+  }, React.createElement(Icon, {
+    n: "close",
+    s: 15
+  })));
+}
+function TodayCards({
+  list
+}) {
+  const tr = useRef(null),
+    dt = useRef(null);
+  const [at, setAt] = useState(0);
+  const key = list.map(m => m.id).join();
+  useEffect(() => {
+    if (!tr.current) return;
+    const off = MI.carousel(tr.current, dt.current);
+    return off;
+  }, [key]);
+  useEffect(() => {
+    setAt(a => Math.min(a, Math.max(0, list.length - 1)));
+  }, [key]);
+  useLayoutEffect(() => {
+    MI.dotsFlip(dt.current);
+  }, [at, key]);
+  if (!list.length) return null;
+  const onScroll = e => {
+    const t = e.currentTarget;
+    const c = t.firstElementChild;
+    if (!c) return;
+    const i = Math.round(t.scrollLeft / (c.offsetWidth + 10));
+    if (i !== at) setAt(Math.max(0, Math.min(list.length - 1, i)));
+  };
+  return React.createElement("div", {
+    className: "tcards",
+    "data-today-cards": list.length
+  }, React.createElement("div", {
+    className: cx('tc-track', list.length === 1 && 'one'),
+    ref: tr,
+    onScroll: onScroll,
+    role: "region",
+    "aria-label": "Since last time"
+  }, list.map((m, i) => React.createElement(TodayCard, {
+    key: m.id,
+    m: m,
+    i: i,
+    n: list.length
+  }))), list.length > 1 && React.createElement("div", {
+    className: "mdots tc-dots",
+    ref: dt,
+    "aria-hidden": "true",
+    "data-tcard-dots": true
+  }, list.map((m, i) => React.createElement("i", {
+    key: m.id,
+    className: i === at ? 'on' : ''
+  }))));
 }
 function TodayHero({
   pick
@@ -25058,9 +25428,7 @@ function TodayHero({
   })), React.createElement("div", {
     className: "thero-sub tnum",
     "data-ring-sub": true
-  }, [wv ? `${fmtAmount(wIt, wv)} water` : null, lastT ? `last logged ${fmtHM(minOf(lastT))}` : 'nothing logged yet'].filter(Boolean).join(', ').replace(/^./, c => c.toUpperCase())), pick.w && React.createElement(FreshWorkout, {
-    w: pick.w
-  }));
+  }, [wv ? `${fmtAmount(wIt, wv)} water` : null, lastT ? `last logged ${fmtHM(minOf(lastT))}` : 'nothing logged yet'].filter(Boolean).join(', ').replace(/^./, c => c.toUpperCase())));
 }
 const NEWS_ORDER = ['back', 'sick', 'day1', 'half', 'pattern', 'week', 'intent', 'passed'];
 function newsText(db, m) {
@@ -25081,46 +25449,6 @@ function newsText(db, m) {
   if (m.kind === 'pattern') return `After a day you move, you sleep about ${Math.round(m.p.diff)} min longer`;
   if (m.kind === 'week') return 'Your last week, played back';
   return '';
-}
-function NewsLine({
-  list
-}) {
-  const S = useStore();
-  const db = S.db;
-  if (!list.length) return null;
-  const m = list[0];
-  const rest = list.length - 1;
-  const passed = m.kind !== 'passed' && m.kind !== 'intent' ? list.filter(x => x.kind === 'passed' || x.kind === 'intent').reduce((n, x) => n + (x.xs ? x.xs.length : 1), 0) : 0;
-  return React.createElement("div", {
-    className: "newsline plain",
-    "data-newsline": m.kind
-  }, React.createElement("button", {
-    className: "nl-main",
-    onClick: () => S.sheet.open({
-      k: 'news',
-      ids: list.map(x => x.id)
-    }),
-    "data-news-open": true
-  }, React.createElement("span", {
-    className: "dot",
-    "aria-hidden": "true"
-  }), React.createElement("span", {
-    className: "nl-t"
-  }, newsText(db, m).replace(/\.$/, ''), rest > 0 ? React.createElement("span", {
-    className: "nl-s"
-  }, ", ", rest, " more") : null), React.createElement(Icon, {
-    n: "right",
-    s: 15,
-    w: 2.2
-  })), React.createElement("button", {
-    className: "nl-x",
-    onClick: () => list.forEach(x => S.dismiss(x.id)),
-    "aria-label": "Hide this for now",
-    "data-news-x": true
-  }, React.createElement(Icon, {
-    n: "close",
-    s: 16
-  })));
 }
 function NewsSheet({
   init
@@ -25502,72 +25830,119 @@ function chipAmount(S, it) {
   if (m === 'passive') return null;
   return '+1';
 }
-function LaterKey({
+const WHEN_H = {
+  morning: 'Later this morning',
+  afternoon: 'This afternoon',
+  evening: 'This evening',
+  any: 'Any time'
+};
+const WHEN_O = ['morning', 'afternoon', 'evening', 'any'];
+function laterWhen(x) {
+  const w = x.why || '';
+  if (!w.startsWith('usual:')) return ['any', 9999];
+  const m = +w.slice(6);
+  return [m < 12 * 60 ? 'morning' : m < 17 * 60 ? 'afternoon' : 'evening', m];
+}
+function LaterLine({
   x
 }) {
   const S = useStore();
   const it = x.it;
-  const amt = chipAmount(S, it);
-  const st = laterState(S.db, x);
-  const [, h] = useTapHold(e => chipLog(S, it, e), () => S.sheet.open({
+  const st = laterState(S.db, x) || laterState(S.db, {
+    ...x,
+    why: ''
+  }) || (['session', 'duration'].includes(it.measure) ? `usually ${usualMinutes(S.db, it)} min` : '');
+  const sess = ['session', 'duration'].includes(it.measure);
+  const live = S.live && S.live.id === it.id;
+  const amt = sess ? null : chipAmount(S, it);
+  const [, h] = useTapHold(e => {
+    if (sess) {
+      if (live) S.endLive();else S.startLive(it, e);
+    } else chipLog(S, it, e);
+  }, () => S.sheet.open({
     k: 'log',
     id: it.id
   }));
-  return React.createElement(React.Fragment, null, React.createElement("button", _extends({
-    className: "lchip lkey"
-  }, h, {
-    "aria-label": `${chipWhat(S, it)}.${st ? ' ' + st + '.' : ''} Hold for more`,
-    "aria-keyshortcuts": "Shift+F10",
+  const what = sess ? live ? `End ${it.name}` : `Start ${it.name}` : chipWhat(S, it);
+  return React.createElement("div", {
+    className: cx('lrow', hueCls(it)),
+    style: hueStyle(it),
     "data-later-item": it.id
-  }), amt && React.createElement("span", {
-    className: "amt tnum"
-  }, amt), React.createElement("span", {
-    className: "nm"
+  }, React.createElement("button", {
+    className: "lr-open",
+    onClick: () => S.nav.push({
+      k: 'item',
+      id: it.id
+    }),
+    "aria-label": `${it.name}${st ? ', ' + st : ''}. Open`
+  }), React.createElement("span", {
+    className: "tok",
+    "aria-hidden": "true"
+  }, React.createElement(Icon, {
+    n: it.glyph,
+    s: 15,
+    w: 2
+  })), React.createElement("span", {
+    className: "lr-m"
+  }, React.createElement("span", {
+    className: "lr-n"
   }, it.short || it.name), st && React.createElement("span", {
-    className: "st"
-  }, st)), React.createElement(AxActions, {
+    className: "lr-s"
+  }, st)), it.measure === 'passive' ? React.createElement(Icon, {
+    n: "right",
+    s: 15,
+    w: 2.2
+  }) : React.createElement("button", _extends({
+    className: cx('lr-key', live && 'live')
+  }, h, {
+    "aria-label": `${what}. Hold for more`,
+    "aria-keyshortcuts": "Shift+F10",
+    "data-later-key": it.id
+  }), sess ? React.createElement(React.Fragment, null, React.createElement(Icon, {
+    n: live ? 'stop' : 'play',
+    s: 13
+  }), live ? 'End' : 'Start') : amt === '+1' ? React.createElement(Icon, {
+    n: "check",
+    s: 17,
+    w: 2.4
+  }) : React.createElement("span", {
+    className: "tnum"
+  }, amt)), React.createElement(AxActions, {
     it: it
   }));
 }
-function LaterRow({
+function LaterRail({
   list
 }) {
-  const ref = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [cut, setCut] = useState(null);
-  const key = list.map(x => x.it.id).join();
-  useLayoutEffect(() => {
-    setCut(null);
-  }, [key]);
-  useLayoutEffect(() => {
-    if (open || cut != null || !ref.current) return;
-    const kids = [...ref.current.querySelectorAll(':scope > .lkey')];
-    if (!kids.length) return;
-    const tops = [...new Set(kids.map(k => k.offsetTop))].sort((a, b) => a - b);
-    if (tops.length <= 2) {
-      setCut(kids.length);
-      return;
-    }
-    const k2 = kids.filter(k => k.offsetTop <= tops[1]).length;
-    setCut(Math.max(1, k2 - 1));
-  });
-  const shown = open || cut == null ? list : list.slice(0, cut);
-  const rest = list.length - shown.length;
+  const [all, setAll] = useState(false);
+  const MAX = 5;
+  const ord = list.map(x => ({
+    x,
+    w: laterWhen(x)
+  })).sort((a, b) => WHEN_O.indexOf(a.w[0]) - WHEN_O.indexOf(b.w[0]) || a.w[1] - b.w[1]);
+  const shown = all || ord.length <= MAX + 1 ? ord : ord.slice(0, MAX);
+  const groups = WHEN_O.map(k => [k, shown.filter(o => o.w[0] === k)]).filter(g => g[1].length);
   return React.createElement("div", {
-    className: "laterwrap",
-    ref: ref,
+    className: "lrail",
     "data-later": true,
-    "data-later-wrapped": true
-  }, shown.map(x => React.createElement(LaterKey, {
-    key: x.it.id,
-    x: x
-  })), rest > 0 && React.createElement("button", {
-    className: "lchip lkey more",
-    onClick: () => setOpen(true),
+    "data-later-rail": true
+  }, groups.map(([k, l]) => React.createElement("div", {
+    key: k,
+    className: "lr-g",
+    "data-later-when": k
+  }, React.createElement("div", {
+    className: "lr-h"
+  }, WHEN_H[k]), l.map(o => React.createElement(LaterLine, {
+    key: o.x.it.id,
+    x: o.x
+  })))), ord.length > shown.length && React.createElement("button", {
+    className: "linkkey lr-more",
+    onClick: () => setAll(true),
     "data-later-more": true
-  }, "+", rest, " more"), open && list.length > 4 && React.createElement("button", {
-    className: "lchip lkey more",
-    onClick: () => setOpen(false)
+  }, "Show all ", ord.length), all && ord.length > MAX + 1 && React.createElement("button", {
+    className: "linkkey lr-more",
+    onClick: () => setAll(false),
+    "data-later-fewer": true
   }, "Fewer"));
 }
 function DateKey({
@@ -25799,7 +26174,6 @@ function TodayScreen() {
   }, [model0, sm]);
   const moments = useMoments(db);
   const pick = useMemo(() => todayHeroPick(db), [db]);
-  const news = useMemo(() => moments.filter(m => m.kind !== 'workout' && !(m.kind === 'intent' && m.x.kind === 'hold')).sort((a, b) => NEWS_ORDER.indexOf(a.kind) - NEWS_ORDER.indexOf(b.kind)), [moments]);
   const dl = useMemo(() => db.prefs.dayLine ? dayLineModel(db, model, S.ax) : null, [db, model, S.ax]);
   const later = dl ? model.later.filter(x => !dl.ids.has(x.it.id)) : model.later;
   const ref = useRef(null);
@@ -25963,6 +26337,7 @@ function TodayScreen() {
   const arrived = ints.filter(x => holdArrived(db, x)).sort((a, b) => a.bring - b.bring);
   const held = arrived.slice(0, 1);
   const heldN = (db.intents || []).filter(x => ['held', 'started', 'seen'].includes(x.status)).length;
+  const cards = useTodayCards(db, pick.w, held[0] && held[0].id);
   const nowN = deadlines.length + held.length + routines.length;
   const [allNow, setAllNow] = useState(false);
   const NOW_MAX = 4;
@@ -26094,6 +26469,8 @@ function TodayScreen() {
     s: 16
   }), React.createElement("span", null, "Feel")))), React.createElement(TodayHero, {
     pick: pick
+  }), React.createElement(TodayCards, {
+    list: cards
   })), React.createElement("div", {
     className: "sec",
     style: {
@@ -26156,12 +26533,6 @@ function TodayScreen() {
     n: "right",
     s: 15,
     w: 2.2
-  })), news.length > 0 && ['back', 'day1'].includes(news[0].kind) && React.createElement("div", {
-    style: {
-      marginTop: 14
-    }
-  }, React.createElement(NewsLine, {
-    list: news
   }))), (() => {
     if (db.nowMin < 20 * 60) return null;
     const red = ['alcohol', 'caffeine'].map(id => db.byId[id]).filter(it => it && statusOn(it, db.today) !== 'paused' && !((db.byItemDay[it.id] || {})[db.today] || []).length);
@@ -26191,14 +26562,8 @@ function TodayScreen() {
     }
   }, React.createElement("div", {
     className: "sec-h"
-  }, React.createElement("h2", null, model.calm ? 'Whenever you like' : 'Later')), React.createElement(LaterRow, {
+  }, React.createElement("h2", null, model.calm ? 'Whenever you like' : 'Later')), React.createElement(LaterRail, {
     list: laterSorted
-  })), news.length > 0 && !['back', 'day1'].includes(news[0].kind) && React.createElement("div", {
-    style: {
-      marginTop: 18
-    }
-  }, React.createElement(NewsLine, {
-    list: news
   })), React.createElement(SuggestSlot, {
     sm: sm
   }), settled.length > 0 && React.createElement("div", {
@@ -34402,6 +34767,11 @@ function App() {
     setMomentsOn,
     dismissed,
     dismiss: id => setDismissed(s => new Set([...s, id])),
+    undismiss: id => setDismissed(s => {
+      const n = new Set(s);
+      n.delete(id);
+      return n;
+    }),
     modules,
     setModule: (k, v) => setModules(m => ({
       ...m,
