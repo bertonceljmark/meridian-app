@@ -1597,9 +1597,11 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .lr-m { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
 .lr-n { font-size: calc(15px * var(--ts, 1)); font-weight: 560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; max-width: 60%; }
 .lr-s { font-size: calc(13px * var(--ts, 1)); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-variant-numeric: tabular-nums; }
-.lr-key { position: relative; z-index: 1; min-width: 44px; height: 36px; padding: 0 12px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: calc(13.5px * var(--ts, 1)); font-weight: 650; color: var(--h-ink); background: transparent; box-shadow: inset 0 0 0 1px var(--line-2, var(--line)); }
+.lr-key { position: relative; z-index: 1; min-width: 44px; height: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: calc(13.5px * var(--ts, 1)); font-weight: 650; color: var(--h-ink); background: transparent; }
+.lr-key::before { content: ''; position: absolute; inset: 4px 0; z-index: -1; border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line-2, var(--line)); }
 .lr-key:active { transform: scale(.95); }
-.lr-key.live { background: var(--ink); color: var(--bg); box-shadow: none; }
+.lr-key.live { color: var(--bg); }
+.lr-key.live::before { background: var(--ink); box-shadow: none; }
 .lrow > svg { color: var(--ink-3); margin-right: 10px; }
 .lr-more { margin: 4px 0 0 -6px; }
 .linkkey { display: inline-flex; align-items: center; min-height: 44px; margin: 4px calc(var(--gut) - 6px) 0; padding: 0 6px; font-weight: 600; font-size: calc(14.5px * var(--ts, 1)); color: var(--ink-2); }
