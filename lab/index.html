@@ -18,13 +18,19 @@
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",Arial,sans-serif;
     -webkit-font-smoothing:antialiased;touch-action:none;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none}
-  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;transition:opacity .17s ease}
+  @media (prefers-reduced-motion: reduce){ canvas#c{transition:none} }
   button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 
   /* top bar: hero switcher, collapses to a pill */
-  #top{position:fixed;left:0;right:0;top:0;z-index:3;display:flex;gap:8px;align-items:center;
+  #top{position:fixed;left:0;right:0;top:0;z-index:3;display:flex;flex-direction:column;gap:7px;
     padding:calc(var(--sat) + 10px) calc(var(--sar) + 12px) 0 calc(var(--sal) + 12px);
     transition:opacity .28s ease, transform .28s ease}
+  #top .r{display:flex;gap:8px;align-items:center}
+  #top .r2{padding-right:0;justify-content:flex-start}
+  #stg{flex:none;width:auto}
+  #stg::before{content:'Stage';align-self:center;padding:0 8px 0 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg3,rgba(255,255,255,.45))}
+  #stg button{padding:6px 12px;font-size:12px}
   #top.hide{opacity:0;transform:translateY(-14px);pointer-events:none}
   .glass{background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);
     box-shadow:inset 0 0 0 .5px var(--hair), inset 0 1px 0 rgba(255,255,255,.07), 0 6px 20px rgba(0,0,0,.25)}
@@ -66,8 +72,9 @@
 <canvas id="c" aria-label="3D object built from your data"></canvas>
 
 <div id="top">
-  <div class="seg glass" role="tablist" id="seg"></div>
-  <button class="pillbtn glass" id="full" aria-label="Hide the switcher">Full</button>
+  <div class="r"><div class="seg glass" role="tablist" aria-label="Hero" id="seg"></div>
+  <button class="pillbtn glass" id="full" aria-label="Hide the switcher">Full</button></div>
+  <div class="r r2"><div class="seg glass" role="tablist" aria-label="Stage" id="stg"></div></div>
 </div>
 <button class="pillbtn glass" id="pill" aria-label="Show the switcher"><i></i><span id="pilltxt">Run</span></button>
 
@@ -89,7 +96,6 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { mergeVertices, toCreasedNormals, mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { STAGE } from './stage.js';
 
@@ -188,11 +194,16 @@ const GEM_FRAG = /* glsl */`
   #endif
   if (uLam > 0.0) {
     float lam = gnoise(vec3(vObj.x*2.5, vObj.y*uLam, vObj.z*2.5)) * 0.6 + gnoise(vec3(vObj.x*9.0, vObj.y*uLam*2.3, vObj.z*9.0)) * 0.4;
-    diffuseColor.rgb *= 0.9 + 0.16*lam + 0.08*gnoise(vObj*90.0);
+    diffuseColor.rgb *= 0.92 + 0.14*lam;
   }
   float flake = mix(0.5, smoothstep(0.12, 0.62, n + 0.35*w.x), uFlake);
   float depth = pow(facing, uFacePow);
   totalEmissiveRadiance += uGlow * col * (0.16 + 0.84*depth) * (0.4 + 1.2*flake) + uRim * uTint2 * pow(1.0 - facing, 3.0);
+  if (uDisp > 0.0) {   // dispersion fringe: a thin, clean spectral band just inside the silhouette
+    float band = smoothstep(0.5, 0.2, facing) * smoothstep(0.0, 0.08, facing);
+    vec3 spec = clamp(abs(fract((1.0 - facing)*1.6 + vec3(0.0, 0.66, 0.33)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+    totalEmissiveRadiance += uDisp * band * mix(spec, uTint2, 0.35) * 0.9;
+  }
   diffuseColor.rgb = mix(diffuseColor.rgb, col, uDiffMix * (0.5 + 0.5*flake));
 }
 `;
@@ -205,20 +216,20 @@ function gemMat(params, o = {}) {
     uGlow: { value: o.glow ?? 0 }, uTime: TIME, uScale: { value: o.scale instanceof THREE.Vector3 ? o.scale : new THREE.Vector3().setScalar(o.scale ?? 2.2) },
     uIris: { value: o.iris ?? 0.3 }, uHue: { value: o.hue ?? 0 }, uFacePow: { value: o.facePow ?? 1.4 }, uLam: { value: o.lam ?? 0 },
     uTint: { value: new THREE.Color(o.tint ?? 0xffffff) }, uTint2: { value: new THREE.Color(o.tint2 ?? o.tint ?? 0xffffff) },
-    uDiffMix: { value: o.diffMix ?? 0 }, uFlake: { value: o.flake ?? 1 }, uSkin: { value: o.skin ?? 0 }, uRim: { value: o.rim ?? 0 },
+    uDiffMix: { value: o.diffMix ?? 0 }, uFlake: { value: o.flake ?? 1 }, uSkin: { value: o.skin ?? 0 }, uRim: { value: o.rim ?? 0 }, uDisp: { value: o.disp ?? 0 },
   };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vObj = position;');
-    sh.fragmentShader = 'varying vec3 vObj;\nuniform float uGlow, uTime, uIris, uHue, uFacePow, uLam, uDiffMix, uFlake, uSkin, uRim;\nuniform vec3 uScale, uTint, uTint2;\n' + NOISE +
+    sh.fragmentShader = 'varying vec3 vObj;\nuniform float uGlow, uTime, uIris, uHue, uFacePow, uLam, uDiffMix, uFlake, uSkin, uRim, uDisp;\nuniform vec3 uScale, uTint, uTint2;\n' + NOISE +
       sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n' + GEM_FRAG)
         .replace('#include <lights_physical_fragment>', `#include <lights_physical_fragment>
   if (uSkin > 0.0) { float skin = smoothstep(uSkin*0.965, uSkin*0.992, length(vObj.xz));
     #ifdef USE_CLEARCOAT
     material.clearcoat *= 1.0 - skin;
     #endif
-    material.roughness = mix(material.roughness, 0.82, skin); material.diffuseColor *= mix(1.0, 0.72 + 0.18*gnoise(vObj*24.0), skin); }`);
+    material.roughness = mix(material.roughness, 0.82, skin); material.diffuseColor *= mix(1.0, 0.8, skin); }`);
   };
   m.customProgramCacheKey = () => 'gem';
   return m;
@@ -230,13 +241,13 @@ function rockMat(p = {}, o = {}) {
   const m = new THREE.MeshStandardMaterial({ color: p.color ?? 0x3a3f47, roughness: p.roughness ?? 0.9, metalness: 0, envMapIntensity: p.env ?? 0.6 });
   const u = {
     uRF: { value: o.freq ?? 2.0 }, uBump: { value: o.bump ?? 1.0 }, uVar: { value: o.vary ?? 1.0 }, uPool: { value: o.pool ?? 0 },
-    uCont: { value: new THREE.Vector3(o.contK ?? 0, o.contOff ?? 0, o.contGlow ?? 0) }, uContCol: { value: new THREE.Color(o.contCol ?? 0xffffff) },
+    uCont: { value: new THREE.Vector3(o.contK ?? 0, o.contOff ?? 0, o.contGlow ?? 0) }, uContCol: { value: new THREE.Color(o.contCol ?? 0xffffff) }, uContDark: { value: o.contDark ?? 0 },
   };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = 'varying vec3 vWP; varying vec3 vLP;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vWP = (modelMatrix * vec4(transformed, 1.0)).xyz; vLP = transformed;');
-    sh.fragmentShader = 'varying vec3 vWP; varying vec3 vLP;\nuniform float uRF, uBump, uVar, uPool;\nuniform vec3 uCont, uContCol;\n' + NOISE + `
+    sh.fragmentShader = 'varying vec3 vWP; varying vec3 vLP;\nuniform float uRF, uBump, uVar, uPool, uContDark;\nuniform vec3 uCont, uContCol;\n' + NOISE + `
 vec3 rockBump(vec3 sp, vec3 sn, vec2 dH, float fd){
   vec3 sx = dFdx(sp); vec3 sy = dFdy(sp); vec3 r1 = cross(sy, sn); vec3 r2 = cross(sn, sx);
   float det = dot(sx, r1) * fd; vec3 g = sign(det) * (dH.x * r1 + dH.y * r2);
@@ -258,8 +269,9 @@ vec3 rockBump(vec3 sp, vec3 sn, vec2 dH, float fd){
   if (uCont.x > 0.0) {
     float f = (vLP.y - uCont.y) * uCont.x;
     float dd = abs(fract(f - 0.5) - 0.5) / max(fwidth(f), 1e-4);
-    float ln = 1.0 - min(dd / 1.2, 1.0);
+    float ln = (1.0 - min(dd / 1.2, 1.0)) * smoothstep(0.6, 0.2, fwidth(f));
     totalEmissiveRadiance += uContCol * uCont.z * ln;
+    diffuseColor.rgb *= 1.0 - uContDark * ln;
   }`);
   };
   m.customProgramCacheKey = () => 'rock';
@@ -406,15 +418,17 @@ function blobTex() {
   x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
   _blobTex = new THREE.CanvasTexture(c); return _blobTex;
 }
+/* every mesh says what it is; the stage restyles it by role (see restyle()) */
+function tag(o, role, accent, lit = 1, extra) { Object.assign(o.userData, { role, lit }, extra || {}); if (accent !== undefined) o.userData.accent = new THREE.Color(accent); return o; }
 function contactBlob(radius, y, opacity = 0.75) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(radius * 2, radius * 2),
     new THREE.MeshBasicMaterial({ map: blobTex(), transparent: true, depthWrite: false, opacity, polygonOffset: true, polygonOffsetFactor: -2 }));
-  m.rotation.x = -Math.PI / 2; m.position.y = y + 0.002; m.renderOrder = 1; return m;
+  m.rotation.x = -Math.PI / 2; m.position.y = y + 0.002; m.renderOrder = 1; return tag(m, 'blob');
 }
 
 const PUCK_MAT = () => new THREE.MeshPhysicalMaterial({ color: 0x060709, roughness: 0.34, metalness: 0.0, clearcoat: 0.8, clearcoatRoughness: 0.18, envMapIntensity: 0.9 });
 function addPuck(g, R, H = 0.12) {
-  const m = new THREE.Mesh(puckGeo(R, H), PUCK_MAT()); m.castShadow = true; m.receiveShadow = true; g.add(m);
+  const m = tag(new THREE.Mesh(puckGeo(R, H), PUCK_MAT()), 'puck'); m.castShadow = true; m.receiveShadow = true; g.add(m);
   return H;
 }
 
@@ -524,7 +538,7 @@ renderer.setPixelRatio(PR);
 renderer.toneMapping = Q.get('tm') === 'aces' ? THREE.ACESFilmicToneMapping : THREE.AgXToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.VSMShadowMap;
 renderer.setClearColor(0x0b1019, 1);
 
 const scene = new THREE.Scene();
@@ -532,70 +546,184 @@ const FOGCOL = new THREE.Color(0x0b111b);
 scene.fog = new THREE.FogExp2(FOGCOL, 0.05);
 const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 200);
 
-/* environment: a procedural studio baked once into a PMREM — gradient dome + three soft boxes */
-function buildEnv(hdr) {
+/* ------------------------------------------------------------------ *
+ *  stages: three abstract worlds. Every hero is restyled by role to fit (restyle()).
+ * ------------------------------------------------------------------ */
+const STAGES = [{ id: 'void', label: 'Void' }, { id: 'matte', label: 'Matte' }, { id: 'ink', label: 'Ink' }];
+let stageId = STAGES.find(x => x.id === Q.get('stage'))?.id ?? 'void';
+const BG = { void: 0x020306, matte: 0x26282d, ink: 0x060910 };
+
+/* environment per stage, baked once per switch into a PMREM: a dome plus crisp strip lights (edge glints) */
+function buildEnv(kind) {
   const s = new THREE.Scene();
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(20, 48, 24), new THREE.ShaderMaterial({
+  const tones = kind === 'matte' ? [[0.045, 0.045, 0.05], [0.2, 0.2, 0.21], [0.3, 0.3, 0.31]] : kind === 'ink' ? [[0.004, 0.005, 0.008], [0.012, 0.015, 0.02], [0.008, 0.01, 0.014]] : [[0.002, 0.002, 0.003], [0.01, 0.012, 0.016], [0.004, 0.005, 0.007]];
+  const v3 = (a) => `vec3(${a.map(x => x.toFixed(4)).join(',')})`;
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(20, 48, 24), new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false,
     vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-    fragmentShader: `varying vec3 vD; void main(){ float y = vD.y;
-      vec3 c = mix(vec3(0.010,0.012,0.016), vec3(0.085,0.11,0.15), smoothstep(-0.25, 0.08, y));
-      c = mix(c, vec3(0.03,0.04,0.06), smoothstep(0.1, 0.9, y));
-      gl_FragColor = vec4(c, 1.0); }`,
-  }));
-  s.add(dome);
-  if (hdr) s.add(new THREE.Mesh(new THREE.SphereGeometry(18, 64, 32), new THREE.MeshBasicMaterial({ map: hdr, side: THREE.BackSide, color: new THREE.Color(0.32, 0.36, 0.44), depthWrite: false })));
-  const box = (w, h, pos, col, k) => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide }));
-    m.position.copy(pos); m.lookAt(0, 0, 0); s.add(m);
-  };
-  box(7, 4.5, new THREE.Vector3(-6, 8, 6), 0xfff0e2, 5.0);     // key softbox, upper left front
-  box(1.6, 9, new THREE.Vector3(8, 2.5, -6), 0xb8d4ff, 4.0);    // cool strip rim, right back
-  box(1.2, 7, new THREE.Vector3(-8, 1.5, -5), 0xd7c2ff, 1.6);   // violet strip, left back
-  box(9, 9, new THREE.Vector3(0, 12, 0), 0xdde6f2, 0.9);        // top fill
-  box(12, 2, new THREE.Vector3(0, -3, 9), 0x2a3140, 0.6);       // floor bounce
+    fragmentShader: `varying vec3 vD; void main(){ float y = vD.y; vec3 c = mix(${v3(tones[0])}, ${v3(tones[1])}, smoothstep(-0.3, 0.05, y)); c = mix(c, ${v3(tones[2])}, smoothstep(0.05, 0.9, y)); gl_FragColor = vec4(c, 1.0); }`,
+  })));
+  const box = (w, h, pos, col, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide })); m.position.copy(pos); m.lookAt(0, 0, 0); s.add(m); };
+  if (kind === 'matte') {
+    box(9, 6, new THREE.Vector3(-6, 8, 5), 0xfff6ec, 3.2);       // big soft key
+    box(6, 6, new THREE.Vector3(8, 3, 4), 0xf0f2f5, 0.9);        // fill
+    box(2, 9, new THREE.Vector3(5, 3, -7), 0xffffff, 1.6);       // rim strip
+  } else {
+    box(0.35, 11, new THREE.Vector3(-6, 3, 5), 0xffffff, 7);     // thin strips → crisp glints on glass and chrome
+    box(0.25, 9, new THREE.Vector3(7, 2, -4), 0xe8f0ff, 6);
+    box(9, 0.22, new THREE.Vector3(0, 9, -2), 0xffffff, 3.5);
+    box(0.2, 6, new THREE.Vector3(-4, 2, -7), 0xfff0e0, kind === 'ink' ? 1 : 3);
+  }
   const pm = new THREE.PMREMGenerator(renderer);
-  const t = pm.fromScene(s, 0.035).texture;
+  const t = pm.fromScene(s, 0.01).texture;
   pm.dispose(); s.traverse(o => { o.geometry?.dispose(); o.material?.dispose(); });
   return t;
 }
-scene.environment = buildEnv();
-let envReady = false;
-new RGBELoader().load('assets/small_cave_1k.hdr', (hdr) => {     // real cave light for reflections, dimmed, plus the key soft box
-  hdr.mapping = THREE.EquirectangularReflectionMapping;
-  const old = scene.environment; scene.environment = buildEnv(hdr); old.dispose(); hdr.dispose(); envReady = true;
-}, undefined, () => { envReady = true; });
 
-/* photo stage: Poly Haven CC0 rocks rendered once offline (bake.html) with this exact camera,
-   drawn as a full-screen layer behind the live hero ("cover" fit). Values are pre-tone-map, so AgX grades
-   stage and hero together. */
-const BG_ASPECT = STAGE.bake.w / STAGE.bake.h;
-const bgTex = new THREE.TextureLoader().load('assets/backdrop.jpg', () => { bgReady = true; });
-bgTex.colorSpace = THREE.SRGBColorSpace; bgTex.generateMipmaps = false; bgTex.minFilter = THREE.LinearFilter;
-let bgReady = false;
-const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
-  depthWrite: false, depthTest: false,
-  uniforms: { map: { value: bgTex }, uScale: { value: new THREE.Vector2(1, 1) } },
-  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }',
-  fragmentShader: 'uniform sampler2D map; uniform vec2 uScale; varying vec2 vUv; void main(){ gl_FragColor = texture2D(map, (vUv - 0.5) * uScale + 0.5); }',
-}));
-bg.frustumCulled = false; bg.renderOrder = -100; scene.add(bg);
-
-/* lights: the key matches the bake; rims and a whisper of fill only touch the hero */
+/* lights (the restyle decides which matter per stage) */
 const key = new THREE.SpotLight(0xfff0e0, STAGE.key.i, 0, STAGE.key.angle, 1, 2);
-key.position.fromArray(STAGE.key.pos); key.castShadow = true;
-key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.025;
-key.shadow.camera.near = 3; key.shadow.camera.far = 18;
-scene.add(key, key.target); key.target.position.fromArray(STAGE.key.target);
+key.position.fromArray(STAGE.key.pos); key.target.position.fromArray(STAGE.key.target); scene.add(key, key.target);
 const rim = new THREE.SpotLight(0xa8ccff, 130, 0, 0.6, 1, 2); rim.position.set(3.4, 3.6, -4.2); rim.target.position.set(0, 0.8, 0); scene.add(rim, rim.target);
 const rim2 = new THREE.SpotLight(0xc9a8ff, 55, 0, 0.6, 1, 2); rim2.position.set(-3.8, 2.4, -3.2); rim2.target.position.set(0, 0.8, 0); scene.add(rim2, rim2.target);
-const hemi = new THREE.HemisphereLight(0x9bb2cf, 0x0a0c10, 0.12); scene.add(hemi);
+const hemi = new THREE.HemisphereLight(0xe8ecf2, 0x2a2826, 0.0); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff4ea, 0); sun.position.set(-2.6, 6.5, 3.6); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); sun.shadow.radius = 14; sun.shadow.blurSamples = 24; sun.shadow.bias = -0.0006;
+Object.assign(sun.shadow.camera, { left: -2.6, right: 2.6, top: 2.6, bottom: -2.6, near: 2, far: 14 }); scene.add(sun);
+const fillL = new THREE.DirectionalLight(0xe9eef6, 0); fillL.position.set(3.5, 2, 3); scene.add(fillL);
 
-/* the hero's shadow and light on the baked ledge: a shadow catcher and a soft additive spill tinted by data */
-const catcher = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.ShadowMaterial({ opacity: 0.55, depthWrite: false }));
-catcher.rotation.x = -Math.PI / 2; catcher.position.y = STAGE.baseY + 0.002; catcher.receiveShadow = true; catcher.renderOrder = -50; scene.add(catcher);
-const spill = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), new THREE.MeshBasicMaterial({ map: radialTex(), color: 0x000000, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
-spill.rotation.x = -Math.PI / 2; spill.position.y = STAGE.baseY + 0.004; spill.renderOrder = -40; scene.add(spill);
+/* the world each stage stands the hero in */
+const world = new THREE.Group(); scene.add(world);
+const mirrorRoot = new THREE.Group(); mirrorRoot.scale.y = -1; scene.add(mirrorRoot);
+let mirrorPairs = [];
+const accentU = { value: new THREE.Color(0xffffff) };
+const flatV = 'varying vec3 vWP; void main(){ vec4 w = modelMatrix*vec4(position,1.0); vWP = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }';
+function buildWorld(kind) {
+  world.children.slice().forEach(c => { world.remove(c); disposeTree(c); });
+  if (kind === 'void') {      // a faint mirror floor that dissolves into black
+    const f = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, fog: false,
+      uniforms: { uAcc: accentU, uBg: { value: new THREE.Color(BG.void) } }, vertexShader: flatV,
+      fragmentShader: `uniform vec3 uAcc, uBg; varying vec3 vWP; void main(){ float r = length(vWP.xz);
+        float a = mix(0.66, 1.0, smoothstep(0.2, 3.2, r)); vec3 c = uBg + uAcc * 0.06 * exp(-r*r*0.8);
+        gl_FragColor = vec4(c, a); }` }));
+    f.rotation.x = -Math.PI / 2; f.position.y = 0.0005; f.renderOrder = -1; world.add(f);
+  } else if (kind === 'ink') {   // engraved rings and spokes, lit only near the hero by its one coloured light
+    const f = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShaderMaterial({ fog: false,
+      uniforms: { uAcc: accentU, uBg: { value: new THREE.Color(BG.ink) }, uLine: { value: new THREE.Color(0x3a4458) } }, vertexShader: flatV,
+      fragmentShader: `uniform vec3 uAcc, uBg, uLine; varying vec3 vWP;
+        float aa(float f){ float w = fwidth(f); return (1.0 - min(abs(fract(f - 0.5) - 0.5) / max(w, 1e-4), 1.0)) * smoothstep(0.6, 0.2, w); }
+        void main(){ float r = length(vWP.xz); float rings = aa(r * 5.0);
+          float sp = aa(atan(vWP.z, vWP.x) / 6.28318 * 48.0) * smoothstep(0.9, 1.6, r);
+          float fade = smoothstep(5.5, 0.6, r); float pool = exp(-r*r*0.55);
+          vec3 c = uBg + uLine * (rings * 0.55 + sp * 0.22) * fade * 0.6 + uAcc * pool * (0.05 + 0.9 * (rings * 0.8 + sp * 0.4));
+          gl_FragColor = vec4(c, 1.0); }` }));
+    f.rotation.x = -Math.PI / 2; f.position.y = -0.001; world.add(f);
+  } else {                    // matte: a seamless studio sweep and a soft round pedestal
+    const yF = -0.3, Rc = 2.6, zc = -1.5;
+    const sweep = new THREE.Mesh(gridGeo(1, 90, (u, v) => {
+      const L1 = 9, L2 = Math.PI / 2 * Rc, L3 = 12, d = v * (L1 + L2 + L3), x = lerp(-24, 24, u);
+      if (d < L1) return new THREE.Vector3(x, yF, 7.5 - d);
+      if (d < L1 + L2) { const a = (d - L1) / Rc; return new THREE.Vector3(x, yF + Rc - Rc * Math.cos(a), zc - Rc * Math.sin(a) + (7.5 - L1 - zc)); }
+      return new THREE.Vector3(x, yF + Rc + (d - L1 - L2), zc - Rc + (7.5 - L1 - zc));
+    }), new THREE.MeshStandardMaterial({ color: 0x3a3d43, roughness: 0.92, side: THREE.DoubleSide, envMapIntensity: 0.6 }));
+    sweep.receiveShadow = true; world.add(sweep);
+    const pr = [new THREE.Vector2(0, yF)], Rp = 1.08, f = 0.07;
+    for (let i = 0; i <= 8; i++) { const a = -Math.PI / 2 + i / 8 * Math.PI / 2; pr.push(new THREE.Vector2(Rp - f + Math.cos(a) * f, yF + f + Math.sin(a) * f)); }
+    for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI / 2; pr.push(new THREE.Vector2(Rp - f + Math.cos(a) * f, -f + Math.sin(a) * f)); }
+    pr.push(new THREE.Vector2(0, 0));
+    const ped = new THREE.Mesh(new THREE.LatheGeometry(pr, 128), new THREE.MeshStandardMaterial({ color: 0x45484e, roughness: 0.78, envMapIntensity: 0.7 }));
+    ped.castShadow = ped.receiveShadow = true; world.add(ped);
+  }
+}
+
+function applyStage(kind) {
+  const old = scene.environment; scene.environment = buildEnv(kind); old?.dispose();
+  renderer.setClearColor(BG[kind], 1); scene.background = new THREE.Color(BG[kind]);
+  scene.fog = kind === 'matte' ? null : new THREE.FogExp2(new THREE.Color(BG[kind]), 0.035);
+  const matte = kind === 'matte', vd = kind === 'void';
+  key.intensity = vd ? 140 : 0; rim.intensity = vd ? 130 : matte ? 18 : 0; rim2.intensity = vd ? 55 : 0;
+  hemi.intensity = matte ? 0.55 : 0; sun.intensity = matte ? 2.3 : 0; fillL.intensity = matte ? 0.35 : 0; sun.castShadow = matte;
+  bloom.strength = vd ? 0.62 : matte ? 0.06 : 0.7; bloom.radius = vd ? 0.32 : 0.22; bloom.threshold = vd ? 0.78 : matte ? 0.98 : 0.5;
+  finish.uniforms.uVig.value = matte ? 0.28 : 0.5;
+  dust.visible = !matte; dust.material.uniforms.uCol.value.set(kind === 'ink' ? 0x8090a8 : 0xc8d8ff);
+  buildWorld(kind);
+}
+
+/* restyle: one material per role per stage */
+const BONE = 0xc9c4ba, GRAPHITE = 0x2c2f35;
+function inkMat(o) {
+  return new THREE.ShaderMaterial({
+    vertexColors: !!o.vc, transparent: !!o.transparent, depthWrite: !o.transparent, side: o.side ?? THREE.FrontSide, fog: false,
+    uniforms: { uInk: { value: new THREE.Color(o.ink ?? 0x070a11) }, uLine: { value: new THREE.Color(o.line) }, uK: { value: o.k ?? 30 }, uLineAmt: { value: o.lineAmt ?? 1 },
+      uRim: { value: o.rim ?? 1 }, uGlow: { value: o.glow ?? 0 }, uMode: { value: o.mode ?? 0 }, uOff: { value: o.off ?? 0 }, uAlpha: { value: o.transparent ? 1 : 0 } },
+    vertexShader: `varying vec3 vWP; varying vec3 vLP; varying vec3 vN; varying vec3 vC;
+      void main(){ vLP = position; vec4 wp = modelMatrix*vec4(position,1.0); vWP = wp.xyz; vN = normalize(mat3(modelMatrix)*normal);
+        #ifdef USE_COLOR
+          vC = color;
+        #else
+          vC = vec3(1.0);
+        #endif
+        gl_Position = projectionMatrix*viewMatrix*wp; }`,
+    fragmentShader: `uniform vec3 uInk, uLine; uniform float uK, uLineAmt, uRim, uGlow, uMode, uOff, uAlpha; varying vec3 vWP; varying vec3 vLP; varying vec3 vN; varying vec3 vC;
+      void main(){ float f = uMode < 0.5 ? vWP.y*uK : (uMode < 1.5 ? length(vLP.xz)*uK : (vLP.y - uOff)*uK);
+        float w = fwidth(f); float ln = (1.0 - min(abs(fract(f - 0.5) - 0.5) / max(w, 1e-4), 1.0)) * smoothstep(0.55, 0.18, w);
+        vec3 V = normalize(cameraPosition - vWP); float fac = abs(dot(normalize(vN), V)); float rim = smoothstep(0.42, 0.0, fac);
+        vec3 lc = uLine * vC;
+        vec3 col = uInk * (0.5 + 0.5*fac) + lc * (ln*uLineAmt + rim*uRim) + lc * uGlow * (0.25 + 0.75*fac);
+        float a = uAlpha > 0.5 ? clamp(ln*uLineAmt + rim*uRim + uGlow, 0.0, 1.0) : 1.0;
+        gl_FragColor = vec4(col, a); }`,
+  });
+}
+function restyle(root, kind, accent) {
+  const mats = new Set();
+  root.traverse(o => {
+    if (o.isLight && !o.isAmbientLight) { o.visible = kind !== 'matte'; return; }
+    const u = o.userData, role = u.role; if (!role || !o.material) return;
+    const acc = (u.accent ?? accent).clone(), lit = u.lit ?? 1, vc = !!o.geometry?.attributes?.color;
+    const accHi = acc.clone().lerp(new THREE.Color(0xffffff), 0.45);
+    let m = o.material, hide = false;
+    if (kind === 'void') {
+      if (role === 'puck') m = new THREE.MeshPhysicalMaterial({ color: 0x010203, roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 2.4 });
+      else if (role === 'struct') m = u.metal ? new THREE.MeshPhysicalMaterial({ color: 0xe6ebf2, metalness: 1, roughness: 0.1, envMapIntensity: 1.8 })
+        : gemMat({ color: 0x05070a, roughness: 0.06, clearcoat: 1, envMapIntensity: 2 }, { glow: 0, rim: 0.45, disp: 1, tint2: accHi });
+      else if (role === 'terrain') m = rockMat({ color: 0x050608, roughness: 0.22, env: 1.8 }, { bump: 0, vary: 0, contK: u.cont[0], contOff: u.cont[1], contGlow: 0.85, contCol: acc });
+      else if (role === 'data') m = gemMat({ color: 0x020304, roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.02, vertexColors: vc, envMapIntensity: 2, side: u.skin ? THREE.DoubleSide : THREE.FrontSide },
+        { glow: 0.12 + 2.3 * lit, tint: vc ? 0xffffff : acc, tint2: accHi, iris: 0.1, rim: 0.5 + 0.7 * lit, disp: 0.85, facePow: 0.9, flake: 0.15, scale: 1.4, skin: u.skin ?? 0, lam: u.lam ?? 0 });
+      else if (role === 'dataDim') m = gemMat({ color: 0x030405, roughness: 0.08, clearcoat: 1, envMapIntensity: 1.8, side: u.skin ? THREE.DoubleSide : THREE.FrontSide }, { glow: 0.02, rim: 0.35, disp: 0.6, tint2: acc.clone().multiplyScalar(0.7), skin: u.skin ?? 0 });
+      else if (role === 'glass' || role === 'glassSolid') m = glassMat();
+      else if (role === 'liquid') m = gemMat({ color: 0x020406, roughness: 0.03, clearcoat: 1, envMapIntensity: 2 }, { glow: 0.5, tint: acc, tint2: accHi, iris: 0, rim: 1.1, disp: 0.7, facePow: 0.5, flake: 0.2, scale: 0.8 });
+      else if (role === 'line') m = new THREE.MeshBasicMaterial({ color: acc.clone().multiplyScalar(0.5 + 1.2 * lit), transparent: true, opacity: 0.9, depthWrite: false });
+    } else if (kind === 'matte') {
+      const satin = (c) => new THREE.MeshPhysicalMaterial({ color: c, vertexColors: vc, roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.35, sheen: 0.25, sheenColor: c, envMapIntensity: 0.9, side: u.skin ? THREE.DoubleSide : THREE.FrontSide });
+      if (role === 'puck') m = new THREE.MeshStandardMaterial({ color: GRAPHITE, roughness: 0.5, envMapIntensity: 0.9 });
+      else if (role === 'struct') m = new THREE.MeshStandardMaterial({ color: u.metal ? 0xa3a09a : BONE, roughness: u.metal ? 0.38 : 0.62, metalness: 0, envMapIntensity: 0.9 });
+      else if (role === 'terrain') m = rockMat({ color: BONE, roughness: 0.66, env: 0.9 }, { bump: 0, vary: 0, contK: u.cont[0], contOff: u.cont[1], contGlow: 0, contDark: 0.3 });
+      else if (role === 'data') m = satin(vc ? new THREE.Color(0xffffff) : new THREE.Color(BONE).lerp(acc, 0.25 + 0.75 * lit));
+      else if (role === 'dataDim') m = new THREE.MeshStandardMaterial({ color: 0x54524e, roughness: 0.7, side: u.skin ? THREE.DoubleSide : THREE.FrontSide });
+      else if (role === 'glass' || role === 'glassSolid') m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 1, roughness: 0.32, thickness: 0.3, ior: 1.45, envMapIntensity: 1, side: THREE.FrontSide });
+      else if (role === 'liquid') m = satin(acc);
+      else if (role === 'line') m = new THREE.MeshBasicMaterial({ color: 0x5f5c58, transparent: true, opacity: 0.9 });
+      else if (role === 'blob') { m = o.material; m.opacity = 0.42; }
+      else hide = true;                          // halos, caustics, glows and bubbles have no place in a studio
+      o.castShadow = o.receiveShadow = role !== 'blob' && role !== 'line';
+    } else {
+      const grey = (k) => new THREE.Color(0x8d99ad).multiplyScalar(k);
+      if (role === 'puck') m = inkMat({ line: grey(0.45), mode: 1, k: 34, rim: 0.7, lineAmt: 0.55 });
+      else if (role === 'struct') m = inkMat({ line: grey(u.metal ? 0.75 : 0.5), k: 32, rim: 0.9 });
+      else if (role === 'terrain') m = inkMat({ line: acc.clone().multiplyScalar(1.5), mode: 2, k: u.cont[0], off: u.cont[1], rim: 0.5, glow: 0.02 });
+      else if (role === 'data') m = inkMat({ line: acc.clone().multiplyScalar(0.45 + 1.9 * lit), vc, k: 42, rim: 1.1, glow: 0.05 + 0.4 * lit, side: u.skin ? THREE.DoubleSide : THREE.FrontSide });
+      else if (role === 'dataDim') m = inkMat({ line: grey(0.22), k: 42, rim: 0.6, side: u.skin ? THREE.DoubleSide : THREE.FrontSide });
+      else if (role === 'glass') m = inkMat({ line: grey(0.7), k: 40, rim: 1.0, transparent: true, side: THREE.DoubleSide });
+      else if (role === 'liquid') m = inkMat({ line: acc.clone().multiplyScalar(1.7), k: 64, rim: 1.2, glow: 0.12 });
+      else if (role === 'line') m = new THREE.MeshBasicMaterial({ color: acc.clone().multiplyScalar(1.3), transparent: true, opacity: 0.95, depthWrite: false });
+      else if (role === 'halo' || role === 'bubbles') m = o.material;
+      else hide = true;
+    }
+    if (hide) { o.visible = false; o.userData.hidden = true; return; }
+    if (m !== o.material) { mats.add(o.material); o.material = m; }
+    if (role === 'line') { u.styled = m; u.hlMat = new THREE.MeshBasicMaterial({ color: acc.clone().lerp(new THREE.Color(0xffffff), .5).multiplyScalar(2.2), transparent: true, opacity: 1, depthWrite: false }); }
+  });
+  mats.forEach(x => x.dispose?.());
+}
 
 /* drifting dust / far stars */
 const dust = (() => {
@@ -614,9 +742,9 @@ const dust = (() => {
       void main(){ vec3 p = position;
         p.x += sin(uTime*0.11 + aSeed*31.0)*0.09; p.y += sin(uTime*0.07 + aSeed*17.0)*0.12 + mod(uTime*0.012*(0.4+aSeed), 0.6);
         vec4 mv = modelViewMatrix*vec4(p, 1.0); gl_Position = projectionMatrix*mv;
-        gl_PointSize = aSize * uPR * (6.0 / -mv.z) * 1.6;
+        gl_PointSize = max(1.0, aSize * uPR * (6.0 / -mv.z) * 0.9);
         vA = (0.35 + 0.65*(0.5 + 0.5*sin(uTime*(0.5+aSeed) + aSeed*40.0))) * smoothstep(0.5, 2.5, -mv.z); }`,
-    fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.0, d); a *= a; gl_FragColor = vec4(uCol * a * vA * 0.9, 1.0); }`,
+    fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.32, d); gl_FragColor = vec4(uCol * a * vA * 0.7, 1.0); }`,
   });
   const p = new THREE.Points(g, m); p.frustumCulled = false; scene.add(p); return p;
 })();
@@ -626,33 +754,28 @@ const W = () => window.innerWidth, H = () => window.innerHeight;
 const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
 const composer = new EffectComposer(renderer, rt);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.42, 0.62, 0.86);
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.3, 0.8);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
-const grain = new ShaderPass({
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) } },
+const finish = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uVig: { value: 0.5 }, uRes: { value: new THREE.Vector2(1, 1) } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes; varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uVig; uniform vec2 uRes; varying vec2 vUv;
     float h12(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y)*p3.z); }
     void main(){ vec4 c = texture2D(tDiffuse, vUv);
       vec2 q = (vUv - vec2(0.5, 0.6)) * vec2(uRes.x/uRes.y, 1.0);
-      float v = smoothstep(1.0, 0.2, length(q)*1.35); c.rgb *= mix(0.55, 1.0, v);
-      float n = h12(vUv*uRes + fract(uTime*7.13)*913.0) + h12(vUv*uRes*1.31 + 17.0 + fract(uTime*3.1)*311.0) - 1.0;
-      c.rgb += n * (2.0/255.0) + n * 0.012 * c.rgb;
+      c.rgb *= mix(1.0 - uVig, 1.0, smoothstep(1.0, 0.2, length(q)*1.3));
+      c.rgb += (h12(vUv*uRes) - 0.5) / 255.0;          // static sub-LSB dither: kills banding, invisible as grain
       gl_FragColor = vec4(c.rgb, 1.0); }`,
 });
-composer.addPass(grain);
+composer.addPass(finish);
 
 function resize() {
   const w = W(), h = H();
   renderer.setSize(w, h, false); composer.setPixelRatio(PR); composer.setSize(w, h);
   bloom.resolution.set(w * PR / 2, h * PR / 2);
-  grain.uniforms.uRes.value.set(w * PR, h * PR);
-  const a = w / h;
-  if (a < BG_ASPECT) { bg.material.uniforms.uScale.value.set(a / BG_ASPECT, 1); camera.fov = BASE_FOV; }
-  else { bg.material.uniforms.uScale.value.set(1, BG_ASPECT / a);
-    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(BASE_FOV) / 2) * BG_ASPECT / a)); }
-  camera.aspect = a; camera.updateProjectionMatrix();
+  finish.uniforms.uRes.value.set(w * PR, h * PR);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
 }
 
 /* ------------------------------------------------------------------ *
@@ -688,12 +811,12 @@ function buildRun(d) {
   const tg = new THREE.BufferGeometry(); tg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); tg.setIndex(idx); tg.computeVertexNormals();
   const step = niceStep(rangeE / 7);
   const terrMat = rockMat({ color: 0x2a2f37, roughness: 0.86, env: 0.7 }, { freq: 5.5, bump: 0.45, vary: 0.7, contK: 1 / (step * vs), contOff: base, contGlow: 0.22, contCol: 0x9fc0e0 });
-  const terr = new THREE.Mesh(tg, terrMat); terr.receiveShadow = true; terr.castShadow = true; g.add(terr);
+  const terr = new THREE.Mesh(tg, terrMat); terr.receiveShadow = true; terr.castShadow = true; g.add(tag(terr, 'terrain', 0xff8a5c, 1, { cont: [1 / (step * vs), base] }));
   const sp = [], si = [];
   for (let j = 0; j <= segs; j++) { const a = j / segs * Math.PI * 2, x = Math.cos(a) * R, z = Math.sin(a) * R; sp.push(x, Hf(x, z), z, x, puckH, z); }
   for (let j = 0; j < segs; j++) { const a = j * 2; si.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); sg.setIndex(si); sg.computeVertexNormals();
-  const skirt = new THREE.Mesh(sg, rockMat({ color: 0x232830, roughness: 0.75, env: 0.7 }, { freq: 3.5, bump: 0.7 })); skirt.material.side = THREE.DoubleSide; g.add(skirt);
+  const skirt = new THREE.Mesh(sg, rockMat({ color: 0x232830, roughness: 0.75, env: 0.7 }, { freq: 3.5, bump: 0.7 })); skirt.material.side = THREE.DoubleSide; g.add(tag(skirt, 'struct'));
 
   // the route
   const tubeR = 0.024;
@@ -713,18 +836,18 @@ function buildRun(d) {
   tube.setAttribute('color', new THREE.BufferAttribute(col, 3));
   const tubeMat = gemMat({ color: 0xffffff, vertexColors: true, roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.04, iridescence: 0.45, iridescenceIOR: 1.35, envMapIntensity: 1.2 },
     { glow: 1.25, iris: 0.06, scale: 3, facePow: 0.9, flake: 0.15 });
-  const tubeM = new THREE.Mesh(tube, tubeMat); tubeM.castShadow = true; g.add(tubeM);
+  const tubeM = new THREE.Mesh(tube, tubeMat); tubeM.castShadow = true; g.add(tag(tubeM, 'data', 0xff8a5c, 1));
   const total = tube.index.count;
   const bead = new THREE.Mesh(new THREE.SphereGeometry(tubeR * 1.9, 32, 16), gemMat({ color: 0xffffff, roughness: .15, clearcoat: 1 }, { glow: 2.2, tint: 0xfff4e0, iris: 0 }));
-  bead.position.copy(cp[0]); g.add(bead);
+  bead.position.copy(cp[0]); g.add(tag(bead, 'data', 0xfff1e0, 1));
   const marker = new THREE.Mesh(new THREE.SphereGeometry(tubeR * 1.6, 24, 12), gemMat({ color: 0xffffff, roughness: .1 }, { glow: 3.0, tint: 0xffffff, iris: 0 }));
-  marker.visible = false; g.add(marker);
+  marker.visible = false; g.add(tag(marker, 'data', 0xffffff, 1));
   fixed.add(contactBlob(R * 0.85, 0, 0.6));
   const under = new THREE.Mesh(new THREE.CircleGeometry(R * 0.6, 64), new THREE.MeshBasicMaterial({ map: radialTex(), color: new THREE.Color(0xff7a52).multiplyScalar(0.5), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-  under.rotation.x = -Math.PI / 2; under.position.y = puckH + 0.003; fixed.add(under);
+  under.rotation.x = -Math.PI / 2; under.position.y = puckH + 0.003; fixed.add(tag(under, 'under'));
 
   return {
-    group: g, fixed, fit: 0.84, pivotY: puckH + 0.42, tilt: 0.55, hover: 0.02, pickables: [tubeM], spin: 0.06, glow: 0x7a3a40,
+    group: g, fixed, fit: 0.84, pivotY: puckH + 0.42, tilt: 0.55, hover: 0.02, pickables: [tubeM], spin: 0.06, glow: 0x7a3a40, accent: new THREE.Color(0xff8a5c),
     update(age) { tube.setDrawRange(0, Math.floor(easeIO(age / 2.4) * total / 6) * 6); bead.scale.setScalar(ease(age * 2)); },
     pick(obj, hit) {
       if (!obj) { marker.visible = false; return null; }
@@ -741,9 +864,10 @@ function niceStep(x) { const e = Math.pow(10, Math.floor(Math.log10(x))); const 
 function buildCrystal(sessions, preset, seed) {
   const g = new THREE.Group(), done = sessions.filter(s => s.done).reverse();     // newest first, at the heart
   const puckH = addPuck(g, 0.78);
-  const base = new THREE.Mesh(rockGeo(seed + 1, { seg: 110, f1: 1.4, a1: 0.3, f2: 2.6, a2: 0.22, sx: 0.66, sy: 0.3, sz: 0.58, bottom: 0 }),
-    rockMat({ color: 0x2c2c36, roughness: 0.85, env: 0.7 }, { freq: 3, bump: 0.8 }));
-  base.position.y = puckH; base.castShadow = base.receiveShadow = true; g.add(base);
+  const dome = []; for (let i = 0; i <= 24; i++) { const t = i / 24, a = t * Math.PI / 2; dome.push(new THREE.Vector2(Math.cos(a) * 0.64, Math.sin(a) * 0.26)); }
+  dome.unshift(new THREE.Vector2(0, 0)); dome.reverse();
+  const base = new THREE.Mesh(new THREE.LatheGeometry(dome.reverse(), 96), new THREE.MeshStandardMaterial({ color: 0x2c2c36, roughness: 0.6 }));
+  base.position.y = puckH; base.castShadow = base.receiveShadow = true; g.add(tag(base, 'struct'));
   const hue = new THREE.Color(preset.hue), hsl = {}; hue.getHSL(hsl);
   const r = rng(seed), n = done.length;
   const maxMin = Math.max(...done.map(s => s.minutes), 1), kL = Math.min(1.0, 1.65 / (0.2 + 1.05 * maxMin / 60));
@@ -766,6 +890,7 @@ function buildCrystal(sessions, preset, seed) {
     sp.position.set(px, py, pz); sp.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
     sp.castShadow = true; sp.receiveShadow = !lit;
     sp.userData = { s, dir, base: sp.position.clone(), lift: 0, liftT: 0, delay: i * 0.035, lit };
+    tag(sp, 'data', c.clone().setHSL(hsl.h + (r() - .5) * 0.04, .62, .62), lit ? 1 : Math.max(0.06, 0.22 - wk * 0.03));
     g.add(sp); spires.push(sp);
   });
   const wkMin = done.filter(s => weeksAgo(s.date) === 0).reduce((a, s) => a + s.minutes, 0);
@@ -773,7 +898,7 @@ function buildCrystal(sessions, preset, seed) {
   g.add(contactBlob(0.95, 0, 0.7));
   const thisWeek = done.filter(s => weeksAgo(s.date) === 0).length, tot = done.reduce((a, s) => a + s.minutes, 0);
   return {
-    group: g, pickables: spires, elev: 0.1, spin: 0.1, glow: hue.clone().multiplyScalar(0.55),
+    group: g, pickables: spires, spin: 0.1, glow: hue.clone().multiplyScalar(0.55), accent: hue.clone(),
     update(age, dt) {
       for (const sp of spires) {
         const u = sp.userData, gr = easeIO((age - u.delay) / 1.1);
@@ -799,17 +924,17 @@ function buildSky(sessions, preset, seed) {
   const Rr = 0.86, C = discH + 0.14 + Rr;
   const metal = new THREE.MeshPhysicalMaterial({ color: 0xc9b68f, metalness: 1, roughness: 0.28, envMapIntensity: 1.3, clearcoat: 0.5, clearcoatRoughness: 0.2 });
   const steel = new THREE.MeshPhysicalMaterial({ color: 0x8f9bab, metalness: 1, roughness: 0.35, envMapIntensity: 1.0 });
-  const dayRing = new THREE.Mesh(new THREE.TorusGeometry(Rr, 0.016, 16, 280), metal); dayRing.position.y = C; dayRing.castShadow = true; g.add(dayRing);
-  const horizon = new THREE.Mesh(new THREE.TorusGeometry(Rr * 1.0, 0.006, 10, 220), steel); horizon.rotation.x = Math.PI / 2; horizon.position.y = C; g.add(horizon);
-  const meridian = new THREE.Mesh(new THREE.TorusGeometry(Rr * 1.0, 0.006, 10, 220), steel); meridian.rotation.y = Math.PI / 2; meridian.position.y = C; g.add(meridian);
-  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.03, C - Rr - discH + 0.02, 24), metal); stem.position.y = discH + (C - Rr - discH) / 2; g.add(stem);
-  const knot = new THREE.Mesh(new THREE.SphereGeometry(0.032, 24, 12), metal); knot.position.y = C - Rr; g.add(knot);
+  const dayRing = new THREE.Mesh(new THREE.TorusGeometry(Rr, 0.016, 16, 280), metal); dayRing.position.y = C; dayRing.castShadow = true; g.add(tag(dayRing, 'struct', undefined, 1, { metal: 1 }));
+  const horizon = new THREE.Mesh(new THREE.TorusGeometry(Rr * 1.0, 0.006, 10, 220), steel); horizon.rotation.x = Math.PI / 2; horizon.position.y = C; g.add(tag(horizon, 'struct', undefined, 0.5, { metal: 1 }));
+  const meridian = new THREE.Mesh(new THREE.TorusGeometry(Rr * 1.0, 0.006, 10, 220), steel); meridian.rotation.y = Math.PI / 2; meridian.position.y = C; g.add(tag(meridian, 'struct', undefined, 0.5, { metal: 1 }));
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.03, C - Rr - discH + 0.02, 24), metal); stem.position.y = discH + (C - Rr - discH) / 2; g.add(tag(stem, 'struct', undefined, 1, { metal: 1 }));
+  const knot = new THREE.Mesh(new THREE.SphereGeometry(0.032, 24, 12), metal); knot.position.y = C - Rr; g.add(tag(knot, 'struct', undefined, 1, { metal: 1 }));
   const ang = (h) => Math.PI / 2 + (12 - h) / 24 * Math.PI * 2;          // noon at the top (the meridian), 6:00 east/left, 18:00 west/right
   const tickM = new THREE.MeshPhysicalMaterial({ color: 0xd8c7a6, metalness: 1, roughness: 0.3 });
   for (let h = 0; h < 24; h++) {
     const big = h % 6 === 0, a = ang(h), len = big ? 0.07 : 0.035;
     const t = new THREE.Mesh(new THREE.BoxGeometry(len, big ? 0.008 : 0.005, big ? 0.008 : 0.005), tickM);
-    t.position.set(Math.cos(a) * (Rr - 0.02 - len / 2), C + Math.sin(a) * (Rr - 0.02 - len / 2), 0); t.rotation.z = a; g.add(t);
+    t.position.set(Math.cos(a) * (Rr - 0.02 - len / 2), C + Math.sin(a) * (Rr - 0.02 - len / 2), 0); t.rotation.z = a; g.add(tag(t, 'struct', undefined, 1, { metal: 1 }));
   }
   const hue = new THREE.Color(preset.hue), hsl = {}; hue.getHSL(hsl);
   const stars = [], halos = [], done = sessions.filter(s => s.done);
@@ -818,7 +943,7 @@ function buildSky(sessions, preset, seed) {
     const pos = new THREE.Vector3(Math.cos(a) * rad, C + Math.sin(a) * rad, zj);
     if (!s.done) {             // a planned session that did not happen: a small matte bead, unlit
       const b = new THREE.Mesh(new THREE.SphereGeometry(0.013, 16, 8), new THREE.MeshStandardMaterial({ color: 0x3a3f48, roughness: 0.85 }));
-      b.position.copy(pos); b.userData = { s, base: pos.clone(), lift: 0, liftT: 0, delay: 0.3 + i * 0.012, sz: 1 }; g.add(b); stars.push(b); return;
+      b.position.copy(pos); b.userData = { s, base: pos.clone(), lift: 0, liftT: 0, delay: 0.3 + i * 0.012, sz: 1 }; g.add(tag(b, 'dataDim')); stars.push(b); return;
     }
     const night = Math.sin(a) < -0.05, satHue = new THREE.Color().setHSL(hsl.h, 0.75, 0.68), sz = 0.016 + 0.026 * Math.sqrt(s.minutes / 30), bright = Math.pow(0.55, wk);
     const tint = night ? new THREE.Color().setHSL(0.6, 0.7, 0.7).lerp(satHue, 0.6) : new THREE.Color().setHSL(0.1, 0.7, 0.72).lerp(satHue, 0.6);
@@ -826,27 +951,27 @@ function buildSky(sessions, preset, seed) {
       { glow: 0.6 + 2.6 * bright, tint, tint2: new THREE.Color(0xffffff), iris: 0.3, hue: r(), scale: 30, facePow: 0.8 });
     const st = new THREE.Mesh(new THREE.IcosahedronGeometry(sz * 0.55, 1), m); st.position.copy(pos); st.rotation.set(r() * 6, r() * 6, 0);
     const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTex(), rotation: r() * 0.5, color: tint.clone().multiplyScalar(0.9 * bright + 0.12), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }));
-    halo.scale.setScalar(sz * 11); halo.position.copy(pos); g.add(halo); halos.push(halo);
+    halo.scale.setScalar(sz * 11); halo.position.copy(pos); g.add(tag(halo, 'halo')); halos.push(halo);
     st.userData = { s, base: pos.clone(), lift: 0, liftT: 0, delay: 0.3 + i * 0.02, sz: 1, halo, hs: sz * 11 };
-    g.add(st); stars.push(st);
+    g.add(tag(st, 'data', tint, bright)); stars.push(st);
   });
   // gnomon: your meridian — the median time of finished sessions
   const med = median(done.map(s => s.hour)), am = ang(med);
   const gl = Rr + 0.02;
   const gn = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, gl, 8), gemMat({ color: 0xffffff, roughness: .2 }, { glow: 1.6, tint: hue.clone().lerp(new THREE.Color(0xffffff), .5), iris: 0 }));
-  gn.position.set(Math.cos(am) * gl / 2, C + Math.sin(am) * gl / 2, 0); gn.rotation.z = am - Math.PI / 2; g.add(gn);
+  gn.position.set(Math.cos(am) * gl / 2, C + Math.sin(am) * gl / 2, 0); gn.rotation.z = am - Math.PI / 2; g.add(tag(gn, 'data', hue, 0.8));
   // the span of your practice, lit on the day circle: earliest to latest finished session
   { const hs = done.map(s => s.hour).sort((a, b) => a - b), h0 = hs[Math.floor(hs.length * .05)] - 0.25, h1 = hs[Math.floor(hs.length * .95)] + 0.25;
     const arcM = gemMat({ color: hue, roughness: .2 }, { glow: 2.2, tint: hue.clone().lerp(new THREE.Color(0xffffff), .35), iris: 0.15 });
     const arc = new THREE.Mesh(new THREE.TorusGeometry(Rr, 0.017, 12, 160, Math.max(0.05, (h1 - h0) / 24 * Math.PI * 2)), arcM);
-    arc.position.y = C; arc.rotation.z = ang(h1); g.add(arc); }
-  const hub = new THREE.Mesh(new THREE.SphereGeometry(0.03, 32, 16), gemMat({ color: 0xffffff, roughness: .1, clearcoat: 1 }, { glow: 1.2, tint: hue, iris: .4 })); hub.position.y = C; g.add(hub);
+    arc.position.y = C; arc.rotation.z = ang(h1); g.add(tag(arc, 'data', hue, 0.9)); }
+  const hub = new THREE.Mesh(new THREE.SphereGeometry(0.03, 32, 16), gemMat({ color: 0xffffff, roughness: .1, clearcoat: 1 }, { glow: 1.2, tint: hue, iris: .4 })); hub.position.y = C; g.add(tag(hub, 'data', hue, 0.7));
   g.add(contactBlob(1.15, 0, 0.55));
   g.rotation.x = 0;
   const avg = Math.round(done.reduce((a, s) => a + s.minutes, 0) / Math.max(1, done.length));
   const when = med < 11 ? 'mostly mornings' : med < 15 ? 'mostly midday' : med < 19 ? 'mostly afternoons' : 'mostly evenings';
   return {
-    group: g, pickables: stars, elev: 0.06, spin: 0.08, glow: hue.clone().multiplyScalar(0.5), initYaw: -0.35,
+    group: g, pickables: stars, spin: 0.08, glow: hue.clone().multiplyScalar(0.5), accent: hue.clone(), initYaw: -0.35,
     update(age, dt) {
       for (const st of stars) {
         const u = st.userData, k = ease((age - u.delay) / 0.6);
@@ -870,7 +995,7 @@ function buildSky(sessions, preset, seed) {
 function buildStrata(sessions, preset, seed) {
   const g = new THREE.Group(), entries = sessions.slice(-34), r = rng(seed);
   const puckH = 0.12, plinth = new THREE.Mesh(new RoundedBoxGeometry(2.05, puckH, 0.62, 4, 0.03), PUCK_MAT());
-  plinth.position.y = puckH / 2; plinth.castShadow = plinth.receiveShadow = true; g.add(plinth);
+  plinth.position.y = puckH / 2; plinth.castShadow = plinth.receiveShadow = true; g.add(tag(plinth, 'puck'));
   const hue = new THREE.Color(preset.hue), hsl = {}; hue.getHSL(hsl);
   const Htot = 1.86, seam = 0.011, nSeam = entries.filter(e => !e.done).length;
   const sumMin = entries.filter(e => e.done).reduce((a, e) => a + e.minutes, 0) || 1;
@@ -894,13 +1019,15 @@ function buildStrata(sessions, preset, seed) {
     const lay = new THREE.Mesh(layerGeo(rad, y, y + th - 0.0004, bedF, Math.PI), m);
     lay.position.y = 0; lay.castShadow = lay.receiveShadow = true;
     lay.userData = { s: e, baseY: 0, lift: 0, liftT: 0, delay: i * 0.035 };
+    if (e.done) tag(lay, 'data', new THREE.Color().setHSL(c.getHSL({}).h, clamp(hsl.s, .35, .8), .3 + 0.07 * e.feel), wk === 0 ? 1 : 0.2 + 0.1 * e.feel, { skin: rad, lam: 40 + r() * 90 });
+    else tag(lay, 'dataDim', 0x2a2523, 0, { skin: rad });
     core.add(lay); layers.push(lay); y += th;
   });
   g.add(contactBlob(0.95, 0, 0.7));
   const done = entries.filter(e => e.done), tot = done.reduce((a, e) => a + e.minutes, 0);
   const out = new THREE.Vector3(0, 0, 1);
   return {
-    group: g, pickables: layers, swing: 0.3, glow: hue.clone().multiplyScalar(0.45), initYaw: -0.5,
+    group: g, pickables: layers, swing: 0.3, glow: hue.clone().multiplyScalar(0.45), accent: hue.clone(), initYaw: -0.5,
     update(age, dt) {
       for (const L of layers) {
         const u = L.userData, k = easeIO((age - u.delay) / 0.5);
@@ -933,11 +1060,11 @@ function buildWater(d) {
   for (let i = 0; i <= 5; i++) { const a = i / 5 * Math.PI / 2; prof.push(new THREE.Vector2(RiB - 0.03 + Math.cos(a) * 0.03, baseT + 0.03 - Math.sin(a) * 0.03)); }
   prof.push(new THREE.Vector2(0.0, baseT));
   const glassG = new THREE.LatheGeometry(prof, 160);
-  const glass = new THREE.Mesh(glassG, glassMat()); glass.position.y = puckH; glass.renderOrder = 3; g.add(glass);
+  const glass = new THREE.Mesh(glassG, glassMat()); glass.position.y = puckH; glass.renderOrder = 3; g.add(tag(glass, 'glass'));
   // the thick base as a real refracting solid
   const baseSolid = new THREE.Mesh(new THREE.CylinderGeometry(Rb - 0.012, Rb - 0.03, baseT - 0.004, 96), new THREE.MeshPhysicalMaterial({
     color: 0xffffff, transmission: 1, thickness: 0.3, roughness: 0.04, ior: 1.5, attenuationColor: new THREE.Color(0xcfe9ee), attenuationDistance: 1.2, envMapIntensity: 1.2 }));
-  baseSolid.position.y = puckH + baseT / 2 + 0.002; g.add(baseSolid);
+  baseSolid.position.y = puckH + baseT / 2 + 0.002; g.add(tag(baseSolid, 'glassSolid'));
   const Ri = (y) => lerp(RiB, RiT, clamp((y - baseT) / (Hg - baseT), 0, 1)) - 0.005;
   const fill = Math.min(d.total / d.goal, 1), topY = baseT + 0.004 + fill * (Hg - 0.1 - baseT);
   const lp = [new THREE.Vector2(0, 0)];
@@ -949,10 +1076,10 @@ function buildWater(d) {
   const liquid = new THREE.Mesh(liqG, gemMat({
     color: 0xffffff, transmission: 1, thickness: 0.9, roughness: 0.03, ior: 1.333, attenuationColor: new THREE.Color(0x9adfe8), attenuationDistance: 1.6,
     envMapIntensity: 1.6, specularIntensity: 1 }, { glow: 0.06, tint: 0x5cc8da, tint2: 0x9ee9f2, iris: 0.0, scale: 0.5, facePow: 0.6, flake: 0.0, rim: 0.9 }));
-  liquid.position.y = puckH + baseT + 0.004; g.add(liquid);
+  liquid.position.y = puckH + baseT + 0.004; g.add(tag(liquid, 'liquid', 0x5cc8da, 1));
   // the bright line where water meets glass
   const men = new THREE.Mesh(new THREE.TorusGeometry(Ri(topY) - 0.002, 0.0035, 8, 160), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xd8f6ff).multiplyScalar(1.6), transparent: true, opacity: 0.85, depthWrite: false }));
-  men.rotation.x = Math.PI / 2; men.position.y = puckH + topY + 0.012; g.add(men);
+  men.rotation.x = Math.PI / 2; men.position.y = puckH + topY + 0.012; g.add(tag(men, 'line', 0xd8f6ff, 1));
   // carbonation: one bubble per ~15 ml logged, rising (and a few clinging to the wall)
   const nb = clamp(Math.round(d.total / 15), 16, 180), br = rng(Math.round(d.total) + d.logs.length * 97);
   const bp = new Float32Array(nb * 3), bs = new Float32Array(nb), bv = new Float32Array(nb);
@@ -971,7 +1098,7 @@ function buildWater(d) {
         vec4 mv = modelViewMatrix*vec4(p, 1.0); gl_Position = projectionMatrix*mv;
         gl_PointSize = aSize * uPR * 26.0 / -mv.z; vA = uK * step(y, uH*uK) * smoothstep(uH*0.97, uH*0.9, y); }`,
     fragmentShader: 'uniform sampler2D uMap; varying float vA; void main(){ vec4 t = texture2D(uMap, gl_PointCoord); gl_FragColor = vec4(vec3(0.85, 0.97, 1.0) * t.a * vA * 1.3, 1.0); }' });
-  const bubbles = new THREE.Points(bg2, bubM); bubbles.position.y = puckH + baseT + 0.004; bubbles.frustumCulled = false; bubbles.renderOrder = 4; g.add(bubbles);
+  const bubbles = new THREE.Points(bg2, bubM); bubbles.position.y = puckH + baseT + 0.004; bubbles.frustumCulled = false; bubbles.renderOrder = 4; g.add(tag(bubbles, 'bubbles'));
   // inner light of the water (a faint glowing core so it reads as lit liquid even on dark)
   const core = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 64, 1, true), new THREE.MeshBasicMaterial({ color: new THREE.Color(0x1a6f86).multiplyScalar(0.35), transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, depthWrite: false }));
   // etched rings: one per drink, at the level that drink brought the water to
@@ -980,7 +1107,7 @@ function buildWater(d) {
   d.logs.forEach((l, i) => {
     cum += l.ml; const f = Math.min(cum / d.goal, 1), y = baseT + 0.004 + f * (Hg - 0.1 - baseT);
     const ro = lerp(Rb, Rt, (y - 0) / Hg) + 0.001;
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(ro, 0.0018, 6, 160), etchM); ring.rotation.x = Math.PI / 2; ring.position.y = puckH + y; g.add(ring);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(ro, 0.0018, 6, 160), etchM); ring.rotation.x = Math.PI / 2; ring.position.y = puckH + y; g.add(tag(ring, 'line', 0xffffff, 0.35));
     const hit = new THREE.Mesh(new THREE.TorusGeometry(ro, 0.035, 6, 48), new THREE.MeshBasicMaterial({ visible: false })); hit.rotation.x = Math.PI / 2; hit.position.y = puckH + y;
     hit.userData = { l, ring }; g.add(hit); rings.push(hit);
   });
@@ -998,11 +1125,11 @@ function buildWater(d) {
         cc /= 4.0; cc = 1.17 - pow(cc, 1.4); float v = pow(abs(cc), 7.0);
         gl_FragColor = vec4(uCol * (v*1.4 + 0.08) * mask * uK, 1.0); }`,
   }));
-  caus.rotation.x = -Math.PI / 2; caus.position.set(0.18, puckH + 0.003, -0.12); caus.renderOrder = 2; g.add(caus);
+  caus.rotation.x = -Math.PI / 2; caus.position.set(0.18, puckH + 0.003, -0.12); caus.renderOrder = 2; g.add(tag(caus, 'caustic'));
   g.add(contactBlob(0.95, 0, 0.6));
   const last = d.logs[d.logs.length - 1];
   return {
-    group: g, pickables: rings, elev: 0.3, spin: 0.05, glow: new THREE.Color(0x1f5a6e),
+    group: g, pickables: rings, spin: 0.05, glow: new THREE.Color(0x1f5a6e), accent: new THREE.Color(0x5cc8da),
     update(age) {
       const k = easeIO((age - 0.15) / 1.6);
       liquid.scale.set(1, Math.max(0.001, k), 1); liquid.visible = k > 0.002;
@@ -1010,9 +1137,9 @@ function buildWater(d) {
       men.visible = k > 0.98; men.material.opacity = 0.85 * clamp((k - 0.98) * 50, 0, 1);
     },
     pick(obj) {
-      rings.forEach(h => h.userData.ring.material = etchM);
+      rings.forEach(h => { const rg = h.userData.ring; if (rg.userData.styled) rg.material = rg.userData.styled; });
       if (!obj) return null;
-      const hl = etchM.clone(); hl.opacity = 0.95; hl.emissive = new THREE.Color(0x9fe8ff); hl.emissiveIntensity = 1.2; obj.userData.ring.material = hl;
+      const rg = obj.userData.ring; if (rg.userData.hlMat) rg.material = rg.userData.hlMat;
       return `${fmtTime(obj.userData.l.hour)} · ${obj.userData.l.ml} ml`;
     },
     info: { kicker: 'Water', num: (d.total / 1000).toFixed(2), unit: 'L', line: d.total >= d.goal ? `Goal of ${d.goal / 1000} L met · ${d.logs.length} drinks, last at ${fmtTime(last.hour)}` : `of ${d.goal / 1000} L · ${d.logs.length} drinks, last at ${fmtTime(last.hour)}`, hint: 'Each etched ring is a drink; bubbles scale with ml. Tap a ring.' },
@@ -1051,8 +1178,7 @@ function fitHero(h) {
   heroRoot.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(heroRoot), size = box.getSize(new THREE.Vector3());
   const s = Math.min(STAGE.fit.h / size.y, STAGE.fit.w / Math.max(size.x, size.z), 1.25) * (h.fit ?? 1);
-  heroRoot.scale.setScalar(s); heroRoot.position.y = STAGE.baseY;
-  spill.scale.setScalar(Math.max(0.6, s * Math.max(size.x, size.z) / 1.6));
+  heroRoot.scale.setScalar(s); heroRoot.position.y = 0;
 }
 
 const $ = (s) => document.getElementById(s);
@@ -1060,27 +1186,50 @@ function setInfo(h) {
   $('kicker').textContent = h.info.kicker; $('num').textContent = h.info.num; $('unit').textContent = h.info.unit;
   $('line').textContent = h.info.line; $('line').classList.remove('picked');
   $('meta').textContent = h.info.hint;
-  $('pilltxt').textContent = HEROES.find(x => x.id === cur).label;
+  $('pilltxt').textContent = HEROES.find(x => x.id === cur).label + ' · ' + STAGES.find(x => x.id === stageId).label;
 }
 let yaw = 0, yawVel = 0, pitch = 0, lastInteract = -1e9;
+/* void stage: a true mirrored copy of the hero under a faint floor (shares geometry and materials) */
+function buildMirror() {
+  mirrorRoot.children.slice().forEach(c => mirrorRoot.remove(c)); mirrorPairs = [];
+  if (stageId !== 'void') return;
+  const copy = heroRoot.clone(true); mirrorRoot.add(copy);
+  const a = [], b = []; heroRoot.traverse(o => a.push(o)); copy.traverse(o => b.push(o));
+  a.forEach((o, i) => { const r = o.userData.role; if (o.isLight || r === 'halo' || r === 'bubbles' || r === 'blob' || r === 'caustic' || o.userData.hidden) { b[i].userData.off = true; } mirrorPairs.push([o, b[i]]); b[i].renderOrder = -2; });
+}
+function syncMirror() {
+  for (const [o, c] of mirrorPairs) { c.position.copy(o.position); c.quaternion.copy(o.quaternion); c.scale.copy(o.scale); c.visible = o.visible && !c.userData.off; if (o.material !== c.material) c.material = o.material; }
+}
+/* switching fades the canvas out and in, so a rebuild never pops */
+function transition(fn) {
+  if (SHOT || REDUCED) { fn(); return; }
+  canvas.style.opacity = '0';
+  setTimeout(() => { fn(); requestAnimationFrame(() => { canvas.style.opacity = '1'; }); }, 170);
+}
 function show(id, keepYaw) {
   cur = id;
   if (hero) { yawG.remove(hero.group); disposeTree(hero.group); if (hero.fixed) { heroRoot.remove(hero.fixed); disposeTree(hero.fixed); } }
   hero = makeHero(id); heroAge = 0;
   yawG.add(hero.group); if (hero.fixed) heroRoot.add(hero.fixed);
   if (!keepYaw) { yaw = hero.initYaw ?? 0.35; yawVel = 0; }
+  restyle(heroRoot, stageId, hero.accent);
   fitHero(hero);
-  spill.material.color.set(hero.glow).multiplyScalar(0.55);
+  accentU.value.copy(hero.accent);
+  buildMirror();
   setInfo(hero);
-  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-selected', b.dataset.id === id));
+  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-selected', b.dataset.id === id));
   window.__ready = false;
 }
 
 const seg = $('seg');
-HEROES.forEach(h => { const b = document.createElement('button'); b.textContent = h.label; b.dataset.id = h.id; b.setAttribute('role', 'tab'); b.onclick = () => show(h.id); seg.appendChild(b); });
+HEROES.forEach(h => { const b = document.createElement('button'); b.textContent = h.label; b.dataset.id = h.id; b.setAttribute('role', 'tab'); b.onclick = () => { if (h.id !== cur) transition(() => show(h.id)); }; seg.appendChild(b); });
+const stg = $('stg');
+function markStage() { stg.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.id === stageId)); setInfo(hero); }
+STAGES.forEach(t => { const b = document.createElement('button'); b.textContent = t.label; b.dataset.id = t.id; b.setAttribute('role', 'tab');
+  b.onclick = () => { if (t.id === stageId) return; transition(() => { stageId = t.id; applyStage(stageId); show(cur, true); markStage(); }); }; stg.appendChild(b); });
 $('full').onclick = () => { $('top').classList.add('hide'); $('pill').classList.add('show'); };
 $('pill').onclick = () => { $('top').classList.remove('hide'); $('pill').classList.remove('show'); };
-$('diff').onclick = () => { sampleIdx[cur]++; show(cur, true); };
+$('diff').onclick = () => { sampleIdx[cur]++; transition(() => show(cur, true)); };
 
 /* drag to turn with inertia; tap to lift */
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
@@ -1127,16 +1276,18 @@ function tick() {
   yawG.rotation.y = yaw; pivot.rotation.x = (hero?.tilt ?? 0) + pitch;
   if (hero?.hover && !REDUCED) pivot.position.y = hero.pivotY + Math.sin(TIME.value * 1.1) * hero.hover;
   if (hero) hero.update(SHOT ? Math.max(heroAge, 0) : heroAge, dt);
-  grain.uniforms.uTime.value = TIME.value;
-  composer.render();
+  syncMirror();
+    composer.render();
   frames++;
-  if (heroAge > 3.4 && frames > 4 && bgReady && envReady && !window.__ready) window.__ready = true;
+  if (heroAge > 3.4 && frames > 4 && !window.__ready) window.__ready = true;
 }
 window.addEventListener('resize', resize);
+applyStage(stageId);
 show(cur);
+markStage();
 resize();
 tick();
-window.__state = () => ({ cur, sample: sampleIdx[cur], frames, info: hero.info });
+window.__state = () => ({ cur, stage: stageId, sample: sampleIdx[cur], frames, info: hero.info });
 </script>
 </body>
 </html>
