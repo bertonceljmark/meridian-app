@@ -38,6 +38,7 @@
   .seg::-webkit-scrollbar{display:none}
   .seg button{flex:1 0 auto;padding:8px 10px;border-radius:999px;font-size:13px;font-weight:500;letter-spacing:-.01em;color:var(--fg2);
     transition:background .2s,color .2s}
+  .seg .grp{flex:none;align-self:center;padding:0 4px 0 10px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg3)}
   .seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 2px 8px rgba(0,0,0,.25)}
   .pillbtn{flex:none;height:36px;padding:0 13px;border-radius:999px;font-size:13px;font-weight:500;color:var(--fg2)}
   #pill{position:fixed;z-index:3;top:calc(var(--sat) + 10px);right:calc(var(--sar) + 12px);display:none;align-items:center;gap:7px}
@@ -59,12 +60,42 @@
     box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 8px 24px rgba(0,0,0,.35)}
   #diff:active{transform:scale(.97)}
   #meta{font-size:12.5px;color:var(--fg3);line-height:1.35}
+  /* Today: compact hero band (~230 pt) + one caption + the Now rows, as in the app */
+  body.today #info{display:none}
+  #today{position:fixed;left:0;right:0;top:calc(var(--sat) + 330px);z-index:2;padding:0 calc(var(--sar) + 20px) 0 calc(var(--sal) + 20px)}
+  #tkicker{font-size:.8125rem;color:var(--fg3);letter-spacing:.01em}
+  #tcap{display:flex;align-items:baseline;gap:6px;margin-top:2px;flex-wrap:wrap}
+  #tnum{font-size:2rem;font-weight:300;letter-spacing:-.03em}
+  #tunit{font-size:1rem;color:var(--fg2);margin-right:8px}
+  #tline{font-size:.9375rem;color:var(--fg2)} #tline.picked{color:#fff}
+  #tnews{display:inline-flex;margin-top:8px;font-size:.75rem;color:var(--fg2);padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 .5px var(--hair)}
+  #tnews:empty{display:none}
+  #nowrows{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+  #nowrows li{display:flex;align-items:center;gap:12px;min-height:3.25rem;padding:0 14px;border-radius:16px;background:rgba(255,255,255,.055);box-shadow:inset 0 0 0 .5px var(--hair);font-size:.9375rem}
+  #nowrows li i{width:8px;height:8px;border-radius:50%;flex:none}
+  #nowrows li span{flex:1} #nowrows li em{font-style:normal;color:var(--fg3);font-size:.8125rem}
+  .trow{display:flex;gap:10px;align-items:center;margin-top:14px}
+  .trow button{flex:none;white-space:nowrap;height:40px;padding:0 16px;border-radius:999px;font-size:.875rem;font-weight:600;background:#fff;color:var(--ink)}
+  .trow #t2d{background:rgba(255,255,255,.1);color:var(--fg)} .trow #t2d[aria-pressed="true"]{background:#fff;color:var(--ink)}
+  #tmeta{font-size:.75rem;color:var(--fg3)}
+  #flat{position:fixed;left:calc(var(--sal) + 20px);right:calc(var(--sar) + 20px);top:calc(var(--sat) + 104px);height:222px;z-index:1;display:none}
+  body.flat #flat{display:block} body.flat canvas#c{opacity:0 !important}
+  #toast{display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;margin:0 0 16px;padding:5px 5px 5px 14px;border-radius:999px;font-size:14px;color:var(--fg);
+    pointer-events:none;opacity:0;transform:translateY(8px) scale(.98);transition:opacity .22s ease, transform .22s ease}
+  #toast.show{opacity:1;transform:none;pointer-events:auto}
+  #toast b{font-weight:600}
+  #toast .tdot{width:7px;height:7px;border-radius:50%;background:#7cf0a6;box-shadow:0 0 8px rgba(124,240,166,.8);margin-right:2px}
+  #toast button{height:32px;padding:0 11px;border-radius:999px;font-size:13.5px;font-weight:500;color:var(--fg2);background:rgba(255,255,255,.07)}
+  #toast #tundo{background:#fff;color:var(--ink);font-weight:600;padding:0 15px;margin-left:4px}
   @media (prefers-reduced-motion: reduce){ #top{transition:none} }
 </style>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+  "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+  "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.7.8/build/index.module.js",
+  "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.23/build/index.module.js"
 } }
 </script>
 </head>
@@ -78,7 +109,20 @@
 </div>
 <button class="pillbtn glass" id="pill" aria-label="Show the switcher"><i></i><span id="pilltxt">Run</span></button>
 
+<div id="flat" aria-hidden="true"></div>
+<div id="today" hidden>
+  <div id="tkicker"></div>
+  <div id="tcap"><span id="tnum"></span> <span id="tunit"></span><span id="tline"></span></div>
+  <div id="tnews"></div>
+  <ul id="nowrows" aria-label="Now"></ul>
+  <div class="trow"><button id="tdiff">Different day</button><button id="t2d" aria-pressed="false">2D</button><span id="tmeta"></span></div>
+</div>
 <div id="info">
+  <div id="toast" class="glass" role="status" aria-live="polite">
+    <span class="tdot"></span><span>Logged <b id="tmin">20 min</b></span>
+    <button id="tminus" aria-label="5 minutes less">−5</button><button id="tplus" aria-label="5 minutes more">+5</button>
+    <button id="tundo">Undo</button>
+  </div>
   <div id="kicker"></div>
   <div id="fig"><span id="num">–</span><span id="unit"></span></div>
   <div id="line"></div>
@@ -95,6 +139,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { mergeVertices, toCreasedNormals, mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { STAGE } from './stage.js';
@@ -327,7 +372,9 @@ function puckGeo(R, H, b = 0.028) {
 function spireGeo(r, L, seed) {
   const R = rng(seed), tipH = r * (1.5 + R() * 0.9), body = Math.max(L - tipH, r * 0.6);
   const rad = Array.from({ length: 6 }, () => r * (0.8 + 0.35 * R())), a0 = R() * 1.0;
-  const ring = (y, sc) => rad.map((rr, i) => { const a = a0 + i / 6 * Math.PI * 2; return new THREE.Vector3(Math.cos(a) * rr * sc, y, Math.sin(a) * rr * sc); });
+  const ring6 = (y, sc) => rad.map((rr, i) => { const a = a0 + i / 6 * Math.PI * 2; return new THREE.Vector3(Math.cos(a) * rr * sc, y, Math.sin(a) * rr * sc); });
+  // every prism edge carries a narrow chamfer facet (12 faces: 6 wide, 6 thin), so no edge is razor-sharp
+  const ring = (y, sc) => { const r6 = ring6(y, sc), out = []; r6.forEach((v, i) => { const p = r6[(i + 5) % 6], n = r6[(i + 1) % 6]; out.push(v.clone().lerp(p, 0.07), v.clone().lerp(n, 0.07)); }); return out; };
   const b = ring(-0.25, 1.0), t = ring(body, 0.93);
   const apex = new THREE.Vector3((R() - .5) * r * .5, body + tipH, (R() - .5) * r * .5);
   const pos = [], c = new THREE.Vector3(), e1 = new THREE.Vector3(), e2 = new THREE.Vector3();
@@ -336,8 +383,8 @@ function spireGeo(r, L, seed) {
     if (c.dot(out) < 0) [B, C] = [C, B];
     pos.push(A.x, A.y, A.z, B.x, B.y, B.z, C.x, C.y, C.z);
   };
-  for (let i = 0; i < 6; i++) {
-    const j = (i + 1) % 6, out = new THREE.Vector3().addVectors(b[i], b[j]).setY(0);
+  for (let i = 0; i < 12; i++) {
+    const j = (i + 1) % 12, out = new THREE.Vector3().addVectors(b[i], b[j]).setY(0);
     tri(b[i], b[j], t[j], out); tri(b[i], t[j], t[i], out);
     const o2 = new THREE.Vector3().addVectors(t[i], t[j]).setY(0).normalize().add(new THREE.Vector3(0, .6, 0));
     tri(t[i], t[j], apex, o2);
@@ -477,6 +524,24 @@ const PRESETS = {
     { routine: 'Swim', hue: '#4dbbd9', days: 70, weekdays: [1, 3, 5], skip: .15, mean: 50, sd: 12, hours: [7] },
     { routine: 'Sketching', hue: '#e0756a', days: 60, weekdays: [0, 3, 6], skip: .2, mean: 70, sd: 35, hours: [16] },
   ],
+  key: [
+    { routine: 'Stretch', hue: '#ff9a6b', days: 70, weekdays: [1, 2, 3, 4, 5, 0], skip: .2, mean: 18, sd: 7, hours: [7.4], aim: 120 },
+    { routine: 'Guitar', hue: '#b892ff', days: 70, weekdays: [1, 3, 5, 6], extra: .1, skip: .15, mean: 38, sd: 16, hours: [19.5], aim: 180 },
+    { routine: 'Spanish', hue: '#5fd2ff', days: 70, weekdays: [0, 1, 2, 3, 4, 5, 6], skip: .35, mean: 14, sd: 6, hours: [8, 21], aim: 105 },
+    { routine: 'Strength', hue: '#7cf0a6', days: 70, weekdays: [1, 4], extra: .15, skip: .1, mean: 50, sd: 12, hours: [18], aim: 120 },
+  ],
+  dial: [
+    { routine: 'Focus', hue: '#ffb85c', days: 14, weekdays: [1, 2, 3, 4, 5], skip: .15, mean: 45, sd: 18, hours: [9.5, 14], aim: 600 },
+    { routine: 'Meditation', hue: '#a9cbff', days: 14, weekdays: [0, 1, 2, 3, 4, 5, 6], skip: .2, mean: 14, sd: 5, hours: [7.1], aim: 105 },
+    { routine: 'Piano', hue: '#ff88b4', days: 14, weekdays: [2, 4, 6], extra: .2, skip: .1, mean: 30, sd: 10, hours: [18], aim: 150 },
+    { routine: 'Walk', hue: '#a6ffd6', days: 14, weekdays: [0, 1, 2, 3, 4, 5, 6], skip: .3, mean: 35, sd: 15, hours: [12.6], aim: 280 },
+  ],
+  vessel: [
+    { routine: 'Reading', hue: '#ffc07a', days: 14, weekdays: [0, 1, 2, 3, 4, 5, 6], skip: .25, mean: 28, sd: 12, hours: [21.8], aim: 210 },
+    { routine: 'Yoga', hue: '#5fe8c6', days: 14, weekdays: [0, 1, 2, 3, 4, 5, 6], skip: .4, mean: 24, sd: 9, hours: [7], aim: 150 },
+    { routine: 'Journaling', hue: '#8a98ff', days: 14, weekdays: [0, 1, 2, 3, 4, 5, 6], skip: .15, mean: 12, sd: 5, hours: [22], aim: 84 },
+    { routine: 'Sketching', hue: '#e0756a', days: 14, weekdays: [0, 3, 6], skip: .1, mean: 55, sd: 25, hours: [16], aim: 180 },
+  ],
   water: [
     { goal: 2000, target: 1650 }, { goal: 2500, target: 2700 }, { goal: 2000, target: 500 }, { goal: 1800, target: 1240 },
   ],
@@ -533,7 +598,7 @@ function genWater(seed, o) {
  * ------------------------------------------------------------------ */
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
-const PR = Math.min(window.devicePixelRatio || 1, 2);
+const PR = Math.min(window.devicePixelRatio || 1, 3);           // the phone's real pixel ratio (3 on iPhone)
 renderer.setPixelRatio(PR);
 renderer.toneMapping = Q.get('tm') === 'aces' ? THREE.ACESFilmicToneMapping : THREE.AgXToneMapping;
 renderer.toneMappingExposure = 1.0;
@@ -553,30 +618,48 @@ const STAGES = [{ id: 'void', label: 'Void' }, { id: 'matte', label: 'Matte' }, 
 let stageId = STAGES.find(x => x.id === Q.get('stage'))?.id ?? 'void';
 const BG = { void: 0x020306, matte: 0x26282d, ink: 0x060910 };
 
-/* environment per stage, baked once per switch into a PMREM: a dome plus crisp strip lights (edge glints) */
-function buildEnv(kind) {
-  const s = new THREE.Scene();
-  const tones = kind === 'matte' ? [[0.045, 0.045, 0.05], [0.2, 0.2, 0.21], [0.3, 0.3, 0.31]] : kind === 'ink' ? [[0.004, 0.005, 0.008], [0.012, 0.015, 0.02], [0.008, 0.01, 0.014]] : [[0.002, 0.002, 0.003], [0.01, 0.012, 0.016], [0.004, 0.005, 0.007]];
-  const v3 = (a) => `vec3(${a.map(x => x.toFixed(4)).join(',')})`;
-  s.add(new THREE.Mesh(new THREE.SphereGeometry(20, 48, 24), new THREE.ShaderMaterial({
-    side: THREE.BackSide, depthWrite: false,
-    vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-    fragmentShader: `varying vec3 vD; void main(){ float y = vD.y; vec3 c = mix(${v3(tones[0])}, ${v3(tones[1])}, smoothstep(-0.3, 0.05, y)); c = mix(c, ${v3(tones[2])}, smoothstep(0.05, 0.9, y)); gl_FragColor = vec4(c, 1.0); }`,
-  })));
-  const box = (w, h, pos, col, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide })); m.position.copy(pos); m.lookAt(0, 0, 0); s.add(m); };
-  if (kind === 'matte') {
-    box(9, 6, new THREE.Vector3(-6, 8, 5), 0xfff6ec, 3.2);       // big soft key
-    box(6, 6, new THREE.Vector3(8, 3, 4), 0xf0f2f5, 0.9);        // fill
-    box(2, 9, new THREE.Vector3(5, 3, -7), 0xffffff, 1.6);       // rim strip
-  } else {
-    box(0.35, 11, new THREE.Vector3(-6, 3, 5), 0xffffff, 7);     // thin strips → crisp glints on glass and chrome
-    box(0.25, 9, new THREE.Vector3(7, 2, -4), 0xe8f0ff, 6);
-    box(9, 0.22, new THREE.Vector3(0, 9, -2), 0xffffff, 3.5);
-    box(0.2, 6, new THREE.Vector3(-4, 2, -7), 0xfff0e0, kind === 'ink' ? 1 : 3);
+/* environment per stage: one equirect HDR built on the CPU (a dome plus crisp strip lights for edge glints).
+   The raster path prefilters it into a PMREM; the path tracer importance-samples the very same texture. */
+const ENV_W = 1024, ENV_H = 512;
+function envEquirect(kind) {
+  const tones = kind === 'matte' ? [[0.045, 0.045, 0.05], [0.2, 0.2, 0.21], [0.3, 0.3, 0.31]] : kind === 'ink' ? [[0.004, 0.005, 0.008], [0.012, 0.015, 0.02], [0.008, 0.01, 0.014]] : [[0.0007, 0.0009, 0.0018], [0.0009, 0.0011, 0.002], [0.0012, 0.0014, 0.0022]];
+  const boxes = kind === 'matte' ? [[9, 6, [-6, 8, 5], 0xfff6ec, 3.2], [6, 6, [8, 3, 4], 0xf0f2f5, 0.9], [2, 9, [5, 3, -7], 0xffffff, 1.6]]
+    : [[0.7, 11, [-6, 3, 5], 0xffffff, 3.6], [0.5, 9, [7, 2, -4], 0xe8f0ff, 3], [9, 0.4, [0, 9, -2], 0xffffff, 0.6], [0.4, 6, [-4, 2, -7], 0xfff0e0, kind === 'ink' ? 0.5 : 1.5]];
+  const B = boxes.map(([w, h, p, col, k]) => {
+    const P = new THREE.Vector3(...p), f = P.clone().normalize(), up = Math.abs(f.y) > 0.99 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0);
+    const rgt = new THREE.Vector3().crossVectors(up, f).normalize(), upv = new THREE.Vector3().crossVectors(f, rgt);
+    return { w, h, P, n: f.clone().negate(), rgt, upv, c: new THREE.Color(col).multiplyScalar(k), pd: P.dot(f.clone().negate()) };
+  });
+  const sm = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const data = new Uint16Array(ENV_W * ENV_H * 4), d = new THREE.Vector3(), toH = THREE.DataUtils.toHalfFloat;
+  for (let y = 0; y < ENV_H; y++) {
+    const el = ((y + 0.5) / ENV_H - 0.5) * Math.PI, dy = Math.sin(el), cr = Math.cos(el), pix = Math.PI / ENV_H;
+    const t1 = sm(-0.3, 0.05, dy), t2 = sm(0.05, 0.9, dy);
+    const base = [0, 1, 2].map(i => lerp(lerp(tones[0][i], tones[1][i], t1), tones[2][i], t2));
+    for (let x = 0; x < ENV_W; x++) {
+      const az = ((x + 0.5) / ENV_W - 0.5) * Math.PI * 2; d.set(cr * Math.cos(az), dy, cr * Math.sin(az));
+      let r = base[0], g = base[1], b = base[2];
+      for (const q of B) {
+        const dn = d.dot(q.n); if (dn >= -1e-4) continue;
+        const t = q.pd / dn; if (t <= 0) continue;
+        const lx = d.x * t - q.P.x, ly = d.y * t - q.P.y, lz = d.z * t - q.P.z;
+        const u = lx * q.rgt.x + ly * q.rgt.y + lz * q.rgt.z, v = lx * q.upv.x + ly * q.upv.y + lz * q.upv.z;
+        const ew = t * pix * 0.7;                         // ~1 texel analytic edge: crisp, never stair-stepped
+        const cov = clamp((q.w / 2 - Math.abs(u)) / ew + 0.5, 0, 1) * clamp((q.h / 2 - Math.abs(v)) / ew + 0.5, 0, 1);
+        if (cov > 0) { r += q.c.r * cov; g += q.c.g * cov; b += q.c.b * cov; }
+      }
+      const i = (y * ENV_W + x) * 4; data[i] = toH(r); data[i + 1] = toH(g); data[i + 2] = toH(b); data[i + 3] = toH(1);
+    }
   }
+  const tex = new THREE.DataTexture(data, ENV_W, ENV_H, THREE.RGBAFormat, THREE.HalfFloatType);
+  tex.mapping = THREE.EquirectangularReflectionMapping; tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
+  return tex;
+}
+let envEq = null;
+function buildEnv(kind) {
+  envEq?.dispose(); envEq = envEquirect(kind);
   const pm = new THREE.PMREMGenerator(renderer);
-  const t = pm.fromScene(s, 0.01).texture;
-  pm.dispose(); s.traverse(o => { o.geometry?.dispose(); o.material?.dispose(); });
+  const t = pm.fromEquirectangular(envEq).texture; pm.dispose();
   return t;
 }
 
@@ -594,7 +677,7 @@ const fillL = new THREE.DirectionalLight(0xe9eef6, 0); fillL.position.set(3.5, 2
 /* the world each stage stands the hero in */
 const world = new THREE.Group(); scene.add(world);
 const mirrorRoot = new THREE.Group(); mirrorRoot.scale.y = -1; scene.add(mirrorRoot);
-let mirrorPairs = [];
+let mirrorPairs = [], mirrorCount = -1;
 const accentU = { value: new THREE.Color(0xffffff) };
 const flatV = 'varying vec3 vWP; void main(){ vec4 w = modelMatrix*vec4(position,1.0); vWP = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }';
 function buildWorld(kind) {
@@ -605,7 +688,8 @@ function buildWorld(kind) {
       fragmentShader: `uniform vec3 uAcc, uBg; varying vec3 vWP; void main(){ float r = length(vWP.xz);
         float a = mix(0.66, 1.0, smoothstep(0.2, 3.2, r)); vec3 c = uBg + uAcc * 0.06 * exp(-r*r*0.8);
         gl_FragColor = vec4(c, a); }` }));
-    f.rotation.x = -Math.PI / 2; f.position.y = 0.0005; f.renderOrder = -1; world.add(f);
+    f.rotation.x = -Math.PI / 2; f.position.y = 0.0005; f.renderOrder = -1; world.add(f); f.userData.floor = 1;
+    f.userData.pt = new THREE.MeshPhysicalMaterial({ color: 0x010102, roughness: 0.09, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03 });
   } else if (kind === 'ink') {   // engraved rings and spokes, lit only near the hero by its one coloured light
     const f = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShaderMaterial({ fog: false,
       uniforms: { uAcc: accentU, uBg: { value: new THREE.Color(BG.ink) }, uLine: { value: new THREE.Color(0x3a4458) } }, vertexShader: flatV,
@@ -616,7 +700,7 @@ function buildWorld(kind) {
           float fade = smoothstep(5.5, 0.6, r); float pool = exp(-r*r*0.55);
           vec3 c = uBg + uLine * (rings * 0.55 + sp * 0.22) * fade * 0.6 + uAcc * pool * (0.05 + 0.9 * (rings * 0.8 + sp * 0.4));
           gl_FragColor = vec4(c, 1.0); }` }));
-    f.rotation.x = -Math.PI / 2; f.position.y = -0.001; world.add(f);
+    f.rotation.x = -Math.PI / 2; f.position.y = -0.001; world.add(f); f.userData.floor = 1;
   } else {                    // matte: a seamless studio sweep and a soft round pedestal
     const yF = -0.3, Rc = 2.6, zc = -1.5;
     const sweep = new THREE.Mesh(gridGeo(1, 90, (u, v) => {
@@ -625,13 +709,13 @@ function buildWorld(kind) {
       if (d < L1 + L2) { const a = (d - L1) / Rc; return new THREE.Vector3(x, yF + Rc - Rc * Math.cos(a), zc - Rc * Math.sin(a) + (7.5 - L1 - zc)); }
       return new THREE.Vector3(x, yF + Rc + (d - L1 - L2), zc - Rc + (7.5 - L1 - zc));
     }), new THREE.MeshStandardMaterial({ color: 0x3a3d43, roughness: 0.92, side: THREE.DoubleSide, envMapIntensity: 0.6 }));
-    sweep.receiveShadow = true; world.add(sweep);
+    sweep.receiveShadow = true; world.add(sweep); sweep.userData.pt = 'self';
     const pr = [new THREE.Vector2(0, yF)], Rp = 1.08, f = 0.07;
     for (let i = 0; i <= 8; i++) { const a = -Math.PI / 2 + i / 8 * Math.PI / 2; pr.push(new THREE.Vector2(Rp - f + Math.cos(a) * f, yF + f + Math.sin(a) * f)); }
     for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI / 2; pr.push(new THREE.Vector2(Rp - f + Math.cos(a) * f, -f + Math.sin(a) * f)); }
     pr.push(new THREE.Vector2(0, 0));
     const ped = new THREE.Mesh(new THREE.LatheGeometry(pr, 128), new THREE.MeshStandardMaterial({ color: 0x45484e, roughness: 0.78, envMapIntensity: 0.7 }));
-    ped.castShadow = ped.receiveShadow = true; world.add(ped);
+    ped.castShadow = ped.receiveShadow = true; world.add(ped); ped.userData.pt = 'self'; ped.userData.floor = 1;
   }
 }
 
@@ -642,7 +726,7 @@ function applyStage(kind) {
   const matte = kind === 'matte', vd = kind === 'void';
   key.intensity = vd ? 140 : 0; rim.intensity = vd ? 130 : matte ? 18 : 0; rim2.intensity = vd ? 55 : 0;
   hemi.intensity = matte ? 0.55 : 0; sun.intensity = matte ? 2.3 : 0; fillL.intensity = matte ? 0.35 : 0; sun.castShadow = matte;
-  bloom.strength = vd ? 0.62 : matte ? 0.06 : 0.7; bloom.radius = vd ? 0.32 : 0.22; bloom.threshold = vd ? 0.78 : matte ? 0.98 : 0.5;
+  bloomBase = bloom.strength = vd ? 0.62 : matte ? 0.06 : 0.7; bloom.radius = vd ? 0.32 : 0.22; bloom.threshold = vd ? 0.78 : matte ? 0.98 : 0.5;
   finish.uniforms.uVig.value = matte ? 0.28 : 0.5;
   dust.visible = !matte; dust.material.uniforms.uCol.value.set(kind === 'ink' ? 0x8090a8 : 0xc8d8ff);
   buildWorld(kind);
@@ -687,22 +771,25 @@ function restyle(root, kind, accent) {
         : gemMat({ color: 0x05070a, roughness: 0.06, clearcoat: 1, envMapIntensity: 2 }, { glow: 0, rim: 0.45, disp: 1, tint2: accHi });
       else if (role === 'terrain') m = rockMat({ color: 0x050608, roughness: 0.22, env: 1.8 }, { bump: 0, vary: 0, contK: u.cont[0], contOff: u.cont[1], contGlow: 0.85, contCol: acc });
       else if (role === 'data') m = gemMat({ color: 0x020304, roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.02, vertexColors: vc, envMapIntensity: 2, side: u.skin ? THREE.DoubleSide : THREE.FrontSide },
-        { glow: 0.12 + 2.3 * lit, tint: vc ? 0xffffff : acc, tint2: accHi, iris: 0.1, rim: 0.5 + 0.7 * lit, disp: 0.85, facePow: 0.9, flake: 0.15, scale: 1.4, skin: u.skin ?? 0, lam: u.lam ?? 0 });
+        { glow: 0.12 + 2.3 * lit, tint: vc ? 0xffffff : acc, tint2: accHi, rim: 0.5 + 0.7 * lit, disp: 0.85, facePow: 0.9, flake: u.opaque ? 0 : 0.15, scale: u.opaque ? 0.5 : 1.4, iris: u.opaque ? 0 : 0.1, skin: u.skin ?? 0, lam: u.lam ?? 0 });
       else if (role === 'dataDim') m = gemMat({ color: 0x030405, roughness: 0.08, clearcoat: 1, envMapIntensity: 1.8, side: u.skin ? THREE.DoubleSide : THREE.FrontSide }, { glow: 0.02, rim: 0.35, disp: 0.6, tint2: acc.clone().multiplyScalar(0.7), skin: u.skin ?? 0 });
       else if (role === 'glass' || role === 'glassSolid') m = glassMat();
       else if (role === 'liquid') m = gemMat({ color: 0x020406, roughness: 0.03, clearcoat: 1, envMapIntensity: 2 }, { glow: 0.5, tint: acc, tint2: accHi, iris: 0, rim: 1.1, disp: 0.7, facePow: 0.5, flake: 0.2, scale: 0.8 });
       else if (role === 'line') m = new THREE.MeshBasicMaterial({ color: acc.clone().multiplyScalar(0.5 + 1.2 * lit), transparent: true, opacity: 0.9, depthWrite: false });
+      else if (role === 'cap') m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 1, roughness: 0.04, thickness: 0.45, ior: 1.5, attenuationColor: acc.clone().lerp(new THREE.Color(1, 1, 1), 0.2), attenuationDistance: 0.55, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.6 });
     } else if (kind === 'matte') {
-      const satin = (c) => new THREE.MeshPhysicalMaterial({ color: c, vertexColors: vc, roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.35, sheen: 0.25, sheenColor: c, envMapIntensity: 0.9, side: u.skin ? THREE.DoubleSide : THREE.FrontSide });
+      const satin = (c) => new THREE.MeshPhysicalMaterial({ color: c, vertexColors: vc, roughness: 0.42, clearcoat: 0.12, clearcoatRoughness: 0.4, envMapIntensity: 0.9, side: u.skin ? THREE.DoubleSide : THREE.FrontSide });
       if (role === 'puck') m = new THREE.MeshStandardMaterial({ color: GRAPHITE, roughness: 0.5, envMapIntensity: 0.9 });
       else if (role === 'struct') m = new THREE.MeshStandardMaterial({ color: u.metal ? 0xa3a09a : BONE, roughness: u.metal ? 0.38 : 0.62, metalness: 0, envMapIntensity: 0.9 });
       else if (role === 'terrain') m = rockMat({ color: BONE, roughness: 0.66, env: 0.9 }, { bump: 0, vary: 0, contK: u.cont[0], contOff: u.cont[1], contGlow: 0, contDark: 0.3 });
       else if (role === 'data') m = satin(vc ? new THREE.Color(0xffffff) : new THREE.Color(BONE).lerp(acc, 0.25 + 0.75 * lit));
       else if (role === 'dataDim') m = new THREE.MeshStandardMaterial({ color: 0x54524e, roughness: 0.7, side: u.skin ? THREE.DoubleSide : THREE.FrontSide });
-      else if (role === 'glass' || role === 'glassSolid') m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 1, roughness: 0.32, thickness: 0.3, ior: 1.45, envMapIntensity: 1, side: THREE.FrontSide });
+      else if (role === 'glass' || role === 'glassSolid') m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 1, roughness: 0.05, thickness: 0.3, ior: 1.5, envMapIntensity: 1, side: THREE.FrontSide });
       else if (role === 'liquid') m = satin(acc);
       else if (role === 'line') m = new THREE.MeshBasicMaterial({ color: 0x5f5c58, transparent: true, opacity: 0.9 });
+      else if (role === 'cap') m = new THREE.MeshPhysicalMaterial({ color: acc, roughness: 0.34, clearcoat: 0.2, clearcoatRoughness: 0.3, envMapIntensity: 0.9 });
       else if (role === 'blob') { m = o.material; m.opacity = 0.42; }
+      else if (role === 'label') m = o.material;
       else hide = true;                          // halos, caustics, glows and bubbles have no place in a studio
       o.castShadow = o.receiveShadow = role !== 'blob' && role !== 'line';
     } else {
@@ -715,7 +802,8 @@ function restyle(root, kind, accent) {
       else if (role === 'glass') m = inkMat({ line: grey(0.7), k: 40, rim: 1.0, transparent: true, side: THREE.DoubleSide });
       else if (role === 'liquid') m = inkMat({ line: acc.clone().multiplyScalar(1.7), k: 64, rim: 1.2, glow: 0.12 });
       else if (role === 'line') m = new THREE.MeshBasicMaterial({ color: acc.clone().multiplyScalar(1.3), transparent: true, opacity: 0.95, depthWrite: false });
-      else if (role === 'halo' || role === 'bubbles') m = o.material;
+      else if (role === 'cap') m = inkMat({ line: acc.clone().multiplyScalar(1.6), k: 60, rim: 1.2, glow: 0.04 });
+      else if (role === 'halo' || role === 'bubbles' || role === 'label') m = o.material;
       else hide = true;
     }
     if (hide) { o.visible = false; o.userData.hidden = true; return; }
@@ -770,12 +858,180 @@ const finish = new ShaderPass({
 });
 composer.addPass(finish);
 
+/* ------------------------------------------------------------------ *
+ *  STILL FRAMES. When nothing has moved for ~400 ms the page stops being a raster preview:
+ *   - Void and Matte: progressive path tracing of the same scene (three-gpu-pathtracer) with real
+ *     refraction, caustics, soft GI and spectral dispersion; emissive data is real light.
+ *   - Ink (line art), Run, or no float-render support: jittered supersampling of the raster frame.
+ *  Either result crossfades in over the live frame and goes through the same bloom / AgX / finish.
+ *  Interaction drops straight back to raster. Sample counts are capped; once converged nothing renders.
+ * ------------------------------------------------------------------ */
+const blend = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, tStill: { value: null }, uMix: { value: 0 }, uDen: { value: 0 }, uTexel: { value: new THREE.Vector2(1, 1) } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+  fragmentShader: `uniform sampler2D tDiffuse, tStill; uniform float uMix, uDen; uniform vec2 uTexel; varying vec2 vUv;
+    float lum(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+    void main(){ vec4 a = texture2D(tDiffuse, vUv); if (uMix <= 0.0) { gl_FragColor = a; return; }
+      vec3 c0 = texture2D(tStill, vUv).rgb, b = c0;
+      if (uDen > 0.0) {                       // edge-preserving (range-weighted) 5x5 filter, fades out as samples converge
+        float l0 = log2(1e-3 + lum(c0)); vec3 acc = vec3(0.0); float wsum = 0.0;
+        for (int j = -2; j <= 2; j++) for (int i = -2; i <= 2; i++) {
+          vec3 c = texture2D(tStill, vUv + vec2(float(i), float(j)) * uTexel).rgb;
+          float dl = log2(1e-3 + lum(c)) - l0;
+          float w = exp(-float(i*i + j*j) / 6.0) * exp(-dl*dl / (2.0 * uDen * uDen));
+          acc += c * w; wsum += w; }
+        b = acc / wsum; }
+      gl_FragColor = vec4(mix(a.rgb, b, uMix), 1.0); }`,
+});
+composer.insertPass(blend, 1);
+const renderPass = composer.passes[0];
+
+let bloomBase = 0.6;
+const MOBILE = /iPhone|iPad|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform));
+const still = { on: false, mode: '', n: 0, cap: 0, mix: 0, done: false, t0: 0, ptScene: null, why: '' };
+let PTmod = null, pt = null, ptFail = Q.has('nopt') ? 'off by ?nopt' : '';
+async function initPT() {
+  try {
+    const gl = renderer.getContext();
+    if (!renderer.capabilities.isWebGL2 || !gl.getExtension('EXT_color_buffer_float')) throw new Error('no float render targets');
+    // three r160 predates Scene.backgroundRotation / environmentRotation (r162) that this pathtracer reads
+    if (!new THREE.Scene().backgroundRotation) { const E0 = new THREE.Euler(); for (const k of ['backgroundRotation', 'environmentRotation']) Object.defineProperty(THREE.Scene.prototype, k, { get() { return E0; }, configurable: true }); }
+    PTmod = await import('three-gpu-pathtracer');
+    pt = new PTmod.WebGLPathTracer(renderer);
+    pt.renderToCanvas = false; pt.rasterizeScene = false; pt.minSamples = 1; pt.renderDelay = 0; pt.fadeDuration = 0;
+    pt.bounces = 7; pt.transmissiveBounces = 12; pt.filterGlossyFactor = 0.35;
+    pt.tiles.set(MOBILE ? 3 : 2, MOBILE ? 3 : 2);
+    // spectral dispersion: the first refracting hit picks one wavelength for the whole path, shifts IOR with it and
+    // weights the path by that wavelength's colour (normalised so white light stays white once converged)
+    const mat = pt._pathTracer.material;
+    let fs = mat.fragmentShader;
+    const fs0 = fs;
+    fs = fs.replace(/RenderState state = initRenderState\(\);/, '$& float lambda = -1.0;')
+      .replace('scatterRec = bsdfSample( - ray.direction, surf );', `if ( surf.transmission > 0.0 && dispersionK > 0.0 && surf.ior > 1.2 ) {
+          if ( lambda < 0.0 ) { lambda = rand( 12 );
+            vec3 sw = clamp( abs( fract( lambda * 0.85 + vec3( 0.0, 0.6667, 0.3333 ) ) * 6.0 - 3.0 ) - 1.0, 0.0, 1.0 );
+            state.throughputColor *= sw * vec3( 2.4286, 1.7, 1.9653 ); }
+          float ior2 = surf.ior + dispersionK * ( lambda - 0.3 );
+          surf.eta = surf.thinFilm || surf.frontFace ? 1.0 / ior2 : ior2; surf.f0 = iorRatioToF0( surf.eta ); }
+        scatterRec = bsdfSample( - ray.direction, surf );`);
+    // firefly clamp per path (a little bias for a lot less sparkle noise at low sample counts)
+    fs = fs.replace('gl_FragColor.a *= opacity;', '{ float Lm = dot( gl_FragColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ); if ( Lm > fireflyK ) gl_FragColor.rgb *= fireflyK / Lm; } gl_FragColor.a *= opacity;');
+    if (fs !== fs0 && fs.includes('float lambda') && fs.includes('fireflyK')) {
+      fs = 'uniform float dispersionK;\nuniform float fireflyK;\n' + fs;
+      mat.fragmentShader = fs; mat.uniforms.dispersionK = { value: 0.06 }; mat.uniforms.fireflyK = { value: 6 }; mat.needsUpdate = true;
+    }
+    pt.renderScale = +(Q.get('ptscale') || 1);
+  } catch (e) { ptFail = String(e.message || e); window.__ptErr = e.stack; pt = null; }
+}
+const ptReady = initPT().then(() => { if (SHOT) window.__pt = pt; });
+
+/* PT stand-ins: physically based materials per role per stage (the raster shaders can't be traced) */
+const ptCache = new Map();
+function ptMat(o) {
+  const u = o.userData, role = u.role, k = stageId;
+  if (u.pt === 'self') return o.material;
+  if (u.pt) return u.pt;
+  if (!role || o.material?.visible === false) return null;
+  if (['halo', 'under', 'caustic', 'blob', 'bubbles', 'hit', 'label3'].includes(role)) return null;
+  const acc = (u.accent ?? hero.accent).clone(), lit = u.lit ?? 1, P = (x) => new THREE.MeshPhysicalMaterial(x);
+  if (k === 'matte') {
+    const m = o.material;
+    if (role === 'line') return P({ color: 0x8a8580, roughness: 0.6 });
+    if (role === 'label') return m;
+    return m.isMeshStandardMaterial ? m : P({ color: BONE, roughness: 0.6 });
+  }
+  // void: data is light inside clear glass; structure is black glass and chrome
+  if (role === 'puck') return P({ color: 0x020203, roughness: 0.07, clearcoat: 1, clearcoatRoughness: 0.03 });
+  if (role === 'struct') return u.metal ? P({ color: 0xe8ecf2, metalness: 1, roughness: 0.12 }) : P({ color: 0x06070a, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.03 });
+  if (role === 'label') return o.material;
+  if (role === 'cap') return P({ color: 0xffffff, transmission: 1, ior: 1.5, roughness: 0.03, thickness: 0.45, attenuationColor: acc.clone().lerp(new THREE.Color(1, 1, 1), 0.2), attenuationDistance: 0.5, clearcoat: 1, clearcoatRoughness: 0.02 });
+  if (role === 'data' || role === 'liquid') {
+    const glow = role === 'liquid' ? 0.2 * lit : 0.05 + 1.1 * Math.pow(lit, 1.4);
+    if (u.skin || u.opaque) return P({ color: acc.clone().multiplyScalar(0.12), roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.03, emissive: acc, emissiveIntensity: glow });
+    return P({ color: 0xffffff, transmission: 1, ior: role === 'liquid' ? 1.333 : 1.55, roughness: 0.015, thickness: 0.3,
+      attenuationColor: acc.clone().lerp(new THREE.Color(1, 1, 1), 0.25), attenuationDistance: role === 'liquid' ? 0.7 : 0.45, emissive: acc, emissiveIntensity: glow });
+  }
+  if (role === 'dataDim') return P({ color: 0x0b0c10, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.04 });
+  if (role === 'glass' || role === 'glassSolid') return P({ color: 0xffffff, transmission: 1, ior: 1.5, roughness: 0.0, thickness: 0.05 });
+  if (role === 'line') return P({ color: 0xffffff, roughness: 0.45, emissive: acc, emissiveIntensity: 1.4 * lit });
+  return P({ color: 0x0b0c10, roughness: 0.2 });
+}
+function buildPTScene() {
+  const s = new THREE.Scene(); s.background = new THREE.Color(BG[stageId]); s.environment = envEq;
+  s.environmentIntensity = stageId === 'matte' ? 1.35 : 1.0;
+  scene.updateMatrixWorld(true);
+  const mats = new Set();
+  for (const root of [heroRoot, world]) root.traverseVisible(o => {
+    if (o.isMesh && !o.isInstancedMesh) {
+      const m = ptMat(o); if (!m) return;
+      const x = new THREE.Mesh(o.geometry, m); x.matrixAutoUpdate = false; x.matrix.copy(o.matrixWorld); s.add(x); mats.add(m);
+    } else if (o.isPointLight && stageId === 'void' && o.intensity > 0) {
+      const L = new THREE.PointLight(o.color, o.intensity, o.distance, o.decay); L.position.setFromMatrixPosition(o.matrixWorld); s.add(L);
+    }
+  });
+  hero.ptExtras?.(stageId).forEach(x => { x.updateMatrixWorld(true); s.add(x); });
+  if (stageId === 'void') for (const L0 of [key, rim, rim2]) {
+    const L = new PTmod.PhysicalSpotLight(L0.color, L0.intensity, 0, L0.angle, L0.penumbra, L0.decay); L.radius = 0.35;
+    L.position.copy(L0.position); L.target.position.copy(L0.target.position); s.add(L, L.target);
+  }
+  return s;
+}
+function ptWanted() { return pt && !ptFail && stageId !== 'ink' && cur !== 'run' && !Q.has('nopt'); }
+
+const accRT = [0, 1].map(() => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false }));
+const jitRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+const accQuad = new FullScreenQuad(new THREE.ShaderMaterial({
+  uniforms: { tA: { value: null }, tB: { value: null }, uW: { value: 1 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: 'uniform sampler2D tA, tB; uniform float uW; varying vec2 vUv; void main(){ gl_FragColor = mix(texture2D(tA, vUv), texture2D(tB, vUv), uW); }',
+  depthTest: false, depthWrite: false }));
+const halton = (i, b) => { let f = 1, r = 0; while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); } return r; };
+function accumulate() {
+  const w = jitRT.width, h = jitRT.height, n = still.n;
+  camera.setViewOffset(w, h, halton(n + 1, 2) - 0.5, halton(n + 1, 3) - 0.5, w, h);
+  renderer.setRenderTarget(jitRT); renderer.render(scene, camera); camera.clearViewOffset();
+  const src = accRT[n % 2], dst = accRT[(n + 1) % 2];
+  accQuad.material.uniforms.tA.value = src.texture; accQuad.material.uniforms.tB.value = jitRT.texture; accQuad.material.uniforms.uW.value = 1 / (n + 1);
+  renderer.setRenderTarget(dst); accQuad.render(renderer); renderer.setRenderTarget(null);
+  still.n++; blend.uniforms.tStill.value = dst.texture; blend.uniforms.uDen.value = 0;
+}
+function startStill() {
+  still.on = true; still.n = 0; still.done = false; still.t0 = performance.now(); still.mix = 0;
+  if (ptWanted()) {
+    still.mode = 'pt'; still.cap = SHOT ? +(Q.get('spp') || 48) : MOBILE ? 96 : 192;
+    const du = pt._pathTracer.material.uniforms.dispersionK;   // spectral paths only where dispersion reads (Void); Matte converges faster without
+    if (du) du.value = stageId === 'void' ? 0.06 : 0;
+    still.ptScene = buildPTScene(); pt.setScene(still.ptScene, camera); pt.reset();
+  } else { still.mode = 'acc'; still.cap = SHOT ? 24 : 32; }
+}
+function stopStill() {
+  if (!still.on) return;
+  still.on = false; still.done = false; renderPass.enabled = true;
+  if (still.ptScene) { still.ptScene.traverse(o => { if (o.isMesh && o.material && !o.material.userData?.keep) { /* stand-ins are shared with nothing else */ } }); still.ptScene = null; }
+}
+function stillFrame(dt) {
+  if (still.mode === 'pt') {
+    if (pt.isCompiling) return;
+    pt.renderSample(); still.n = pt.samples;
+    const tx = pt.target.texture;                 // float32: not linearly filterable on many GPUs (iPhone included) → sample it 1:1
+    if (tx.magFilter !== THREE.NearestFilter) { tx.magFilter = tx.minFilter = THREE.NearestFilter; tx.needsUpdate = true; }
+    blend.uniforms.tStill.value = tx; blend.uniforms.uTexel.value.set(1 / pt.target.width, 1 / pt.target.height);
+    blend.uniforms.uDen.value = Q.has('noden') ? 0 : 1.7 / Math.sqrt(Math.max(1, still.n));
+    if (still.n >= 2) still.mix = Math.min(1, still.mix + dt / 0.6);
+  } else {
+    accumulate(); if (still.n >= 4) still.mix = Math.min(1, still.mix + dt / 0.25);
+  }
+  if (still.n >= still.cap && still.mix >= 1) still.done = true;
+}
+
 function resize() {
   const w = W(), h = H();
   renderer.setSize(w, h, false); composer.setPixelRatio(PR); composer.setSize(w, h);
   bloom.resolution.set(w * PR / 2, h * PR / 2);
   finish.uniforms.uRes.value.set(w * PR, h * PR);
+  jitRT.setSize(w * PR, h * PR); accRT.forEach(r => r.setSize(w * PR, h * PR)); stopStill(); lastMotion = performance.now();
   camera.aspect = w / h; camera.updateProjectionMatrix();
+  if (hero) fitHero(hero);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1147,23 +1403,676 @@ function buildWater(d) {
 }
 
 /* ------------------------------------------------------------------ *
+ *  USABLE FORMS: a key, a dial and a vessel you log with. Every visible part is still data.
+ *  Shared: sessions = generated history + what you log here (LOGS, kept per routine across stage
+ *  switches). Logging happens in one gesture; the toast always offers Undo and a length nudge.
+ * ------------------------------------------------------------------ */
+const LOGS = {};
+const logKey = () => cur + ':' + sampleIdx[cur];
+const allSessions = (base) => base.concat(LOGS[logKey()] ?? []);
+const DAYL = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const DAYN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const fmtDate = (d) => `${DAYN[(d.getDay() + 6) % 7]} ${d.getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]}`;
+const weekStart = (off) => addDays(MONDAY, -7 * off);
+const dayIdx = (d) => Math.round((sod(d) - MONDAY) / DAY);          // 0 = this Monday, negative = earlier
+const round5 = (m) => Math.max(5, Math.round(m / 5) * 5);
+const numUnit = (m) => m < 60 ? { num: String(m), unit: 'min' } : { num: (m / 60).toFixed(m % 60 ? 1 : 0), unit: 'h' };
+const NOTES = ['felt loose', 'short on time', 'good focus', 'tired but went', 'new routine', 'with a friend', '', '', ''];
+const noteFor = (s) => NOTES[Math.floor((s.hour * 7.3 + s.minutes) % NOTES.length)];
+/* back-references live off the JSON-able userData (Object3D.clone deep-copies userData) */
+const link = (o, k, v) => Object.defineProperty(o.userData, k, { value: v, enumerable: false, configurable: true, writable: true });
+function haptic(ms = 8) { try { navigator.vibrate?.(ms); } catch {} }
+function newSession(minutes) { return { date: new Date(TODAY), hour: TODAY.getHours() + TODAY.getMinutes() / 60, minutes, done: true, feel: 4, added: true }; }
+function logSession(minutes) {
+  const s = newSession(minutes); (LOGS[logKey()] ??= []).push(s);
+  hero.onLog?.(s); setInfo(hero); showToast(s); haptic(14); markMotion();
+}
+function undoLog() {
+  const a = LOGS[logKey()]; const s = a?.pop(); if (!s) return;
+  hero.onUndo?.(s); setInfo(hero); hideToast(); haptic(6); markMotion();
+}
+let toastS = null, toastTimer = 0;
+function showToast(s) {
+  toastS = s; $('tmin').textContent = fmtMin(s.minutes); $('toast').classList.add('show');
+  clearTimeout(toastTimer); if (!SHOT) toastTimer = setTimeout(hideToast, 9000);
+}
+function hideToast() { $('toast').classList.remove('show'); toastS = null; }
+function nudge(d) {
+  if (!toastS) return; toastS.minutes = clamp(toastS.minutes + d, 5, 180); $('tmin').textContent = fmtMin(toastS.minutes);
+  hero.onEdit?.(toastS); setInfo(hero); markMotion(); clearTimeout(toastTimer); if (!SHOT) toastTimer = setTimeout(hideToast, 9000);
+}
+/* a spring for physical travel: underdamped so a release overshoots and settles like a real switch */
+function spring(k = 520, c = 15) { return { x: 0, v: 0, T: 0, step(dt) { const n = Math.max(1, Math.ceil(dt / 0.004)), h = dt / n; for (let i = 0; i < n; i++) { this.v += (-(this.x - this.T) * k - this.v * c) * h; this.x += this.v * h; } return Math.abs(this.v) > 1e-3 || Math.abs(this.x - this.T) > 1e-4; } }; }
+/* soft-edged column: rounded box rebuilt only when its height changes */
+function colGeo(w, h, d, r) { return new RoundedBoxGeometry(w, Math.max(h, 2 * r + 0.002), d, 5, Math.min(r, h / 2 - 0.0005)); }
+function smoothGeo(g) { g.deleteAttribute('normal'); g.deleteAttribute('uv'); g = mergeVertices(g, 1e-5); g.computeVertexNormals(); return g; }
+function labelTex(chars, opt = {}) {
+  const W = 1024, Hh = 128, c = document.createElement('canvas'); c.width = W; c.height = Hh; const x = c.getContext('2d');
+  x.clearRect(0, 0, W, Hh); x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = `${opt.weight ?? 500} ${opt.size ?? 64}px Inter, -apple-system, system-ui, sans-serif`;
+  chars.forEach((ch, i) => { x.globalAlpha = opt.alpha?.[i] ?? 1; x.fillText(ch, (i + 0.5) * W / chars.length, Hh / 2 + 4); });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function labelMesh(chars, w, h, opt) {
+  const t = labelTex(chars, opt);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: t, alphaMap: t, map: t, transparent: true, depthWrite: false, roughness: 1 }));
+  m.rotation.x = -Math.PI / 2; m.userData.labelTex = t; return tag(m, 'label');
+}
+
+/* 6. KEY + WEEK — one big mechanical key; this week's seven days stand behind it as columns */
+function buildKey(base, preset, seed) {
+  const g = new THREE.Group(), hue = new THREE.Color(preset.hue), hsl = {}; hue.getHSL(hsl);
+  const SL = { w: 2.34, h: 0.16, d: 1.72 };
+  const slab = new THREE.Mesh(smoothGeo(new RoundedBoxGeometry(SL.w, SL.h, SL.d, 8, 0.07)), PUCK_MAT());
+  slab.position.y = SL.h / 2; slab.castShadow = slab.receiveShadow = true; g.add(tag(slab, 'puck'));
+  const top = SL.h, colZ = -0.42, keyZ = 0.4, xs = (i) => (i - 3) * 0.29;
+  // the switch: housing, stem light, and a sculpted glass cap (cylindrical dish, tapered walls, soft edges)
+  const housing = new THREE.Mesh(smoothGeo(new RoundedBoxGeometry(0.72, 0.12, 0.72, 6, 0.04)), new THREE.MeshStandardMaterial({ color: 0x15171c, roughness: 0.4 }));
+  housing.position.set(0, top + 0.06, keyZ); housing.castShadow = housing.receiveShadow = true; g.add(tag(housing, 'struct'));
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.1, 64), new THREE.MeshStandardMaterial({ color: hue }));
+  stem.position.set(0, top + 0.15, keyZ); g.add(tag(stem, 'data', hue, 0.85, { opaque: 1 }));
+  const capG = (() => {
+    const w = 0.66, h = 0.27; let cg = new RoundedBoxGeometry(w, h, w, 10, 0.07); cg.deleteAttribute('normal'); cg.deleteAttribute('uv'); cg = mergeVertices(cg, 1e-5);
+    const p = cg.attributes.position, v = new THREE.Vector3();
+    for (let i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i); const t = (v.y + h / 2) / h, sc = lerp(1, 0.84, t);
+      v.x *= sc; v.z *= sc;
+      const tt = clamp((v.y - (h / 2 - 0.08)) / 0.08, 0, 1);       // only the top face gets the dish
+      v.y -= 0.045 * tt * Math.max(0, 1 - Math.pow(v.x / (w * 0.42), 2));
+      p.setXYZ(i, v.x, v.y, v.z);
+    }
+    cg.computeVertexNormals(); cg.translate(0, h / 2, 0); return cg;
+  })();
+  const cap = new THREE.Mesh(capG, new THREE.MeshPhysicalMaterial({ color: hue, roughness: 0.2 }));
+  const capBase = top + 0.16; cap.position.set(0, capBase, keyZ); cap.castShadow = true; g.add(tag(cap, 'cap', hue, 1));
+  const capHit = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.5, 0.78), new THREE.MeshBasicMaterial({ visible: false })); capHit.position.set(0, top + 0.25, keyZ); g.add(capHit);
+  // the week: one column per day, one stacked segment per session; missed days a dark stub, days to come a ghost
+  const cols = new THREE.Group(); g.add(cols);
+  const label = labelMesh(DAYL, 0.29 * 7, 0.29, { size: 58 }); label.position.set(0, top + 0.002, colZ + 0.2); g.add(label);
+  const sess = () => allSessions(base);
+  const maxDay = () => {            // scale: the 90th-percentile day of the last 10 weeks stands ~1 unit tall
+    const t = []; for (let w = 0; w < 10; w++) for (let d = 0; d < 7; d++) { const m = sess().filter(s => s.done && dayIdx(s.date) === d - 7 * w).reduce((a, s) => a + s.minutes, 0); if (m) t.push(m); }
+    t.sort((a, b) => a - b); return Math.max(30, t[Math.floor(t.length * 0.9)] ?? 30); };
+  let kH = 1.3 / maxDay();
+  let week = 0, segs = [];            // segs: { mesh, s, h, H (target), y, Y (target), day }
+  const segMat = (s, today) => new THREE.MeshPhysicalMaterial({ color: new THREE.Color().setHSL(hsl.h, hsl.s * 0.9, 0.55 + (s.feel - 3) * 0.03), roughness: 0.3 });
+  function layout(animate) {
+    const ws = sess(), live = new Set();
+    for (let d = 0; d < 7; d++) {
+      const di = d - 7 * week, day = addDays(weekStart(week), d), future = sod(day) > sod(TODAY);
+      const list = ws.filter(s => dayIdx(s.date) === di);
+      let y = top + 0.004;
+      const done = list.filter(s => s.done);
+      done.forEach((s, j) => {
+        let sg = segs.find(q => q.s === s);
+        const H = clamp(s.minutes * kH, 0.03, 1.5);
+        if (!sg) {
+          const m = new THREE.Mesh(colGeo(0.23, H, 0.23, 0.04), segMat(s)); m.castShadow = m.receiveShadow = true;
+          tag(m, 'data', new THREE.Color().setHSL(hsl.h + (s.feel - 3) * 0.012, 0.62, 0.6), week === 0 ? 0.5 : 0.3);
+          sg = { mesh: m, s, h: animate ? 0.0 : H, y, day: d, born: animate ? 0 : 1 }; segs.push(sg); cols.add(m); link(m, 'seg', sg);
+        }
+        sg.H = H; sg.Y = y; sg.day = d; sg.x = xs(d); live.add(sg); y += H + 0.014;
+      });
+      if (!done.length) {        // stub: missed (planned, not done) = dark tile; future = ghost tile; rest day = nothing
+        const missed = list.some(s => !s.done), key = 'stub' + d;
+        let sg = segs.find(q => q.stub === key);
+        if (missed || future) {
+          if (!sg) { const m = new THREE.Mesh(colGeo(0.23, 0.03, 0.23, 0.012), new THREE.MeshStandardMaterial({ color: 0x2a2c33, roughness: 0.5 })); tag(m, 'dataDim', hue, 0); sg = { mesh: m, stub: key, h: 0.03 }; segs.push(sg); cols.add(m); link(m, 'seg', sg); }
+          sg.H = future ? 0.012 : 0.03; sg.Y = y; sg.x = xs(d); sg.day = d; sg.missed = missed; live.add(sg);
+          sg.mesh.userData.lit = 0; sg.mesh.userData.ghost = future;
+        }
+      }
+    }
+    segs = segs.filter(q => { if (live.has(q)) return true; q.dying = true; q.H = 0.0; dying.push(q); return false; });
+    if (!animate) segs.forEach(q => { q.h = q.H; q.y = q.Y; });
+  }
+  const dying = [];
+  // today's marker: a thin bright line on the slab under today's column (this week only)
+  const todayD = (TODAY.getDay() + 6) % 7;
+  const mark = new THREE.Mesh(new RoundedBoxGeometry(0.22, 0.006, 0.026, 2, 0.003), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: hue, emissiveIntensity: 1 }));
+  mark.position.set(xs(todayD), top + 0.003, colZ + 0.135); g.add(tag(mark, 'line', hue, 1));
+  layout(false);
+  const travel = 0.085, sp = spring(900, 22);
+  let pressed = false, actuated = false, flash = 0;
+  const minutesDefault = round5(median(base.filter(s => s.done).map(s => s.minutes)) || 20);
+  const weekMin = (w) => sess().filter(s => s.done && dayIdx(s.date) >= -7 * w && dayIdx(s.date) < 7 - 7 * w).reduce((a, s) => a + s.minutes, 0);
+  const weekCount = (w) => sess().filter(s => s.done && dayIdx(s.date) >= -7 * w && dayIdx(s.date) < 7 - 7 * w).length;
+  const h = {
+    group: g, pickables: [], pressables: [capHit], tilt: 0.62, pivotY: 0, fit: 1, initYaw: 0, buildT: 1.6, accent: hue.clone(), glow: hue.clone().multiplyScalar(0.5),
+    scrubbable: true, week: 0,
+    get info() {
+      const m = weekMin(week), n = weekCount(week);
+      const label = week === 0 ? 'This week' : week === 1 ? 'Last week' : `Week of ${fmtDate(weekStart(week))}`;
+      return { kicker: `${preset.routine} · ${label}`, ...numUnit(m), line: `${n} session${n === 1 ? '' : 's'} · aim ${fmtMin(preset.aim)}${week === 0 ? ` · press the key to log ${fmtMin(minutesDefault)}` : ''}`,
+        hint: week === 0 ? 'Columns are minutes per day. Tap one; drag sideways for earlier weeks.' : 'Drag back to this week to log.' };
+    },
+    down(hit) {
+      if (!hit || hit.object !== capHit || week !== 0) return false;
+      pressed = true; actuated = false; sp.T = -travel; return true;
+    },
+    up() { pressed = false; sp.T = 0; },
+    scrub(steps) {
+      const nw = clamp(week + steps, 0, 8); if (nw === week) return;
+      week = nw; h.week = week; layout(true); setInfo(h); haptic(4); return true;
+    },
+    onLog() { kH = 1.3 / maxDay(); layout(true); flash = 1; },
+    onUndo() { kH = 1.3 / maxDay(); layout(true); },
+    onEdit() { kH = 1.3 / maxDay(); layout(true); },
+    update(age, dt) {
+      let busy = false;
+      const k = easeIO(age / 1.2);
+      // key physics: bottom-out is a hard stop with a small bounce; actuation logs a session (like a real switch at 2/3 travel)
+      busy = sp.step(dt) || busy;
+      if (sp.x < -travel) { sp.x = -travel; if (sp.v < -0.4) { haptic(10); } sp.v = Math.abs(sp.v) * 0.18; }
+      if (pressed && !actuated && sp.x < -travel * 0.66) { actuated = true; logSession(minutesDefault); }
+      cap.position.y = capBase + sp.x; capHit.position.y = top + 0.25 + sp.x;
+      stem.position.y = top + 0.15 + sp.x * 0.5;
+      flash = Math.max(0, flash - dt * 2.2); if (flash > 0) busy = true;
+      stem.userData.flash = flash;
+      const gu = stem.material.userData.u; if (gu) gu.uGlow.value = (stem.userData.baseGlow ??= gu.uGlow.value) * (1 + 2.5 * flash);
+      // columns grow (build-in, logging, scrubbing) with a soft overshoot
+      const all = segs.concat(dying);
+      for (const q of all) {
+        const H = (q.H ?? 0) * (q.stub ? 1 : k), dh = H - q.h;
+        if (Math.abs(dh) > 1e-4 || Math.abs(q.vh ?? 0) > 1e-3) {
+          const ns = Math.max(1, Math.ceil(dt / 0.008)), hs = dt / ns;
+          for (let i = 0; i < ns; i++) { q.vh = ((q.vh ?? 0) + (H - q.h) * hs * 260) * Math.pow(0.0009, hs); q.h = Math.max(0.0005, q.h + q.vh * hs); }
+          if (Math.abs(H - q.h) < 2e-4 && Math.abs(q.vh) < 2e-3) { q.h = H; q.vh = 0; }
+          busy = true;
+          q.mesh.geometry.dispose(); q.mesh.geometry = colGeo(0.23, Math.max(q.h, 0.001), 0.23, q.stub ? 0.012 : 0.04);
+        }
+        q.y = q.y === undefined ? q.Y : q.y + ((q.Y ?? q.y) - q.y) * Math.min(1, dt * 14);
+        q.mesh.position.set(q.x, (q.y ?? top) + q.h / 2, colZ);
+        q.mesh.visible = q.h > 0.004;
+      }
+      for (let i = dying.length - 1; i >= 0; i--) if (dying[i].h < 0.002) { cols.remove(dying[i].mesh); dying[i].mesh.geometry.dispose(); dying.splice(i, 1); }
+      h.pickables = segs.map(q => q.mesh);
+      return busy || pressed;
+    },
+    pick(obj) {
+      segs.forEach(q => q.mesh.userData.sel = false);
+      if (!obj) return null; const q = obj.userData.seg; if (!q) return null;
+      const day = addDays(weekStart(week), q.day);
+      if (q.stub) return q.mesh.userData.ghost ? `${fmtDate(day)} · still to come` : `${fmtDate(day)} · planned, skipped`;
+      const s = q.s, n = noteFor(s);
+      return `${fmtDate(s.date)}, ${fmtTime(s.hour)} · ${fmtMin(s.minutes)}${s.added ? ' · just logged' : n ? ' · “' + n + '”' : ''}`;
+    },
+  };
+  return h;
+}
+
+/* 7. DIAL — a weighty knurled knob with 5-minute detents; the ring around it fills toward the weekly aim */
+function buildDial(base, preset, seed) {
+  const g = new THREE.Group(), hue = new THREE.Color(preset.hue), hsl = {}; hue.getHSL(hsl);
+  const puckH = addPuck(g, 1.0, 0.14);
+  // the knob: lathe profile with chamfered top edge, slightly dished top, knurled side band
+  const RK = 0.5, HK = 0.3, NR = 96;
+  const knobG = (() => {
+    const prof = [[0, HK - 0.012], [RK * 0.55, HK - 0.004], [RK - 0.035, HK], [RK - 0.012, HK - 0.008], [RK, HK - 0.03], [RK, 0.03], [RK - 0.01, 0.006], [RK - 0.03, 0]];
+    // resample the profile so the knurl band has rows
+    const pts = []; for (let i = 0; i < prof.length - 1; i++) { const [a, b] = [prof[i], prof[i + 1]]; const n = (i === 4) ? 24 : 6; for (let j = 0; j < n; j++) pts.push([lerp(a[0], b[0], j / n), lerp(a[1], b[1], j / n)]); } pts.push(prof[prof.length - 1]);
+    const NU = 720, NV = pts.length;
+    return gridGeo(NU, NV - 1, (u, v) => {
+      const i = Math.round(v * (NV - 1)), [r0, y] = pts[i], a = u * Math.PI * 2;
+      const band = r0 >= RK - 0.0005 && y > 0.035 && y < HK - 0.035 ? 1 : 0;
+      const kn = band * 0.011 * (Math.pow(Math.abs(Math.cos(a * NR / 2)), 0.6) - 0.5);       // straight knurl ridges
+      const r = r0 + kn; return new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r);      // winding: faces point outward
+    });
+  })();
+  const knob = new THREE.Group(); knob.position.y = puckH; g.add(knob);
+  const knobM = new THREE.Mesh(knobG, new THREE.MeshStandardMaterial({ color: 0x9aa0a8, metalness: 1, roughness: 0.3 }));
+  knobM.castShadow = knobM.receiveShadow = true; knob.add(tag(knobM, 'struct', undefined, 1, { metal: 1 }));
+  const notch = new THREE.Mesh(smoothGeo(new RoundedBoxGeometry(0.035, 0.012, 0.13, 3, 0.005)), new THREE.MeshStandardMaterial({ color: hue }));
+  notch.position.set(0, HK + 0.001, -(RK - 0.12)); knob.add(tag(notch, 'data', hue, 1, { opaque: 1 }));
+  // centre button: press to log
+  const btnProf = []; for (let i = 0; i <= 12; i++) { const a = i / 12 * Math.PI / 2; btnProf.push(new THREE.Vector2(Math.sin(a) * 0.19, 0.05 + Math.cos(a) * 0.022)); }
+  btnProf.push(new THREE.Vector2(0.19, 0)); btnProf.unshift(new THREE.Vector2(0, 0.072));
+  const btn = new THREE.Mesh(new THREE.LatheGeometry(btnProf.slice().reverse(), 96), new THREE.MeshPhysicalMaterial({ color: hue, roughness: 0.25 }));
+  btn.position.y = puckH + HK - 0.035; btn.castShadow = true; g.add(tag(btn, 'data', hue, 0.35, { opaque: 1 }));
+  const btnHit = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.2, 32), new THREE.MeshBasicMaterial({ visible: false })); btnHit.position.y = puckH + HK; g.add(btnHit);
+  const knobHit = new THREE.Mesh(new THREE.CylinderGeometry(RK + 0.05, RK + 0.05, HK + 0.05, 48), new THREE.MeshBasicMaterial({ visible: false })); knobHit.position.y = puckH + HK / 2; g.add(knobHit);
+  // minute scale on the deck: 12 ticks (5 min each), every 15 min longer
+  const ticks = [];
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2, L = i % 3 === 0 ? 0.07 : 0.04;
+    const t = new THREE.Mesh(smoothGeo(new RoundedBoxGeometry(0.012, 0.006, L, 2, 0.003)), new THREE.MeshStandardMaterial({ color: 0xd0d4da }));
+    t.position.set(Math.sin(a) * (RK + 0.06 + L / 2), puckH + 0.003, -Math.cos(a) * (RK + 0.06 + L / 2)); t.rotation.y = -a; g.add(tag(t, 'struct', undefined, 1, { metal: 1 })); ticks.push(t); }
+  // the week ring: one arc per session this week, length = minutes / weekly aim (a full ring = aim met)
+  const R0 = 0.74, R1 = 0.9, ringG = new THREE.Group(); g.add(ringG);
+  const groove = new THREE.Mesh(new THREE.RingGeometry(R0 - 0.01, R1 + 0.01, 256, 1), new THREE.MeshStandardMaterial({ color: 0x0c0d10, roughness: 0.6 }));
+  groove.rotation.x = -Math.PI / 2; groove.position.y = puckH + 0.001; g.add(tag(groove, 'dataDim', hue, 0));
+  const arcGeo = (a0, a1) => {
+    const n = Math.max(6, Math.round((a1 - a0) * 120)), hgt = 0.05, b = 0.012;
+    // rounded rectangular cross-section swept around the arc, rounded ends
+    const prof = []; const C = [[R1 - b, hgt - b, 0], [R0 + b, hgt - b, 0.5 * Math.PI], [R0 + b, b, Math.PI], [R1 - b, b, 1.5 * Math.PI]];
+    C.forEach(([x, y, s]) => { for (let i = 0; i <= 4; i++) { const a = s + i / 4 * Math.PI / 2; prof.push([x + Math.cos(a) * b, y + Math.sin(a) * b]); } });
+    prof.push(prof[0]); prof.reverse();          // outward winding
+    const gg = gridGeo(n, prof.length - 1, (u, v) => {
+      const [x, y] = prof[Math.round(v * (prof.length - 1))], a = lerp(a0, a1, u);
+      const endF = Math.min(u * (a1 - a0) * R1, (1 - u) * (a1 - a0) * R1) / 0.012;     // squeeze the ends round
+      const k = clamp(endF, 0, 1), mid = (R0 + R1) / 2, rr = mid + (x - mid) * Math.sqrt(k), yy = 0.025 + (y - 0.025) * Math.sqrt(k);
+      return new THREE.Vector3(Math.sin(a) * rr, yy, -Math.cos(a) * rr);
+    });
+    return gg;
+  };
+  const sess = () => allSessions(base).filter(s => s.done && dayIdx(s.date) >= 0);
+  let arcs = [];
+  function layoutRing(animate) {
+    const list = sess(), aim = preset.aim, gap = 0.035;
+    let a = 0; const live = new Set();
+    list.forEach((s, i) => {
+      const span = Math.max(0.04, Math.min(s.minutes / aim, 1) * Math.PI * 2 - gap);
+      let q = arcs.find(x => x.s === s);
+      if (!q) { q = { s, a0: a, span: animate ? 0 : span, m: null }; arcs.push(q); }
+      q.A0 = a; q.SPAN = Math.min(span, Math.PI * 2 * 1.5); live.add(q); a += span + gap;
+    });
+    arcs.forEach(q => { if (!live.has(q)) { q.SPAN = 0; q.dying = true; } });
+    arcs.forEach(q => q.dirty = true);
+  }
+  layoutRing(false);
+  let ang = 0, angV = 0, turning = false, lastA = 0, setMin = 0, btnSp = spring(1100, 26), btnDown = false, prevDet = 0;
+  const DET = Math.PI * 2 / 12;               // one detent = 5 minutes, one turn = an hour
+  const plane = new THREE.Plane(), tmpV = new THREE.Vector3(), up = new THREE.Vector3();
+  const pointerAngle = (e) => {
+    ndc.set(e.clientX / W() * 2 - 1, -(e.clientY / H()) * 2 + 1); ray.setFromCamera(ndc, camera);
+    knob.updateMatrixWorld(); up.set(0, 1, 0).transformDirection(knob.matrixWorld); const c = new THREE.Vector3().setFromMatrixPosition(knob.matrixWorld);
+    plane.setFromNormalAndCoplanarPoint(up, c); if (!ray.ray.intersectPlane(plane, tmpV)) return null;
+    const L = knob.parent.worldToLocal(tmpV.clone()); return Math.atan2(L.x, -L.z);      // the deck's frame, not the turning knob's
+  };
+  const h = {
+    group: g, pickables: [], pressables: [btnHit, knobHit], tilt: 0.78, pivotY: 0.05, fit: 0.98, initYaw: 0, buildT: 1.4, accent: hue.clone(), glow: hue.clone().multiplyScalar(0.5),
+    get info() {
+      const m = sess().reduce((a, s) => a + s.minutes, 0), n = sess().length;
+      if (turning || setMin > 0) return { kicker: `${preset.routine} · set length`, num: String(setMin), unit: 'min', line: setMin ? 'Press the centre to log it' : 'Turn to set minutes', hint: 'One detent is 5 minutes; a full turn is an hour.' };
+      return { kicker: `${preset.routine} · this week`, ...numUnit(m), line: `${n} session${n === 1 ? '' : 's'} · ${Math.round(100 * m / preset.aim)}% of ${fmtMin(preset.aim)} aim`, hint: 'Turn the dial to set minutes, press the centre to log. Tap an arc.' };
+    },
+    down(hit, e) {
+      if (!hit) return false;
+      if (hit.object === btnHit) { btnDown = true; btnSp.T = -0.028; return true; }
+      if (hit.object === knobHit) { turning = true; lastA = pointerAngle(e) ?? 0; setInfo(h); return true; }
+      return false;
+    },
+    move(e) {
+      if (!turning) return; const a = pointerAngle(e); if (a === null) return;
+      let d = a - lastA; if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; lastA = a;
+      ang = clamp(ang + d, 0, Math.PI * 4); angV = 0;
+    },
+    up() {
+      if (btnDown) { btnDown = false; btnSp.T = 0; const m = setMin || round5(median(base.filter(s => s.done).map(s => s.minutes)) || 20); returning = true; setMin = 0; logSession(m); return; }
+      turning = false;
+    },
+    setTo(min) { ang = min / 60 * Math.PI * 2; turning = true; },
+    onLog() { layoutRing(true); },
+    onUndo() { layoutRing(true); }, onEdit() { layoutRing(true); },
+    update(age, dt) {
+      let busy = turning || btnDown;
+      const k = easeIO(age / 1.1);
+      // detents: the knob is pulled toward the nearest notch (magnetic), each notch crossed ticks
+      const target = turning ? ang + (Math.round(ang / DET) * DET - ang) * 0.55 : (returning ? 0 : Math.round(ang / DET) * DET);
+      if (!turning) { angV += (target - ang) * dt * 200; angV *= Math.pow(0.0005, dt); ang += angV * dt; if (Math.abs(angV) > 1e-3 || Math.abs(target - ang) > 1e-3) busy = true; else if (returning) { returning = false; ang = 0; } }
+      const shown = turning ? target : ang;
+      knob.rotation.y = -shown;
+      const det = Math.round(shown / DET); if (det !== prevDet) { prevDet = det; haptic(5); }
+      const nm = returning ? 0 : Math.round(Math.round(shown / DET) * 5); if (nm !== setMin && !returning) { setMin = nm; setInfo(h); }
+      busy = btnSp.step(dt) || busy; btn.position.y = puckH + HK - 0.035 + btnSp.x;
+      for (const q of arcs) {
+        const tA0 = q.A0, tS = q.SPAN * k;
+        if (Math.abs(q.span - tS) > 1e-4 || Math.abs(q.a0 - tA0) > 1e-4 || q.dirty) {
+          q.span += (tS - q.span) * Math.min(1, dt * 7); q.a0 += (tA0 - q.a0) * Math.min(1, dt * 7); q.dirty = false; busy = true;
+          if (!q.m) { q.m = new THREE.Mesh(arcGeo(0, 0.05), new THREE.MeshPhysicalMaterial({ color: hue, roughness: 0.3 })); q.m.castShadow = q.m.receiveShadow = true; q.m.position.y = puckH; link(q.m, 'arc', q);
+            tag(q.m, 'data', new THREE.Color().setHSL(hsl.h + (q.s.feel - 3) * 0.012, 0.62, 0.6), 1); ringG.add(q.m); if (h.restyleOne) h.restyleOne(q.m); }
+          q.m.geometry.dispose(); q.m.geometry = arcGeo(q.a0, q.a0 + Math.max(q.span, 0.002)); q.m.visible = q.span > 0.01;
+        }
+      }
+      arcs = arcs.filter(q => { if (q.dying && q.span < 0.01) { ringG.remove(q.m); q.m?.geometry.dispose(); return false; } return true; });
+      h.pickables = arcs.filter(q => q.m).map(q => q.m);
+      return busy;
+    },
+    pick(obj) {
+      if (!obj?.userData.arc) return null; const s = obj.userData.arc.s, n = noteFor(s);
+      return `${fmtDate(s.date)}, ${fmtTime(s.hour)} · ${fmtMin(s.minutes)}${s.added ? ' · just logged' : n ? ' · “' + n + '”' : ''}`;
+    },
+  };
+  let returning = false;
+  return h;
+}
+
+/* 8. VESSEL — a glass that fills toward the weekly aim; each session is a layer; hold the glass to pour one */
+function buildVessel(base, preset, seed) {
+  const g = new THREE.Group(), hue = new THREE.Color(preset.hue), hsl = {}; hue.getHSL(hsl);
+  const puckH = addPuck(g, 0.78);
+  const Rb = 0.42, Rt = 0.5, Hg = 1.38, wall = 0.034, baseT = 0.14;
+  const prof = [new THREE.Vector2(0, 0)];
+  for (let i = 0; i <= 8; i++) { const a = -Math.PI / 2 + i / 8 * Math.PI / 2; prof.push(new THREE.Vector2(Rb - 0.035 + Math.cos(a) * 0.035, 0.035 + Math.sin(a) * 0.035)); }
+  for (let i = 1; i <= 12; i++) prof.push(new THREE.Vector2(lerp(Rb, Rt, i / 12), lerp(0.035, Hg - 0.017, i / 12)));
+  for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI; prof.push(new THREE.Vector2(Rt - wall / 2 + Math.cos(a) * wall / 2, Hg - 0.017 + Math.sin(a) * 0.017)); }
+  const RiT = Rt - wall, RiB = Rb - wall - 0.004;
+  for (let i = 1; i <= 12; i++) prof.push(new THREE.Vector2(lerp(RiT, RiB, i / 12), lerp(Hg - 0.017, baseT + 0.03, i / 12)));
+  for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI / 2; prof.push(new THREE.Vector2(RiB - 0.03 + Math.cos(a) * 0.03, baseT + 0.03 - Math.sin(a) * 0.03)); }
+  prof.push(new THREE.Vector2(0.0, baseT));
+  const glass = new THREE.Mesh(new THREE.LatheGeometry(prof, 192), glassMat()); glass.position.y = puckH; glass.renderOrder = 3; g.add(tag(glass, 'glass'));
+  const Ri = (y) => lerp(RiB, RiT, clamp((y - baseT) / (Hg - baseT), 0, 1)) - 0.004;
+  const aimY = Hg - 0.16, kY = (aimY - baseT) / preset.aim;      // minutes → height; the aim line sits just under the rim
+  const aimRing = new THREE.Mesh(new THREE.TorusGeometry(lerp(Rb, Rt, aimY / Hg) + 0.0015, 0.0026, 8, 192), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }));
+  aimRing.rotation.x = Math.PI / 2; aimRing.position.y = puckH + aimY; g.add(tag(aimRing, 'line', 0xffffff, 0.6));
+  const layerGeo2 = (y0, y1, top) => {
+    const p = [new THREE.Vector2(0, 0)], r0 = Ri(y0), r1 = Ri(y1), hh = y1 - y0, b = Math.min(0.012, hh / 2.2);
+    for (let i = 0; i <= 4; i++) { const a = -Math.PI / 2 + i / 4 * Math.PI / 2; p.push(new THREE.Vector2(r0 - b + Math.cos(a) * b, b + Math.sin(a) * b)); }
+    if (top) { p.push(new THREE.Vector2(r1, hh + 0.012)); for (let i = 1; i <= 10; i++) { const t = i / 10; p.push(new THREE.Vector2(r1 * (1 - t), hh + 0.012 * Math.pow(1 - t, 6))); } }
+    else { for (let i = 0; i <= 4; i++) { const a = i / 4 * Math.PI / 2; p.push(new THREE.Vector2(r1 - b + Math.cos(a) * b, hh - b + Math.sin(a) * b)); } p.push(new THREE.Vector2(0, hh)); }
+    return new THREE.LatheGeometry(p, 128);
+  };
+  const sess = () => allSessions(base).filter(s => s.done && dayIdx(s.date) >= 0);
+  let layers = [];          // { s, m, h, H, y, Y }
+  const colFor = (s, i) => new THREE.Color().setHSL(hsl.h + ((i % 3) - 1) * 0.03, clamp(hsl.s * 0.85, 0.3, 0.9), 0.5 + ((i % 2) ? 0.06 : -0.04) + (s.feel - 3) * 0.02);
+  function layout(animate) {
+    const list = sess(); let y = baseT + 0.004; const live = new Set();
+    list.forEach((s, i) => {
+      let q = layers.find(x => x.s === s);
+      const H = Math.max(0.008, s.minutes * kY);
+      if (!q) { q = { s, h: animate ? 0 : H, y }; layers.push(q); }
+      q.H = H; q.Y = y; q.i = i; live.add(q); y += H + 0.003;
+    });
+    layers.forEach(q => { if (!live.has(q)) { q.H = 0; q.dying = true; } });
+    layers.forEach(q => q.dirty = true);
+  }
+  layout(false);
+  // the pour: a stream from above while you hold, minutes = how long you hold
+  const stream = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 1, 32, 1, true), new THREE.MeshPhysicalMaterial({ color: hue }));
+  stream.visible = false; g.add(tag(stream, 'liquid', hue, 0.6));
+  const glassHit = new THREE.Mesh(new THREE.CylinderGeometry(Rt + 0.04, Rb + 0.04, Hg, 32), new THREE.MeshBasicMaterial({ visible: false })); glassHit.position.y = puckH + Hg / 2; g.add(glassHit);
+  let pouring = null, pourT = 0, streamK = 0, wob = 0, wobV = 0, downAt = 0;
+  const h = {
+    group: g, pickables: [], pressables: [glassHit], tilt: 0.1, pivotY: 0, fit: 1, initYaw: 0, buildT: 1.8, accent: hue.clone(), glow: hue.clone().multiplyScalar(0.5),
+    get info() {
+      const m = sess().reduce((a, s) => a + s.minutes, 0), n = sess().length;
+      if (pouring) return { kicker: `${preset.routine} · pouring`, num: String(pouring.minutes), unit: 'min', line: 'Let go to log it', hint: 'Hold longer for a longer session.' };
+      return { kicker: `${preset.routine} · this week`, ...numUnit(m), line: `${n} session${n === 1 ? '' : 's'} · ${m >= preset.aim ? 'aim met' : fmtMin(preset.aim - m) + ' to the line'}`, hint: 'Each layer is a session. Hold the glass to pour one in; tap a layer.' };
+    },
+    down(hit) {
+      if (!hit || hit.object !== glassHit) return false;
+      downAt = performance.now(); pourT = 0; pouring = null; return true;
+    },
+    up(e) {
+      if (!pouring) {               // a quick tap on the glass picks the layer under the finger instead
+        doTap(e.clientX, e.clientY); return;
+      }
+      const s = pouring; pouring = null; s.minutes = Math.max(5, s.minutes);
+      const a = LOGS[logKey()] ??= []; a.push(s); s.pending = false; wobV += 0.9; setInfo(h); showToast(s); haptic(14); markMotion();
+    },
+    onLog() { layout(true); }, onUndo() { layout(true); }, onEdit() { layout(true); },
+    update(age, dt) {
+      let busy = false; const k = easeIO((age - 0.1) / 1.4);
+      if (downAt && !pouring && performance.now() - downAt > 260 && capturing) { pouring = newSession(0); pouring.pending = true; layers.push({ s: pouring, h: 0, y: 0, pend: true }); setInfo(h); haptic(6); }
+      if (!capturing) downAt = 0;
+      if (pouring) { pourT += dt; const m = Math.max(1, Math.round(pourT * 12)); if (m !== pouring.minutes) { pouring.minutes = m; setInfo(h); } busy = true; }
+      // the pending layer is the one being poured
+      const pend = layers.find(q => q.s === pouring);
+      if (pend) { pend.H = Math.max(0.004, pouring.minutes * kY); pend.Y = layers.filter(q => !q.dying && q !== pend).reduce((a, q) => Math.max(a, q.Y + q.H + 0.003), baseT + 0.004); }
+      layers.forEach(q => { if (q.pend && q.s !== pouring) q.pend = false; });
+      streamK += ((pouring ? 1 : 0) - streamK) * Math.min(1, dt * (pouring ? 14 : 6)); if (streamK > 0.002) busy = true;
+      const topY = layers.filter(q => !q.dying).reduce((a, q) => Math.max(a, q.y + q.h), baseT);
+      stream.visible = streamK > 0.01;
+      const sTop = Hg + 0.9, sBot = topY + 0.01;
+      stream.scale.set(streamK, (sTop - sBot), streamK); stream.position.set(0.02 * Math.sin(TIME.value * 9), puckH + (sTop + sBot) / 2, 0);
+      wobV += -wob * dt * 90 - wobV * dt * 5; wob += wobV * dt; if (Math.abs(wob) + Math.abs(wobV) > 1e-3) busy = true;
+      if (pouring) wob = 0.25 * Math.sin(TIME.value * 13);
+      const n = layers.length;
+      layers.forEach((q, i) => {
+        const H = (q.H ?? 0) * k, Y = q.Y ?? q.y, top = i === n - 1 || layers.slice(i + 1).every(x => x.dying);
+        const changed = Math.abs(q.h - H) > 1e-4 || Math.abs(q.y - Y) > 1e-4 || q.dirty || q.top !== top;
+        if (changed) {
+          q.h += (H - q.h) * Math.min(1, dt * (q.s === pouring ? 30 : 8)); q.y += (Y - q.y) * Math.min(1, dt * 10); q.dirty = false; q.top = top; busy = true;
+          if (!q.m) { q.m = new THREE.Mesh(layerGeo2(0, 0.01, false), new THREE.MeshPhysicalMaterial({ color: colFor(q.s, q.i ?? i), roughness: 0.2 })); link(q.m, 'layer', q);
+            tag(q.m, 'liquid', colFor(q.s, q.i ?? i), q.s.added ? 1 : 0.7); g.add(q.m); h.restyleOne?.(q.m); }
+          if (q.h > 0.002) { q.m.geometry.dispose(); q.m.geometry = layerGeo2(q.y, q.y + q.h, top); }
+          q.m.position.y = puckH + q.y; q.m.visible = q.h > 0.002;
+        }
+        if (top && q.m) { q.m.rotation.z = wob * 0.035; q.m.rotation.x = wob * 0.02; }
+        else if (q.m) q.m.rotation.set(0, 0, 0);
+      });
+      layers = layers.filter(q => { if (q.dying && q.h < 0.003) { if (q.m) { g.remove(q.m); q.m.geometry.dispose(); } return false; } return true; });
+      h.pickables = layers.filter(q => q.m && !q.pend).map(q => q.m);
+      return busy || !!pouring;
+    },
+    pick(obj) {
+      if (!obj?.userData.layer) return null; const s = obj.userData.layer.s, n = noteFor(s);
+      return `${fmtDate(s.date)}, ${fmtTime(s.hour)} · ${fmtMin(s.minutes)}${s.added ? ' · just logged' : n ? ' · “' + n + '”' : ''}`;
+    },
+  };
+  return h;
+}
+
+/* ------------------------------------------------------------------ *
+ *  TODAY: the whole day, every routine equal. Three options built from one day's logs.
+ *  One data source (DAY.logs) feeds the hero, the caption, the a11y text and the 2D fallback.
+ * ------------------------------------------------------------------ */
+const RT = {   // routine → colour (all equal weight; medication is neutral by design)
+  meditation: { c: '#a9cbff', name: 'Meditation' }, water: { c: '#5cc8da', name: 'Water' }, meal: { c: '#ffb85c', name: 'Meal' },
+  sketching: { c: '#e0756a', name: 'Sketching' }, reading: { c: '#c7a0ff', name: 'Reading' }, run: { c: '#ff7a59', name: 'Run' },
+  stretch: { c: '#7cf0a6', name: 'Stretch' }, journaling: { c: '#8a98ff', name: 'Journaling' }, medication: { c: '#b9bec8', name: 'Medication', neutral: true },
+};
+const hm = (h, m) => h + m / 60;
+const DAYLOGS = [
+  { label: 'Thu 22 Oct', now: hm(14, 20), rise: hm(7, 26), set: hm(18, 21), news: 'Run yesterday · 6.2 km',
+    logs: [['meditation', hm(7, 10), 12, 'min'], ['water', hm(8, 32), 300, 'ml'], ['meal', hm(8, 45), 1, 'breakfast'], ['medication', hm(9, 0), 1, 'dose'],
+      ['sketching', hm(10, 0), 25, 'min'], ['water', hm(11, 15), 250, 'ml'], ['meal', hm(12, 40), 1, 'lunch'], ['water', hm(13, 50), 300, 'ml']],
+    open: [['stretch', hm(18, 0), hm(19, 0)], ['reading', hm(21, 0), hm(22, 30)], ['water', hm(14, 20), hm(22, 0)]] },
+  { label: 'Sun 18 Oct', now: hm(11, 5), rise: hm(7, 20), set: hm(18, 28), news: '',
+    logs: [['water', hm(9, 40), 250, 'ml']],
+    open: [['meal', hm(12, 0), hm(14, 0)], ['reading', hm(21, 0), hm(23, 0)]] },
+  { label: 'Tue 20 Oct', now: hm(21, 40), rise: hm(7, 23), set: hm(18, 24), news: 'Slept 7 h 40',
+    logs: [['meditation', hm(6, 50), 15, 'min'], ['run', hm(7, 30), 34, 'min'], ['water', hm(8, 10), 400, 'ml'], ['medication', hm(8, 15), 1, 'dose'], ['meal', hm(8, 30), 1, 'breakfast'],
+      ['water', hm(10, 5), 250, 'ml'], ['water', hm(10, 40), 250, 'ml'], ['water', hm(10, 55), 200, 'ml'], ['meal', hm(12, 30), 1, 'lunch'], ['sketching', hm(15, 0), 40, 'min'],
+      ['water', hm(15, 50), 300, 'ml'], ['meal', hm(18, 45), 1, 'dinner'], ['stretch', hm(19, 10), 15, 'min'], ['medication', hm(20, 0), 1, 'dose'], ['reading', hm(21, 0), 30, 'min'], ['journaling', hm(21, 15), 10, 'min']],
+    open: [] },
+  { label: 'Sat 17 Oct', now: hm(17, 30), rise: hm(7, 18), set: hm(18, 31), news: '',
+    logs: [['meal', hm(10, 30), 1, 'brunch'], ['water', hm(10, 45), 500, 'ml'], ['reading', hm(11, 0), 50, 'min'], ['sketching', hm(14, 10), 90, 'min'], ['water', hm(16, 0), 300, 'ml']],
+    open: [['meal', hm(18, 30), hm(20, 30)], ['stretch', hm(20, 0), hm(21, 0)]] },
+];
+function dayData(i) {
+  const d = DAYLOGS[i % DAYLOGS.length];
+  const logs = d.logs.map(([r, t, v, u], k) => ({ r, t, v, u, k, dur: u === 'min' ? v / 60 : 0,
+    eq: u === 'min' ? v : u === 'ml' ? v / 20 : r === 'medication' ? 8 : 20 }));
+  return { ...d, logs };
+}
+const fmtLog = (l) => `${fmtTime(l.t)} · ${RT[l.r].name}${l.u === 'min' ? ' · ' + l.v + ' min' : l.u === 'ml' ? ' · ' + l.v + ' ml' : l.u === 'dose' ? ' · taken' : ' · ' + l.u}`;
+const beadR = (l) => 0.03 + 0.042 * Math.sqrt(Math.min(l.eq, 90) / 60);       // drawn size is capped; counts never are
+function todayInfo(d) {
+  const n = d.logs.length, last = d.logs.filter(l => l.t <= d.now).at(-1);
+  return { kicker: `Today · ${d.label}`, num: String(n), unit: n === 1 ? 'log' : 'logs', line: last ? `Last at ${fmtTime(last.t)} · now ${fmtTime(d.now)}` : `Nothing yet · now ${fmtTime(d.now)}`,
+    hint: 'Tap a light to see that log.', a11y: `${n} logs today: ` + d.logs.map(fmtLog).join('; ') };
+}
+function txtSprite(text, h, opt = {}) {
+  const c = document.createElement('canvas'), x = c.getContext('2d'), fs = 96;
+  x.font = `${opt.weight ?? 500} ${fs}px Inter, -apple-system, system-ui, sans-serif`; const w = Math.ceil(x.measureText(text).width) + 16;
+  c.width = w; c.height = fs * 1.3; x.font = `${opt.weight ?? 500} ${fs}px Inter, -apple-system, system-ui, sans-serif`;
+  x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.textAlign = 'center'; x.fillText(text, w / 2, c.height / 2 + 4);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(h * w / c.height, h), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: new THREE.Color(opt.color ?? 0xffffff).multiplyScalar(opt.k ?? 0.55), emissiveMap: t, alphaMap: t, transparent: true, depthWrite: false, roughness: 1 }));
+  return tag(m, 'label');
+}
+const tubeAlong = (fn, t0, t1, r, n = 200, rs = 12) => {
+  const pts = []; for (let i = 0; i <= n; i++) pts.push(fn(lerp(t0, t1, i / n)));
+  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n, r, rs, false);
+};
+function beadMesh(l, pos, r) {
+  const c = new THREE.Color(RT[l.r].c), neutral = RT[l.r].neutral;
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 48, 24), new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.25 }));
+  m.position.copy(pos); m.castShadow = true;
+  neutral ? tag(m, 'struct', undefined, 1, { metal: 1 }) : tag(m, 'data', c, 0.42, { opaque: 1 });
+  link(m, 'log', l); return m;
+}
+function nowMesh(pos, r) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 64, 32), new THREE.MeshPhysicalMaterial({ color: 0xfff1d6 }));
+  m.position.copy(pos); return tag(m, 'data', 0xfff0d8, 1, { opaque: 1 });
+}
+function hitFor(l, pos, r) { const h = new THREE.Mesh(new THREE.SphereGeometry(Math.max(r * 1.8, 0.075), 12, 8), new THREE.MeshBasicMaterial({ visible: false })); h.position.copy(pos); link(h, 'log', l); return h; }
+function todayHero(d, g, hits, extra) {
+  return Object.assign({ group: g, pickables: hits, today: true, tilt: 0, pivotY: 0, fit: 1, initYaw: 0, buildT: 1.4, accent: new THREE.Color(0xfff0d8), glow: new THREE.Color(0x553f22),
+    data: d, info: todayInfo(d),
+    pick(obj) { const l = obj?.userData.log; return l ? fmtLog(l) : null; },
+  }, extra);
+}
+
+/* T1. DAY ARC — the sun's path: day above the horizon, night faint below; each log a light at its hour */
+function buildDayArc(d) {
+  const g = new THREE.Group(), hits = [], R = 1.08, Ry = 0.66;
+  const P = (h, out = 0) => { const a = (h - 12) / 24 * Math.PI * 2; return new THREE.Vector3(Math.sin(a) * (R + out), Math.cos(a) * (Ry + out * Ry / R), 0); };
+  const horizonY = P(d.rise).y;
+  g.position.y = -horizonY * 0.6;
+  const day = new THREE.Mesh(tubeAlong(P, d.rise, d.set, 0.0075, 220), new THREE.MeshStandardMaterial({ color: 0xffffff })); g.add(tag(day, 'struct', undefined, 1, { metal: 1 }));
+  const night1 = new THREE.Mesh(tubeAlong(P, d.set, 24 + d.rise, 0.004, 220), new THREE.MeshStandardMaterial({ color: 0x555a66 })); g.add(tag(night1, 'dataDim', 0x8090a8, 0));
+  const hz = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 2.7, 8), new THREE.MeshStandardMaterial({ color: 0x8a909c })); hz.rotation.z = Math.PI / 2; hz.position.y = horizonY; g.add(tag(hz, 'struct'));
+  // hour marks: a tick every hour, longer every 6 h, numerals at 6 / 12 / 18 / 0
+  for (let h = 0; h < 24; h++) {
+    const a = P(h), b = P(h, h % 6 ? 0.035 : 0.07), L = a.distanceTo(b);
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, L, 6), new THREE.MeshStandardMaterial({ color: 0xc9ced8 }));
+    t.position.copy(a).add(b).multiplyScalar(0.5); t.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+    g.add(tag(t, h > d.rise && h < d.set ? 'struct' : 'dataDim', 0x8090a8, 0, h > d.rise && h < d.set ? { metal: 1 } : {}));
+    if (h % 6 === 0) { const s = txtSprite(h === 0 ? '0' : String(h), 0.085); s.position.copy(P(h, 0.16)); g.add(s); }
+  }
+  // logs: a light at the hour, sized by amount; sessions also trace their duration along the path; same-time logs stack outward
+  const slots = [];
+  d.logs.forEach(l => {
+    let out = 0.0; while (slots.some(s => Math.abs(s.t - l.t) < 0.42 && Math.abs(s.out - out) < 0.01)) out += 0.1;
+    slots.push({ t: l.t, out });
+    const r = beadR(l), p = P(l.t, out);
+    if (l.dur > 0.08) { const seg = new THREE.Mesh(tubeAlong((h) => P(h, out), l.t, l.t + l.dur, 0.016, 40), new THREE.MeshPhysicalMaterial({ color: RT[l.r].c })); g.add(tag(seg, 'data', RT[l.r].c, 0.75, { opaque: 1 })); }
+    const b = beadMesh(l, p, r); g.add(b); const hb = hitFor(l, p, r); g.add(hb); hits.push(hb);
+  });
+  // the sun at the current time (colour lives here only)
+  const sun = nowMesh(P(d.now, 0), 0.07); g.add(sun);
+  const nowTxt = txtSprite(fmtTime(d.now), 0.07, { color: 0xfff0d8, k: 0.8 }); nowTxt.position.copy(P(d.now, -0.17)); g.add(nowTxt);
+  return todayHero(d, g, hits, { kind: 'arc',
+    update(age) { const k = easeIO(age / 1.2); g.children.forEach(o => { if (o.userData.log && !o.material?.visible === false) {} }); sun.scale.setScalar(Math.max(0.001, k)); return false; } });
+}
+
+/* T2. CLOCK FACE — a front-on 24 h watch dial: indices, numerals, beads and duration arcs per log, faint open windows, a now hand */
+function buildClock(d) {
+  const g = new THREE.Group(), hits = [], R = 0.92;
+  const A = (h) => (h - 12) / 24 * Math.PI * 2;                    // noon at the top, midnight at the bottom
+  const P = (h, r) => new THREE.Vector3(Math.sin(A(h)) * r, Math.cos(A(h)) * r, 0);
+  const prof = [new THREE.Vector2(0, 0.045)]; for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI / 2; prof.push(new THREE.Vector2(R + 0.03 + Math.sin(a) * 0.035, 0.045 - (1 - Math.cos(a)) * 0.035)); }
+  prof.push(new THREE.Vector2(R + 0.065, -0.03)); prof.push(new THREE.Vector2(0, -0.03));
+  const face = new THREE.Mesh(new THREE.LatheGeometry(prof, 192), PUCK_MAT()); face.rotation.x = Math.PI / 2; face.position.z = -0.045; g.add(tag(face, 'puck'));
+  const bezel = new THREE.Mesh(new THREE.TorusGeometry(R + 0.03, 0.014, 24, 256), new THREE.MeshStandardMaterial({ color: 0xc0c4cc, metalness: 1, roughness: 0.25 })); bezel.position.z = 0.0; g.add(tag(bezel, 'struct', undefined, 1, { metal: 1 }));
+  for (let h = 0; h < 24; h++) for (let q = 0; q < 4; q++) {      // hour indices + quarter-hour minute dots
+    const hh = h + q / 4, major = q === 0, L = major ? (h % 6 ? 0.06 : 0.11) : 0.012, w = major ? (h % 6 ? 0.008 : 0.016) : 0.008;
+    const t = new THREE.Mesh(smoothGeo(new RoundedBoxGeometry(w, L, 0.008, 2, Math.min(w, L) / 2 - 0.0005)), new THREE.MeshStandardMaterial({ color: 0xd6dae2, metalness: 1, roughness: 0.25 }));
+    t.position.copy(P(hh, R - 0.03 - L / 2)); t.position.z = 0.005; t.rotation.z = -A(hh); g.add(tag(t, major ? 'struct' : 'dataDim', 0x8090a8, 0, major ? { metal: 1 } : {}));
+  }
+  [0, 6, 12, 18].forEach(h => { const s = txtSprite(h === 0 ? '24' : String(h), 0.1, { k: 0.6 }); s.position.copy(P(h, R - 0.23)); s.position.z = 0.006; g.add(s); });
+  // open windows: faint arcs on an inner track
+  d.open.forEach(([r, t0, t1]) => { if (t1 <= d.now) return; const a0 = Math.max(t0, d.now);
+    const m = new THREE.Mesh(tubeAlong(h => P(h, R - 0.36), a0, t1, 0.006, 60, 8), new THREE.MeshStandardMaterial({ color: 0x6c7280 })); m.position.z = 0.006; g.add(tag(m, 'dataDim', 0x8090a8, 0)); });
+  // logs: a bead at the hour; a session also draws its duration as an arc; same-time logs step inward (all of them, no cap)
+  const slots = [];
+  d.logs.forEach(l => {
+    let rr = R - 0.17; while (slots.some(s => Math.abs(s.t - l.t) < 0.5 && Math.abs(s.rr - rr) < 0.01)) rr -= 0.075;
+    slots.push({ t: l.t, rr }); const r = beadR(l) * 0.85, p = P(l.t, rr); p.z = 0.03;
+    if (l.dur > 0.08) { const seg = new THREE.Mesh(tubeAlong(h => P(h, rr), l.t, l.t + l.dur, 0.017, 40), new THREE.MeshPhysicalMaterial({ color: RT[l.r].c })); seg.position.z = 0.03; g.add(tag(seg, 'data', RT[l.r].c, 0.75, { opaque: 1 })); }
+    const b = beadMesh(l, p, r); g.add(b); const hb = hitFor(l, p, r); g.add(hb); hits.push(hb);
+  });
+  // now hand + centre cap
+  const hand = new THREE.Mesh(smoothGeo(new RoundedBoxGeometry(0.018, R - 0.06, 0.012, 2, 0.0055)), new THREE.MeshPhysicalMaterial({ color: 0xfff0d8 }));
+  hand.geometry.translate(0, (R - 0.06) / 2, 0); hand.rotation.z = -A(d.now); hand.position.z = 0.05; g.add(tag(hand, 'data', 0xfff0d8, 1, { opaque: 1 }));
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.03, 48), new THREE.MeshStandardMaterial({ color: 0xc0c4cc, metalness: 1, roughness: 0.25 })); cap.rotation.x = Math.PI / 2; cap.position.z = 0.055; g.add(tag(cap, 'struct', undefined, 1, { metal: 1 }));
+  const tip = nowMesh(P(d.now, R - 0.06), 0.022); tip.position.z = 0.055; g.add(tip);
+  return todayHero(d, g, hits, { kind: 'clock', update(age) { hand.rotation.z = -A(d.now) * easeIO(age / 1.2); tip.position.copy(P(d.now * easeIO(age / 1.2), R - 0.06)); tip.position.z = 0.055; return false; } });
+}
+
+/* T3. RIBBON — a soft band through the day, left to right; it swells where things happened, coloured by routine; future faint */
+function buildRibbon(d) {
+  const g = new THREE.Group(), hits = [], X0 = -1.2, X1 = 1.2, X = (h) => lerp(X0, X1, h / 24);
+  const Yc = (x) => 0.07 * Math.sin(x * 2.4 + 0.6), Zc = (x) => 0.05 * Math.cos(x * 1.7);
+  const sig = 0.55, NX = 480, NR = 24;
+  const amp = (h) => d.logs.reduce((a, l) => a + (0.03 + 0.11 * Math.sqrt(Math.min(l.eq, 90) / 60)) * Math.exp(-Math.pow((h - (l.t + l.dur / 2)) / (sig + l.dur / 2), 2)), 0);
+  const colAt = (h) => { let c = new THREE.Color(0, 0, 0), wsum = 0; d.logs.forEach(l => { const w = Math.exp(-Math.pow((h - (l.t + l.dur / 2)) / (sig * 0.8 + l.dur / 2), 2) * 1.0); c.add(new THREE.Color(RT[l.r].c).multiplyScalar(w)); wsum += w; });
+    const base = new THREE.Color(0x6c7280); if (wsum < 1e-4) return base; c.multiplyScalar(1 / wsum); return base.lerp(c, clamp(wsum * 1.4, 0, 1)); };
+  const pos = [], col = [], idx = [], uv = [];
+  for (let i = 0; i <= NX; i++) {
+    const h = i / NX * 24, x = X(h), past = h <= d.now, w = (0.016 + Math.min(amp(h), 0.24)) * (past ? 1 : 0.55), th = 0.014 + w * 0.25;
+    const c = colAt(h); if (!past) c.lerp(new THREE.Color(0x3a3e48), 0.65);
+    for (let j = 0; j <= NR; j++) { const a = j / NR * Math.PI * 2; pos.push(x, Yc(x) + Math.sin(a) * w, Zc(x) + Math.cos(a) * th); col.push(c.r, c.g, c.b, 1); uv.push(i / NX, j / NR); }
+  }
+  for (let i = 0; i < NX; i++) for (let j = 0; j < NR; j++) { const a = i * (NR + 1) + j, b = a + NR + 1; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+  const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); rg.setAttribute('color', new THREE.Float32BufferAttribute(col, 4)); // RGBA: the path tracer merges colours as vec4
+  rg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); rg.setIndex(idx); rg.computeVertexNormals();
+  const band = new THREE.Mesh(rg, new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.3 })); g.add(tag(band, 'data', 0xffffff, 0.55, { opaque: 1 }));
+  const axisY = -0.36;
+  for (let h = 0; h <= 24; h += 1) { const L = h % 6 ? 0.025 : 0.05; const t = new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, L, 6), new THREE.MeshStandardMaterial({ color: 0xc9ced8 })); t.position.set(X(h), axisY + L / 2, 0); g.add(tag(t, h % 6 ? 'dataDim' : 'struct', 0x8090a8, 0, h % 6 ? {} : { metal: 1 }));
+    if (h % 6 === 0) { const s = txtSprite(String(h), 0.075); s.position.set(X(h), axisY - 0.07, 0); g.add(s); } }
+  const ax = new THREE.Mesh(new THREE.CylinderGeometry(0.0025, 0.0025, X1 - X0, 6), new THREE.MeshStandardMaterial({ color: 0x8a909c })); ax.rotation.z = Math.PI / 2; ax.position.y = axisY; g.add(tag(ax, 'struct'));
+  // logs: small markers riding the band's upper edge, stacked if close (all of them)
+  const slots = [];
+  d.logs.forEach(l => { const x = X(l.t); let k = 0; while (slots.some(s => Math.abs(s.t - l.t) < 0.35 && s.k === k)) k++; slots.push({ t: l.t, k });
+    const p = new THREE.Vector3(x, Yc(x) + 0.016 + Math.min(amp(l.t), 0.24) + 0.035 + k * 0.06, Zc(x)); const r = 0.018 + 0.012 * Math.sqrt(Math.min(l.eq, 90) / 60);
+    const b = beadMesh(l, p, r); g.add(b); const hb = hitFor(l, p, 0.05); g.add(hb); hits.push(hb); });
+  // now: a thin vertical light and a bead on the band
+  const nx = X(d.now);
+  const nl = new THREE.Mesh(new THREE.CylinderGeometry(0.0045, 0.0045, 0.62, 8), new THREE.MeshPhysicalMaterial({ color: 0xfff0d8 })); nl.position.set(nx, axisY + 0.31, Zc(nx)); g.add(tag(nl, 'data', 0xfff0d8, 1, { opaque: 1 }));
+  const nb = nowMesh(new THREE.Vector3(nx, Yc(nx), Zc(nx)), 0.034); g.add(nb);
+  const nowTxt = txtSprite(fmtTime(d.now), 0.065, { color: 0xfff0d8, k: 0.8 }); nowTxt.position.set(nx, axisY + 0.68, 0); g.add(nowTxt);
+  return todayHero(d, g, hits, { kind: 'ribbon', update(age) { const k = easeIO(age / 1.3); band.scale.set(Math.max(0.001, k), 1, 1); band.position.x = X0 * (1 - k); return false; } });
+}
+
+/* the same data as a flat, neutral 2D drawing (fallback): grey marks, colour only on now */
+function today2D(h) {
+  const d = h.data, W2 = 340, H2 = 210, ink = 'rgba(255,255,255,.78)', dim = 'rgba(255,255,255,.28)', now = '#ffd79a';
+  let s = `<svg viewBox="0 0 ${W2} ${H2}" width="100%" height="100%" role="img" aria-label="${h.info.a11y.replace(/"/g, '')}" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui" font-size="11" fill="${dim}">`;
+  const r = (l) => 2.6 + 3.6 * Math.sqrt(Math.min(l.eq, 90) / 60);
+  if (h.kind === 'clock' || h.kind === 'arc') {
+    const cx = W2 / 2, cy = h.kind === 'arc' ? 128 : 105, R = h.kind === 'arc' ? 140 : 92, Ry = h.kind === 'arc' ? 86 : 92;
+    const pt = (t, k = 1) => { const a = (t - 12) / 24 * Math.PI * 2; return [cx + Math.sin(a) * R * k, cy - Math.cos(a) * Ry * k]; };
+    const path = (t0, t1, k = 1) => { let p = ''; for (let i = 0; i <= 60; i++) { const [x, y] = pt(lerp(t0, t1, i / 60), k); p += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); } return p; };
+    if (h.kind === 'arc') { s += `<path d="${path(d.rise, d.set)}" stroke="${ink}" stroke-width="1.5" fill="none"/><path d="${path(d.set, 24 + d.rise)}" stroke="${dim}" stroke-width="1" fill="none"/>`;
+      const hy = pt(d.rise)[1]; s += `<line x1="8" x2="${W2 - 8}" y1="${hy}" y2="${hy}" stroke="${dim}"/>`; }
+    else s += `<circle cx="${cx}" cy="${cy}" r="${R}" stroke="${ink}" stroke-width="1.5" fill="none"/>`;
+    for (let t = 0; t < 24; t++) { const [x1, y1] = pt(t), [x2, y2] = pt(t, t % 6 ? 0.95 : 0.9); s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${t % 6 ? dim : ink}" stroke-width="${t % 6 ? 1 : 1.5}"/>`;
+      if (t % 6 === 0) { const [x, y] = pt(t, h.kind === 'arc' ? 1.14 : 0.76); s += `<text x="${x}" y="${y + 4}" text-anchor="middle">${t || (h.kind === 'clock' ? 24 : 0)}</text>`; } }
+    const slots = []; d.logs.forEach(l => { let k = h.kind === 'arc' ? 1 : 0.84; while (slots.some(q => Math.abs(q.t - l.t) < 0.45 && Math.abs(q.k - k) < 0.01)) k += h.kind === 'arc' ? 0.09 : -0.08; slots.push({ t: l.t, k });
+      if (l.dur > 0.08) s += `<path d="${path(l.t, l.t + l.dur, k)}" stroke="${ink}" stroke-width="3" stroke-linecap="round" fill="none"/>`;
+      const [x, y] = pt(l.t, k); s += `<circle cx="${x}" cy="${y}" r="${r(l)}" fill="${ink}"/>`; });
+    const [nx, ny] = pt(d.now); if (h.kind === 'clock') s += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${now}" stroke-width="2"/>`;
+    s += `<circle cx="${nx}" cy="${ny}" r="5.5" fill="${now}"/>`;
+  } else {
+    const X = (t) => 12 + t / 24 * (W2 - 24), base = 120;
+    let top = '', bot = ''; for (let i = 0; i <= 96; i++) { const t = i / 4, a = d.logs.reduce((s2, l) => s2 + (2 + 9 * Math.sqrt(Math.min(l.eq, 90) / 60)) * Math.exp(-Math.pow((t - l.t - l.dur / 2) / (0.55 + l.dur / 2), 2)), 0) + 1.5;
+      top += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + (base - Math.min(a, 34)).toFixed(1); bot = 'L' + X(t).toFixed(1) + ' ' + (base + Math.min(a, 34)).toFixed(1) + bot; }
+    s += `<path d="${top}${bot}Z" fill="rgba(255,255,255,.22)" stroke="${ink}" stroke-width="1"/>`;
+    for (let t = 0; t <= 24; t++) s += `<line x1="${X(t)}" x2="${X(t)}" y1="178" y2="${t % 6 ? 183 : 188}" stroke="${t % 6 ? dim : ink}"/>` + (t % 6 ? '' : `<text x="${X(t)}" y="202" text-anchor="middle">${t}</text>`);
+    const slots = []; d.logs.forEach(l => { let k = 0; while (slots.some(q => Math.abs(q.t - l.t) < 0.35 && q.k === k)) k++; slots.push({ t: l.t, k }); s += `<circle cx="${X(l.t)}" cy="${80 - k * 9}" r="${r(l) * 0.8}" fill="${ink}"/>`; });
+    s += `<line x1="${X(d.now)}" x2="${X(d.now)}" y1="60" y2="178" stroke="${now}" stroke-width="1.5"/><circle cx="${X(d.now)}" cy="${base}" r="4.5" fill="${now}"/>`;
+  }
+  return s + '</svg>';
+}
+
+/* ------------------------------------------------------------------ *
  *  switching, framing, interaction
  * ------------------------------------------------------------------ */
 const HEROES = [
-  { id: 'run', label: 'Run' }, { id: 'crystal', label: 'Crystal' }, { id: 'sky', label: 'Sky' },
+  { id: 'arc', label: 'Arc', group: 'Today' }, { id: 'clock', label: 'Clock' }, { id: 'ribbon', label: 'Ribbon' },
+  { id: 'key', label: 'Key', group: 'Routine' }, { id: 'dial', label: 'Dial' }, { id: 'vessel', label: 'Vessel' },
+  { id: 'run', label: 'Run', group: 'Lab' }, { id: 'crystal', label: 'Crystal' }, { id: 'sky', label: 'Sky' },
   { id: 'strata', label: 'Strata' }, { id: 'water', label: 'Water' },
 ];
-const sampleIdx = { run: 0, crystal: 0, sky: 0, strata: 0, water: 0 };
-let cur = HEROES.find(h => h.id === Q.get('hero'))?.id ?? 'run';
+const sampleIdx = { arc: 0, clock: 0, ribbon: 0, key: 0, dial: 0, vessel: 0, run: 0, crystal: 0, sky: 0, strata: 0, water: 0 };
+let cur = HEROES.find(h => h.id === Q.get('hero'))?.id ?? 'arc';
 if (Q.has('sample')) sampleIdx[cur] = +Q.get('sample') || 0;
 let hero = null, heroAge = 0;
 const heroRoot = new THREE.Group(), pivot = new THREE.Group(), yawG = new THREE.Group();
 heroRoot.add(pivot); pivot.add(yawG); scene.add(heroRoot);
 
 function makeHero(id) {
-  const i = sampleIdx[id], pre = PRESETS[id][i % 4], seed = 1000 + i * 7919 + id.length * 13;
+  const i = sampleIdx[id], pre = PRESETS[id]?.[i % 4], seed = 1000 + i * 7919 + id.length * 13;
   if (id === 'run') return buildRun(genRoute(seed, pre));
   if (id === 'water') return buildWater(genWater(seed, pre));
+  if (id === 'arc') return buildDayArc(dayData(i));
+  if (id === 'clock') return buildClock(dayData(i));
+  if (id === 'ribbon') return buildRibbon(dayData(i));
+  if (id === 'key') return buildKey(genSessions(seed, pre), pre, seed);
+  if (id === 'dial') return buildDial(genSessions(seed, pre), pre, seed);
+  if (id === 'vessel') return buildVessel(genSessions(seed, pre), pre, seed);
   const sessions = genSessions(seed, pre);
   if (id === 'crystal') return buildCrystal(sessions, pre, seed);
   if (id === 'sky') return buildSky(sessions, pre, seed);
@@ -1179,10 +2088,32 @@ function fitHero(h) {
   const box = new THREE.Box3().setFromObject(heroRoot), size = box.getSize(new THREE.Vector3());
   const s = Math.min(STAGE.fit.h / size.y, STAGE.fit.w / Math.max(size.x, size.z), 1.25) * (h.fit ?? 1);
   heroRoot.scale.setScalar(s); heroRoot.position.y = 0;
+  if (h.today) {                    // ~222 pt band starting under the switcher: solve scale and height by projection
+    camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+    const px = (y) => { const v = new THREE.Vector3(0, y, 0).project(camera); return (1 - v.y) / 2 * H(); };
+    const u2px = px(1.0) - px(2.0), bandH = 210, s2 = Math.min(bandH / (size.y * u2px), (W() - 40) / (Math.max(size.x, 0.01) * u2px));
+    heroRoot.scale.setScalar(s2);
+    const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;top:env(safe-area-inset-top)'; document.body.appendChild(pr); const sat = pr.getBoundingClientRect().top; pr.remove();
+    const want = sat + 104 + 111;
+    let lo = -2, hi = 5; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; heroRoot.position.y = m; heroRoot.updateMatrixWorld(true); const c = new THREE.Box3().setFromObject(hero.group).getCenter(new THREE.Vector3()); const y = px(c.y); if (y > want) lo = m; else hi = m; }
+  }
 }
 
 const $ = (s) => document.getElementById(s);
+function setToday(h) {
+  const t = h.info, d = h.data;
+  $('tkicker').textContent = t.kicker; $('tnum').textContent = t.num; $('tunit').textContent = t.unit; $('tline').textContent = t.line; $('tline').classList.remove('picked');
+  $('tnews').textContent = d.news; $('tmeta').textContent = t.hint;
+  canvas.setAttribute('aria-label', t.a11y);
+  const rows = d.open.filter(o => o[2] > d.now).map(([r, a, b]) => [RT[r].name, `${a <= d.now ? 'open now' : fmtTime(a)} – ${fmtTime(b)}`]);
+  const fill = [['Meditation', 'tomorrow 07:00'], ['Water', 'any time'], ['Stretch', 'tomorrow 18:00']];
+  while (rows.length < 3) rows.push(fill[rows.length]);
+  $('nowrows').innerHTML = rows.slice(0, 3).map(([n, w]) => `<li><i style="background:rgba(255,255,255,.35)"></i><span>${n}</span><em>${w}</em></li>`).join('');
+  $('flat').innerHTML = today2D(h);
+}
 function setInfo(h) {
+  document.body.classList.toggle('today', !!h.today); $('today').hidden = !h.today;
+  if (h.today) { setToday(h); $('pilltxt').textContent = HEROES.find(x => x.id === cur).label + ' · ' + STAGES.find(x => x.id === stageId).label; return; }
   $('kicker').textContent = h.info.kicker; $('num').textContent = h.info.num; $('unit').textContent = h.info.unit;
   $('line').textContent = h.info.line; $('line').classList.remove('picked');
   $('meta').textContent = h.info.hint;
@@ -1192,13 +2123,15 @@ let yaw = 0, yawVel = 0, pitch = 0, lastInteract = -1e9;
 /* void stage: a true mirrored copy of the hero under a faint floor (shares geometry and materials) */
 function buildMirror() {
   mirrorRoot.children.slice().forEach(c => mirrorRoot.remove(c)); mirrorPairs = [];
-  if (stageId !== 'void') return;
+  mirrorCount = 0; heroRoot.traverse(o => { if (o.isMesh) mirrorCount++; });
+  if (stageId !== 'void' || hero?.today) return;
   const copy = heroRoot.clone(true); mirrorRoot.add(copy);
   const a = [], b = []; heroRoot.traverse(o => a.push(o)); copy.traverse(o => b.push(o));
   a.forEach((o, i) => { const r = o.userData.role; if (o.isLight || r === 'halo' || r === 'bubbles' || r === 'blob' || r === 'caustic' || o.userData.hidden) { b[i].userData.off = true; } mirrorPairs.push([o, b[i]]); b[i].renderOrder = -2; });
 }
 function syncMirror() {
-  for (const [o, c] of mirrorPairs) { c.position.copy(o.position); c.quaternion.copy(o.quaternion); c.scale.copy(o.scale); c.visible = o.visible && !c.userData.off; if (o.material !== c.material) c.material = o.material; }
+  let n = 0; heroRoot.traverse(o => { if (o.isMesh) n++; }); if (n !== mirrorCount) buildMirror();
+  for (const [o, c] of mirrorPairs) { c.position.copy(o.position); c.quaternion.copy(o.quaternion); c.scale.copy(o.scale); c.visible = o.visible && !!o.parent && !c.userData.off; if (o.geometry !== c.geometry) c.geometry = o.geometry; if (o.material !== c.material) c.material = o.material; }
 }
 /* switching fades the canvas out and in, so a rebuild never pops */
 function transition(fn) {
@@ -1207,12 +2140,15 @@ function transition(fn) {
   setTimeout(() => { fn(); requestAnimationFrame(() => { canvas.style.opacity = '1'; }); }, 170);
 }
 function show(id, keepYaw) {
-  cur = id;
+  cur = id; markMotion(); still.mix = 0;
   if (hero) { yawG.remove(hero.group); disposeTree(hero.group); if (hero.fixed) { heroRoot.remove(hero.fixed); disposeTree(hero.fixed); } }
   hero = makeHero(id); heroAge = 0;
   yawG.add(hero.group); if (hero.fixed) heroRoot.add(hero.fixed);
   if (!keepYaw) { yaw = hero.initYaw ?? 0.35; yawVel = 0; }
+  world.children.forEach(o => { if (o.userData.floor) o.visible = !hero.today; });
+  sun.castShadow = stageId === 'matte' && !hero.today;
   restyle(heroRoot, stageId, hero.accent);
+  hero.restyleOne = (m) => restyle(m, stageId, hero.accent);
   fitHero(hero);
   accentU.value.copy(hero.accent);
   buildMirror();
@@ -1222,64 +2158,105 @@ function show(id, keepYaw) {
 }
 
 const seg = $('seg');
-HEROES.forEach(h => { const b = document.createElement('button'); b.textContent = h.label; b.dataset.id = h.id; b.setAttribute('role', 'tab'); b.onclick = () => { if (h.id !== cur) transition(() => show(h.id)); }; seg.appendChild(b); });
+HEROES.forEach(h => { if (h.group) { const t = document.createElement('span'); t.className = 'grp'; t.textContent = h.group; seg.appendChild(t); } const b = document.createElement('button'); b.textContent = h.label; b.dataset.id = h.id; b.setAttribute('role', 'tab'); b.onclick = () => { if (h.id !== cur) transition(() => show(h.id)); }; seg.appendChild(b); });
 const stg = $('stg');
 function markStage() { stg.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.id === stageId)); setInfo(hero); }
 STAGES.forEach(t => { const b = document.createElement('button'); b.textContent = t.label; b.dataset.id = t.id; b.setAttribute('role', 'tab');
   b.onclick = () => { if (t.id === stageId) return; transition(() => { stageId = t.id; applyStage(stageId); show(cur, true); markStage(); }); }; stg.appendChild(b); });
 $('full').onclick = () => { $('top').classList.add('hide'); $('pill').classList.add('show'); };
 $('pill').onclick = () => { $('top').classList.remove('hide'); $('pill').classList.remove('show'); };
-$('diff').onclick = () => { sampleIdx[cur]++; transition(() => show(cur, true)); };
+$('diff').onclick = () => { sampleIdx[cur]++; hideToast(); transition(() => show(cur, true)); };
+$('tdiff').onclick = () => { sampleIdx[cur]++; transition(() => show(cur, true)); };
+$('t2d').onclick = () => { const on = !document.body.classList.contains('flat'); document.body.classList.toggle('flat', on); $('t2d').setAttribute('aria-pressed', on); };
+if (Q.has('flat')) { document.body.classList.add('flat'); $('t2d').setAttribute('aria-pressed', 'true'); }
+if (Q.get('text')) document.documentElement.style.fontSize = (+Q.get('text')) + '%';
+$('tundo').onclick = undoLog; $('tminus').onclick = () => nudge(-5); $('tplus').onclick = () => nudge(5);
 
 /* drag to turn with inertia; tap to lift */
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 let drag = null;
-canvas.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, t: performance.now(), moved: 0 }; yawVel = 0; try { canvas.setPointerCapture(e.pointerId); } catch {} });
+let capturing = false, scrubAcc = 0;
+function hitAt(x, y, list) {
+  if (!list?.length) return null;
+  ndc.set(x / W() * 2 - 1, -(y / H()) * 2 + 1); ray.setFromCamera(ndc, camera);
+  return ray.intersectObjects(list, false)[0] ?? null;
+}
+canvas.addEventListener('pointerdown', (e) => {
+  markMotion(); try { canvas.setPointerCapture(e.pointerId); } catch {}
+  if (hero.down && hero.down(hitAt(e.clientX, e.clientY, hero.pressables), e)) { capturing = true; drag = null; return; }
+  drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, t: performance.now(), moved: 0 }; yawVel = 0; scrubAcc = 0;
+});
 canvas.addEventListener('pointermove', (e) => {
+  if (capturing) { hero.move?.(e); markMotion(); return; }
   if (!drag) return;
   const dx = e.clientX - drag.lx, dy = e.clientY - drag.ly; drag.lx = e.clientX; drag.ly = e.clientY;
-  drag.moved += Math.abs(dx) + Math.abs(dy);
-  yaw += dx * 0.009; yawVel = dx * 0.009; pitch = clamp(pitch + dy * 0.003, -0.22, 0.22); lastInteract = performance.now();
+  drag.moved += Math.abs(dx) + Math.abs(dy); markMotion();
+  if (hero.scrub) {                       // sideways drag scrubs through weeks instead of turning the object
+    scrubAcc += dx; while (Math.abs(scrubAcc) > 56) { hero.scrub(Math.sign(scrubAcc)); scrubAcc -= Math.sign(scrubAcc) * 56; }
+    return;
+  }
+  yaw += dx * 0.009; yawVel = dx * 0.009; pitch = clamp(pitch + dy * 0.003, -0.22, 0.22);
 });
 const endDrag = (e) => {
+  if (capturing) { capturing = false; hero.up?.(e); markMotion(); return; }
   if (!drag) return;
   const tap = drag.moved < 8 && performance.now() - drag.t < 400; drag = null;
   if (tap) doTap(e.clientX, e.clientY);
 };
-canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', () => drag = null);
+canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', () => { drag = null; if (capturing) { capturing = false; hero.up?.({ clientX: -1, clientY: -1, cancel: true }); } });
 function doTap(x, y) {
   ndc.set(x / W() * 2 - 1, -(y / H()) * 2 + 1); ray.setFromCamera(ndc, camera);
   const hit = ray.intersectObjects(hero.pickables, false)[0];
   const txt = hero.pick(hit ? hit.object : null, hit);
-  const line = $('line');
+  const line = hero.today ? $('tline') : $('line');
   if (txt) { line.textContent = txt; line.classList.add('picked'); } else { line.textContent = hero.info.line; line.classList.remove('picked'); }
-  lastInteract = performance.now();
+  markMotion();
 }
 window.__tap = doTap;
+window.__press = (x, y) => canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: y, pointerId: 1, bubbles: true }));
+window.__move = (x, y) => canvas.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y, pointerId: 1, bubbles: true }));
+window.__release = (x, y) => canvas.dispatchEvent(new PointerEvent('pointerup', { clientX: x, clientY: y, pointerId: 1, bubbles: true }));
+window.__undo = () => undoLog();
+if (SHOT) window.__dbgHero = () => hero;
+window.__anchor = (list, i = 0, local) => { const o = (list === 'press' ? hero.pressables : hero.pickables).at(i); if (!o) return null; o.updateMatrixWorld(true);
+  const v = local ? new THREE.Vector3(...local).applyMatrix4(o.matrixWorld) : new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3());
+  v.project(camera); return [(v.x + 1) / 2 * W(), (1 - v.y) / 2 * H()]; };
 
 /* loop */
 const clock = new THREE.Clock();
-let frames = 0;
+let frames = 0, quiet = 0, lastMotion = 0, ptLoaded = false;
+ptReady.then(() => { ptLoaded = true; });
+function markMotion() { quiet = 0; stopStill(); if (SHOT) window.__ready = false; }
 function tick() {
   requestAnimationFrame(tick);
   if (document.hidden || window.__hold) return;
-  const dt = Math.min(clock.getDelta(), SHOT ? 1.0 : 1 / 20), now = performance.now();
-  TIME.value += dt; heroAge += dt;
-  if (!drag) {
-    yaw += yawVel; yawVel *= Math.pow(0.93, dt * 60);
-    if (!SHOT && !REDUCED && now - lastInteract > 1600) {
-      if (hero?.swing) yaw += ((hero.initYaw ?? 0) + Math.sin(TIME.value * 0.3) * hero.swing - yaw) * Math.min(1, dt * 0.8);
-      else yaw += (hero?.spin ?? 0.08) * dt;
-    }
-    pitch *= Math.pow(0.9, dt * 60);
+  const dt = Math.min(clock.getDelta(), SHOT ? 1.0 : 1 / 20);
+  if (still.on) {
+    if (still.done) return;                                   // converged: draw nothing, the phone rests
+    stillFrame(dt);
+    blend.uniforms.uMix.value = still.mix; renderPass.enabled = still.mix < 1;
+    bloom.strength = bloomBase * (1 - (still.mode === 'pt' ? 0.55 : 0) * still.mix);
+    composer.render(); frames++;
+    if (still.done && SHOT) window.__ready = true;
+    return;
   }
+  TIME.value += dt; heroAge += dt;
+  let moving = !!drag || Math.abs(yawVel) > 2e-4 || Math.abs(pitch) > 2e-3;
+  if (!drag) { yaw += yawVel; yawVel *= Math.pow(0.9, dt * 60); pitch *= Math.pow(0.88, dt * 60); }
   yawG.rotation.y = yaw; pivot.rotation.x = (hero?.tilt ?? 0) + pitch;
   if (hero?.hover && !REDUCED) pivot.position.y = hero.pivotY + Math.sin(TIME.value * 1.1) * hero.hover;
-  if (hero) hero.update(SHOT ? Math.max(heroAge, 0) : heroAge, dt);
+  if (hero) {                        // fixed small sub-steps keep every spring stable even when a frame is slow
+    const n = Math.min(30, Math.max(1, Math.ceil(dt / (1 / 60)))), a0 = heroAge - dt;
+    for (let i = 1; i <= n; i++) if (hero.update(a0 + dt * i / n, dt / n) === true) moving = true;
+  }
+  if (heroAge < (hero?.buildT ?? 3.4)) moving = true;
+  quiet = moving ? 0 : quiet + dt;
   syncMirror();
-    composer.render();
-  frames++;
-  if (heroAge > 3.4 && frames > 4 && !window.__ready) window.__ready = true;
+  if (still.mix > 0) still.mix = Math.max(0, still.mix - dt / 0.15);
+  blend.uniforms.uMix.value = still.mix; renderPass.enabled = true; bloom.strength = bloomBase * (1 - (still.mode === 'pt' ? 0.55 : 0) * still.mix);
+  composer.render(); frames++;
+  if (quiet > 0.4 && (ptLoaded || Q.has('nopt')) && !window.__nostill && !Q.has('raw')) startStill();
+  if (SHOT && Q.has('raw') && quiet > 0.4) window.__ready = true;
 }
 window.addEventListener('resize', resize);
 applyStage(stageId);
@@ -1287,7 +2264,7 @@ show(cur);
 markStage();
 resize();
 tick();
-window.__state = () => ({ cur, stage: stageId, sample: sampleIdx[cur], frames, info: hero.info });
+window.__state = () => ({ cur, stage: stageId, sample: sampleIdx[cur], frames, info: hero.info, still: { on: still.on, mode: still.mode, n: still.n, done: still.done, ptFail, ms: Math.round(performance.now() - still.t0) } });
 </script>
 </body>
 </html>
