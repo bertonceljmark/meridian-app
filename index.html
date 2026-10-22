@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0B1019">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<style>.status,.island,.homebar{display:none!important}html,body{height:100%;background:#0B1019}.mobile{position:fixed;top:0;right:0;bottom:0;left:0}.mobile .screen{width:100%!important;height:100%!important}</style>
+<style>.status,.island,.homebar{display:none!important}html,body{height:100%;background:#0B1019}.mobile{position:fixed;top:0;right:0;bottom:0;left:0}.mobile .screen{width:100%!important;height:100%!important}@media (display-mode: standalone){.mobile{top:-54px}}</style>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
@@ -261,7 +261,7 @@ svg { display: block; }
 @keyframes zoomIn { from { transform: scale(.86); opacity: 0; } to { transform: none; opacity: 1; } }
 .scroll { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; overscroll-behavior: contain; }
 .scroll::-webkit-scrollbar { display: none; }
-.pad-tab { height: 132px; }
+.pad-tab { height: calc(132px + var(--strip, 0px)); }
 .pad-tab.bar { height: 196px; }
 
 /* top bar for pushed pages */
@@ -1205,8 +1205,8 @@ svg { display: block; }
 .m3-legend.placed { position: relative; display: block; height: calc(16px * var(--ts, 1)); padding: 0; }
 .m3-legend.placed.keys { height: 44px; }
 .m3-legend.colvals button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; }
-.m3-legend.colvals .cn { font-style: normal; display: block; font-size: calc(11.5px * var(--ts, 1)); line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.m3-legend.colvals .cv { display: block; font-size: calc(12px * var(--ts, 1)); line-height: 1.2; font-weight: 620; color: var(--on-deep); overflow-wrap: anywhere; }
+.m3-legend.colvals .cn { font-style: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: calc(11.5px * var(--ts, 1)); line-height: 1.2; max-width: 100%; overflow: hidden; white-space: normal; overflow-wrap: normal; word-break: keep-all; hyphens: manual; }
+.m3-legend.colvals .cv { display: block; font-size: calc(12px * var(--ts, 1)); line-height: 1.2; font-weight: 620; color: var(--on-deep); overflow-wrap: normal; word-break: keep-all; hyphens: manual; }
 .m3-legend.colvals.placed.keys { height: calc(30px + 58px * var(--ts, 1)); }
 .ax .m3-legend.colvals .cn { font-size: 13px; letter-spacing: -.01em; }
 .ax .m3-legend.colvals.placed.keys { height: calc(46px + 58px * var(--ts, 1)); }
@@ -1500,6 +1500,8 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 
 /* ---- A-05 / D-04: every row action is one neutral ink key; the screen's one primary key is the plain lit pill ---- */
 .act:not(.live), .qrow .act:not(.live), .act.pill:not(.live) { background: var(--key); color: var(--key-ink); box-shadow: var(--key-mat); }
+/* OP5-02: a round key's glyph never shrinks to fit its padding */
+.act > svg, .qrow .act > svg { flex: none; }
 .act.primary:not(.live), .qrow .act.primary:not(.live) { background: var(--btn-1); color: var(--btn-1-ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 0 rgba(0,0,0,.18), 0 6px 14px -8px rgba(8,12,20,.5); padding: 0 18px; font-weight: 650; }
 .qrow .act { width: 44px; height: 44px; border-radius: 22px; }
 .qrow .act.pill { width: auto; min-width: 44px; }
@@ -2174,7 +2176,9 @@ class Slots extends Stage {
     const rows = n > 8 ? 2 : 1, per = Math.ceil(n / rows);
     /* AL4-01: record stones are pebbles across the stage, one per session, big enough to read and to tap */
     const big = !!this.data.recs; const gap = big ? 6.4 / Math.max(1, per) : Math.min(1.3, 5.2 / Math.max(1, per)); const r = big ? gap * .4 : Math.min(n === 1 ? .62 : .44, gap * .36);
-    this.fit = big ? { d: 6.6, y: .55, tilt: .32, aspect: 2.1 } : { d: n === 1 ? 4.6 : per > 7 ? 7.0 : 6.0, y: n === 1 ? .5 : .35, tilt: rows > 1 ? .62 : .5, aspect: 1.9 };
+    /* AL6-02: the view is fitted to the tallest record stone, so none is cut by the top of the canvas */
+    const Hmax = big ? Math.max(0, ...L.map(sl => r * 1.9 * (sl.h == null ? 1 : Math.max(.06, sl.h * 2.4)))) : 0; const top = .08 + Math.max(r * 1.2, Hmax) + .25;
+    this.fit = big ? { d: Math.max(6.6, (top + .45) / 2 / .2), y: Math.max(.55, (top - .45) / 2), tilt: .32, aspect: 2.1 } : { d: n === 1 ? 4.6 : per > 7 ? 7.0 : 6.0, y: n === 1 ? .5 : .35, tilt: rows > 1 ? .62 : .5, aspect: 1.9 };
     const lit = stoneMat(this.data.hue); const matte = new T.MeshStandardMaterial({ color: ok(.66, .012, 250), roughness: .82 });
     const clear = new T.MeshPhysicalMaterial({ color: 0xe6edf8, roughness: .05, transparent: true, opacity: .16, clearcoat: 1, envMapIntensity: 2, depthWrite: false });
     const plinthM = new T.MeshStandardMaterial({ color: ok(.3, .015, 255), roughness: .6, metalness: .1 });
@@ -2182,10 +2186,12 @@ class Slots extends Stage {
       const row = Math.floor(i / per), col = i % per, nr = row === rows - 1 ? n - per * (rows - 1) : per;
       const x = (col - (nr - 1) / 2) * gap; const z = big ? 0 : -Math.pow(Math.abs(col - (nr - 1) / 2) / Math.max(1, nr / 2), 2) * .7 + (rows > 1 ? (row - .5) * gap * 1.5 : 0);
       const plinth = new T.Mesh(new T.CylinderGeometry(r * 1.05, r * 1.15, .08, 24), plinthM); plinth.position.set(x, .04, z); plinth.receiveShadow = true; g.add(plinth);
-      const h = sl.h == null ? 1 : big ? Math.max(.2, sl.h * 2.4) /* BD-11: a real height range, from zero */ : Math.max(.25, sl.h);
+      const h = sl.h == null ? 1 : big ? Math.max(.06, sl.h * 2.4) /* BD-11: a real height range, from zero */ : Math.max(.25, sl.h);
       /* AL5-01: a record stone keeps one shape; its length is the height of a standing stone seated on the plinth (uniform cross-section, never a stretched pebble) */
-      const rr = r * .6, H = big ? Math.max(2 * rr, r * 1.9 * h) : 0; const geo = big ? new T.CapsuleGeometry(rr, Math.max(0, H - 2 * rr), 8, 24) : cut(r);
-      const m = new T.Mesh(geo, sl.on ? (this.data.matte || sl.dim ? matte : sl.hue != null ? stoneMat(sl.hue) : lit) : clear); m.castShadow = !!sl.on; if (big) m.position.set(x, .08 + H / 2, z); else { m.position.set(x, .1 + r * .95 * h, z); m.scale.set(1, h, 1); } m.renderOrder = sl.on ? 0 : 2; m.userData.pick = sl.pick != null ? sl.pick : i; if (sl.on && this.opts.onPick) this.picks.push(m); g.add(m);
+      /* B7-01: below the capsule's minimum (its own width) a short session is a dome of its true height, so 7 and 12 min differ */
+      const rr = r * .6, Ht = r * 1.9 * h, dome = big && Ht < 2 * rr, H = big ? Math.max(2 * rr, Ht) : 0;
+      const geo = !big ? cut(r) : dome ? new T.SphereGeometry(rr, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, Ht / rr, 1) : new T.CapsuleGeometry(rr, Math.max(0, H - 2 * rr), 8, 24);
+      const m = new T.Mesh(geo, sl.on ? (this.data.matte || sl.dim ? matte : sl.hue != null ? stoneMat(sl.hue) : lit) : clear); m.castShadow = !!sl.on; if (big) m.position.set(x, dome ? .08 : .08 + H / 2, z); else { m.position.set(x, .1 + r * .95 * h, z); m.scale.set(1, h, 1); } m.renderOrder = sl.on ? 0 : 2; m.userData.pick = sl.pick != null ? sl.pick : i; if (sl.on && this.opts.onPick) this.picks.push(m); g.add(m);
       this.items.push({ m, i, y0: m.position.y, s: sp(0), on: !!sl.on });
     });
     this.mats = { lit, matte, clear }; this.hueMats = {};
@@ -2218,25 +2224,26 @@ class Dial extends Stage {
     const L = this.data.slots; const n = L.length; const R0 = 1.25, R1 = 2.35; const step = Math.PI * 2 / n;
     const plat = new T.Mesh(new T.CylinderGeometry(R1 + .22, R1 + .3, .12, 96), new T.MeshStandardMaterial({ color: ok(.2, .016, 255), roughness: .92, metalness: 0, envMapIntensity: .35 })); plat.position.y = -.06; plat.receiveShadow = true; g.add(plat);
     const hub = new T.Mesh(new T.CylinderGeometry(R0 - .18, R0 - .12, .05, 64), new T.MeshStandardMaterial({ color: ok(.15, .014, 255), roughness: .9, metalness: 0, envMapIntensity: .3 })); hub.position.y = .02; g.add(hub);
-    const on = this.data.hue != null ? gem(ok(.6, .15, this.data.hue)) : gem(ok(.62, .07, 215), { roughness: .2 });
+    const on = this.data.hue != null ? new T.MeshStandardMaterial({ color: ok(.62, .1, this.data.hue), roughness: .7 }) : new T.MeshStandardMaterial({ color: ok(.66, .02, 240), roughness: .78 });
+    this.dayMat = new T.MeshStandardMaterial({ color: ok(.62, .012, 245), roughness: .8, metalness: 0 }); this.todayMat = new T.MeshStandardMaterial({ color: ok(.7, .11, this.data.hue != null ? this.data.hue : 215), roughness: .6, metalness: 0 });
     const clear = new T.MeshPhysicalMaterial({ color: 0xe6edf8, roughness: .08, transparent: true, opacity: .16, flatShading: true, depthWrite: false });
     const ctxC = { travel: ok(.62, .08, 70), sick: ok(.5, .02, 250), away: ok(.4, .01, 250), vacation: ok(.6, .07, 190) };
     L.forEach((sl, i) => {
-      const t = (i + .5) * step; const wArc = step * (R0 + R1) / 2 * .62;
+      /* AL6-01: narrower blocks (half the spacing at the inner edge) so neighbours never touch */
+      const t = (i + .5) * step; const wArc = Math.min(step * R0 * .5, .2);
       if (sl.ctx) { const seg = new T.Mesh(new T.CylinderGeometry(R1 + .2, R1 + .2, .02, 6, 1, false, Math.PI - (i + 1) * step, step), new T.MeshStandardMaterial({ color: ctxC[sl.ctx] || ctxC.away, roughness: .9, envMapIntensity: .4 })); seg.position.y = .005; g.add(seg); }
       if (sl.future || (sl.unknown && this.data.quietEmpty)) { const d = new T.Mesh(new T.SphereGeometry(sl.future ? .03 : .04, 8, 6), sl.future ? clear : this.tickMat || (this.tickMat = new T.MeshStandardMaterial({ color: ok(.5, .015, 250), roughness: .8 }))); d.position.set(Math.sin(t) * (R0 + .1), .05, -Math.cos(t) * (R0 + .1)); g.add(d); return; }
       const len = sl.unknown ? (R1 - R0) * .9 : (R1 - R0) * (.25 + .75 * (sl.f || 0));
       if (sl.layers && sl.layers.length && !sl.unknown) {
-        // one thin layer per routine kept that day, in its own hue; an amount routine is only a hairline
-        const m = new T.Group(); m.position.set(Math.sin(t) * R0, 0, -Math.cos(t) * R0); m.rotation.y = -t; let y = 0;
-        const L2 = (R1 - R0) * .82;
-        sl.layers.forEach(ly => { const th = .052; /* OP-15: one even layer per routine kept, so a taller block always means more kept */ const geo = new T.BoxGeometry(wArc, th, L2); geo.translate(0, y + th / 2, -L2 / 2); const lm = new T.Mesh(geo, this.layerMat(ly.hue)); lm.castShadow = true; lm.userData.pick = sl.id; m.add(lm); if (sl.id != null) this.picks.push(lm); y += th + .006; });
-        if (sl.rare != null) { const cap = new T.Mesh(new T.SphereGeometry(Math.min(.09, wArc * .42), 20, 14), stoneMat(sl.rare, { roughness: .18, clearcoat: 1 })); cap.position.set(0, y + .07, -L2 * .55); cap.castShadow = true; m.add(cap); }
+        /* OP-15 kept: height is the number of routines kept that day (one even step each). AL6-01: one matte block per day, hue only on today */
+        const m = new T.Group(); m.position.set(Math.sin(t) * R0, 0, -Math.cos(t) * R0); m.rotation.y = -t;
+        const L2 = (R1 - R0) * .82; const hs = sl.layers.length * .038;
+        const geo = new T.BoxGeometry(wArc, hs, L2); geo.translate(0, hs / 2, -L2 / 2); const lm = new T.Mesh(geo, i === this.data.todayI ? this.todayMat : this.dayMat); lm.castShadow = true; lm.userData.pick = sl.id; m.add(lm); if (sl.id != null) this.picks.push(lm);
         g.add(m); this.blocks.push({ m, id: sl.id, hgt: 1, s: sp(0), lift: sp(0), i, grp: true }); return;
       }
       const hgt = sl.unknown ? .03 : .1 + .32 * (sl.f || 0);
       const geo = new T.BoxGeometry(wArc, 1, len); geo.translate(0, .5, -len / 2);
-      const m = new T.Mesh(geo, sl.unknown ? clear : sl.hue != null ? this.layerMat(sl.hue) : on); m.castShadow = !sl.unknown; m.position.set(Math.sin(t) * R0, 0, -Math.cos(t) * R0); m.rotation.y = -t; m.userData.pick = sl.id;
+      const m = new T.Mesh(geo, sl.unknown ? clear : i === this.data.todayI && this.data.hue == null ? this.todayMat : on); m.castShadow = !sl.unknown; m.position.set(Math.sin(t) * R0, 0, -Math.cos(t) * R0); m.rotation.y = -t; m.userData.pick = sl.id;
       g.add(m); if (!sl.unknown && sl.id != null) this.picks.push(m);
       this.blocks.push({ m, id: sl.id, hgt, s: sp(0), lift: sp(0), i });
     });
@@ -2828,7 +2835,7 @@ const ITEMS0 = [{
 }, {
   id: 'stretch',
   name: 'Stretching',
-  short: 'Stretch',
+  colName: 'Stretch',
   kind: 'routine',
   measure: 'session',
   hue: 122,
@@ -5373,7 +5380,8 @@ function naturalState(db, it, ev) {
   const tg = ev.tg;
   const c = it.cadence.type;
   const left = ev.b - db.today + 1;
-  const lastE = lastEntry(db, it);
+  const lastE0 = lastEntry(db, it);
+  const lastE = lastE0 && beforeBreak(db, dayOf(lastE0.t)) ? null : lastE0;
   const last = lastE && dayOf(lastE.t) < db.today ? `last ${relDay(dayOf(lastE.t), db.today)}` : '';
   const j = (...xs) => xs.filter(Boolean).join(', ');
   const per = c === 'day' ? 'today' : c === 'week' ? 'this week' : c === 'month' ? 'this month' : c === 'everyN' ? 'this window' : 'this week';
@@ -5442,6 +5450,7 @@ function progressText(db, it, ev) {
     L: true
   })} ${pw}`;
   if (tg.cmp === 'none') return `${fmtDur(currentWeekMinutes(db, it))} this week`;
+  if (RHYTHM(it) && ev.state !== 'met' && ev.b >= db.today) return naturalState(db, it, ev).head.replace(/^./, s => s.toLowerCase());
   if (ev.v === 0 && tg.cmp !== 'at_most') return (lastSaid(db, it) || `open ${pw}`).replace(/^./, s => s.toLowerCase());
   if ((tg.v > 1 || isRange(tg)) && ev.v >= tg.v && tg.cmp !== 'at_most') return `${aimDone(tg, ev.v)} ${pw}`;
   if (tg.v > 1 || isRange(tg) || tg.cmp === 'at_most') return `${ev.v} of ${tg.cmp === 'at_most' ? 'at most ' : ''}${rngTxt(tg)} ${pw}`;
@@ -5470,13 +5479,15 @@ function lifetime(db, it) {
   const minutes = minutesOf(it, all);
   const amount = SUMS.has(it.measure) ? sum(all.map(e => e.v)) : count;
   const days = new Set(all.map(e => dayOf(e.t))).size;
+  const first = all[0] ? dayOf(all[0].t) : null;
   return {
     all,
     count: all.length,
     minutes,
     amount,
     days,
-    first: all[0] ? dayOf(all[0].t) : null
+    first,
+    since: first != null ? Math.min(first, it.created) : it.created
   };
 }
 function keptOf(db, it, L) {
@@ -5487,7 +5498,8 @@ function keptOf(db, it, L) {
     k = 0,
     d = it.created,
     g = 0;
-  while (d <= db.today && g++ < 4000) {
+  const end = it.retired != null ? Math.min(db.today, it.retired) : db.today;
+  while (d <= end && g++ < 4000) {
     const [a, b] = periodOf(it, d);
     if (!isPausedOn(it, a)) {
       n++;
@@ -5527,14 +5539,14 @@ function primaryAccum(it, L) {
   if (m === 'event') return {
     big: String(L.count),
     unit: unitWord(it, L.count),
-    line: `since ${fmtDay(it.created, {
+    line: `since ${fmtDay(L.since, {
       noDow: true
     })}`
   };
   if (m === 'confirmation' || m === 'count') return {
     big: String(L.count),
     unit: unitWord(it, L.count),
-    line: `since ${fmtDay(it.created, {
+    line: `since ${fmtDay(L.since, {
       noDow: true
     })}`
   };
@@ -6548,6 +6560,22 @@ const INKS = {
   deep3: ['var(--on-deep-3)', '#8f8c86'],
   acc: ['var(--acc)', '#4a7dbf']
 };
+const CHART_RO = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(es => es.forEach(e => {
+  const s = e.target;
+  const vb = s.viewBox && s.viewBox.baseVal;
+  const w = s.clientWidth;
+  if (vb && vb.width && w) {
+    const v = Math.max(1, vb.width / w).toFixed(3);
+    if (s.style.getPropertyValue('--ci') !== v) s.style.setProperty('--ci', v);
+  }
+})) : null;
+const chartFit = el => {
+  const s = el && el.ownerSVGElement;
+  if (s && CHART_RO && !s.__ci) {
+    s.__ci = 1;
+    CHART_RO.observe(s);
+  }
+};
 function Tx({
   c = 3,
   size = 12,
@@ -6558,10 +6586,11 @@ function Tx({
 }) {
   const [v, f] = INKS[c] || [c, c];
   return React.createElement("text", _extends({
+    ref: chartFit,
     fill: f,
     style: {
       fill: v,
-      fontSize: `calc(${Math.max(size, 11)}px * (1 + (var(--ts, 1) - 1) * .6))`,
+      fontSize: `calc(${Math.max(size, 11)}px * (1 + (var(--ts, 1) - 1) * .6) * var(--ci, 1))`,
       fontWeight: weight,
       fontFamily: 'var(--f-text)',
       fontVariantNumeric: 'tabular-nums'
@@ -7157,10 +7186,11 @@ function Lines({
   bands,
   marks
 }) {
+  const axW = s => s ? Math.max(...s.domain.map(v => String(s.fmtAxis ? s.fmtAxis(v) : v).length)) : 0;
   const W = 350,
     H = height,
-    pl = 36,
-    pr = 34,
+    pl = Math.max(36, 8 + 10 * axW(series[0])),
+    pr = Math.max(34, 8 + 10 * axW(series[1])),
     pt = 30,
     pb = 22;
   const ref = useRef(null);
@@ -8062,6 +8092,7 @@ function ItemObject({
     fallback: fallback
   }));
 }
+const monthSoFar = d => d && d.daysWith ? `So far, ${plural(d.daysWith, 'day')} with something recorded` : 'Nothing recorded yet';
 function YearObject({
   db,
   data,
@@ -8122,10 +8153,11 @@ function YearObject({
   }), React.createElement("div", {
     className: "m3-cap",
     "aria-live": "polite"
-  }, React.createElement("b", null, MONTHS[front]), React.createElement("span", null, fut ? 'Still ahead' : notes[front] || heldText((held && held[front] || {
+  }, React.createElement("b", null, MONTHS[front]), React.createElement("span", null, fut ? 'Still ahead' : notes[front] || (front === monthOf(db.today) ? monthSoFar(data[front]) : null) || heldText((held && held[front] || {
     held: []
   }).held) || monthFact(db, front) || 'A quieter month')));
 }
+const dayColsMax = S => S.axL ? 4 : 5;
 const colVal = (db, it) => {
   const ev = currentEval(db, it);
   return rowVal(db, it, ev).replace(/ today$/, '');
@@ -8142,7 +8174,7 @@ function DayColumns({
       hue: it.hue,
       f: ev.tg.cmp === 'none' || !ev.tg.v ? 0 : ev.state === 'met' ? 1 : clamp(ev.v / ev.tg.v, 0, 1)
     };
-  }).slice(0, 7);
+  }).slice(0, dayColsMax(S));
   const data = useMemo(() => ({
     cols,
     wide: true
@@ -8175,8 +8207,10 @@ function DayColumns({
       color: 'var(--on-deep-2)'
     } : {
       color: 'var(--on-deep-2)',
-      maxWidth: cols.length * 64,
-      margin: '0 auto'
+      maxWidth: cols.length * 76,
+      margin: '0 auto',
+      padding: 0,
+      gap: 0
     }
   }, cols.map((c, i) => {
     const it = db.byId[c.id];
@@ -8191,7 +8225,9 @@ function DayColumns({
           left: `${(xs[i] * 100).toFixed(2)}%`,
           width: `calc(${(cw * 100).toFixed(2)}% - 6px)`
         } : {
-          flex: 1
+          flex: '1 1 0',
+          minWidth: 0,
+          padding: '4px 3px'
         }),
         minHeight: 44,
         minWidth: 44,
@@ -8202,18 +8238,19 @@ function DayColumns({
       s: 18
     }), React.createElement("i", {
       className: "cn"
-    }, it.short || it.name, it.isNew ? ', new' : ''), React.createElement("b", {
+    }, it.colName || it.short || it.name, it.isNew ? ', new' : ''), React.createElement("b", {
       className: "cv tnum"
     }, val));
-  })), list.length > cols.length && React.createElement("div", {
+  })), React.createElement("div", {
     style: {
       textAlign: 'center',
       color: 'var(--on-deep-3)',
       fontSize: fs(12.5),
-      marginTop: 2
+      marginTop: 4,
+      padding: '0 var(--gut)'
     },
     "data-cols-of": true
-  }, cols.length, " of ", list.length, " daily routines"));
+  }, list.length > cols.length ? `Every day, so far today. ${cols.length} of ${list.length} here, the rest under More every day` : 'Every day, so far today'));
 }
 function ZoneColumns({
   zones,
@@ -9943,14 +9980,18 @@ function IntentMoment({
     key: l,
     className: "chip",
     style: second,
-    onClick: e => set(dl ? {
-      due: d,
-      offeredOn: null
-    } : {
-      bring: d,
-      bringLabel: lab,
-      at
-    }, dl ? `New date: ${fmtDay(d)}` : `Comes back ${lab}`, x.title, e)
+    onClick: e => {
+      const al = !dl && lab === 'when you get home' && db.prefs.location !== 'allowed';
+      if (al) S.act.setPref('location', 'allowed');
+      set(dl ? {
+        due: d,
+        offeredOn: null
+      } : {
+        bring: d,
+        bringLabel: lab,
+        at
+      }, dl ? `New date: ${fmtDay(d)}` : `Comes back ${lab}`, al ? `${x.title}. iOS asks for location once` : x.title, e);
+    }
   }, l))) : React.createElement("div", {
     style: {
       display: 'flex',
@@ -13677,7 +13718,7 @@ function periodLabel(it, p) {
 function resultSeries(db, it) {
   const c = it.cadence.type;
   const count = c === 'day' ? 21 : c === 'month' ? 10 : c === 'everyN' ? 16 : 16;
-  const ps = periodsBack(db, it, count);
+  const ps = periodsBack(db, it, count, it.retired != null && it.retired < db.today ? it.retired : undefined);
   const q = it.measure === 'quantity';
   return ps.map(p => {
     const {
@@ -14208,7 +14249,9 @@ function ResultsSection({
     const parts = obs ? [[sum0.met, 'confirmed within your intention'], [sum0.part, 'above it'], [sum0.unk, 'unknown']] : [[sum0.met, ev0(it) ? 'at target' : 'recorded'], [sum0.part, 'partly'], [sum0.unk, 'with nothing recorded'], [sum0.aside, 'set aside or paused'], [sum0.none, 'noted as not done']];
     const l = parts.filter(p => p[0] > 0).map(p => `${p[0]} ${p[1]}`);
     const unit = it.cadence.type === 'day' ? 'days' : it.cadence.type === 'month' ? 'months' : it.cadence.type === 'everyN' ? 'windows' : 'weeks';
-    return l.length ? `Last ${sum0.n} ${unit}: ${l.join(', ')}.` : '';
+    return l.length ? `${it.retired != null && it.retired < db.today ? `Retired ${fmtDay(it.retired, {
+      noDow: true
+    })}. Its last` : 'Last'} ${sum0.n} ${unit}: ${l.join(', ')}.` : '';
   })()), it.id === 'alcohol' && React.createElement(AlcoholConfirm, {
     it: it
   }), (it.id === 'movement' || it.id === 'running') && React.createElement(RecentWorkouts, {
@@ -14645,9 +14688,11 @@ function GrowthSection({
     style: {
       marginTop: 4
     }
-  }, pa.big, " ", pa.unit === 'litres' ? 'L' : pa.unit, " since ", fmtDay(it.created, {
+  }, pa.big, " ", pa.unit === 'litres' ? 'L' : pa.unit, " since ", fmtDay(L.since, {
     noDow: true
-  }), pa.line && !/^since /.test(pa.line) ? `, ${pa.line}` : '')) : React.createElement(React.Fragment, null, React.createElement("div", {
+  }), it.retired != null && it.retired < db.today ? `. Retired ${fmtDay(it.retired, {
+    noDow: true
+  })}` : '', pa.line && !/^since /.test(pa.line) ? `, ${pa.line}` : '')) : React.createElement(React.Fragment, null, React.createElement("div", {
     style: {
       display: 'flex',
       alignItems: 'baseline',
@@ -14667,7 +14712,7 @@ function GrowthSection({
     style: {
       color: 'var(--ink-2)'
     }
-  }, pa.unit === 'litres' ? 'L' : pa.unit, " since ", fmtDay(it.created, {
+  }, pa.unit === 'litres' ? 'L' : pa.unit, " since ", fmtDay(L.since, {
     noDow: true
   }))), pa.line && React.createElement("div", {
     className: "t-s",
@@ -14799,7 +14844,7 @@ function GrowthSection({
       },
       "data-growth-legend": true
     }, L);
-  })(), nx && React.createElement("p", {
+  })(), nx && it.retired == null && React.createElement("p", {
     className: "t-s",
     style: {
       marginTop: 12,
@@ -16350,10 +16395,12 @@ const wHue = w => ({
   hue: WHUE[w.type] || 150
 });
 const fmtKm = v => `${v.toFixed(v < 10 ? 1 : 1)}`;
+const beforeBreak = (db, d) => db.contexts.some(c => ['away', 'vacation', 'sick'].includes(c.type) && c.from > d && c.to < db.today && c.to - c.from + 1 >= 7);
 const lastSaid = (db, it) => {
   const l = lastEntry(db, it);
   if (!l) return '';
   const d = dayOf(l.t);
+  if (beforeBreak(db, d)) return '';
   return d === db.today ? 'Earlier today' : d === db.today - 1 ? 'Last done yesterday' : `Last ${relDay(d, db.today)}`;
 };
 const relDayCap = (d, today) => relDay(d, today).replace(/^./, s => s.toUpperCase());
@@ -16898,7 +16945,7 @@ function EfficiencyChart({
 }) {
   const W = 350,
     H = 180,
-    pl = 34,
+    pl = 50,
     pr = 8,
     pt = 22,
     pb = 24;
@@ -18231,7 +18278,8 @@ function TimeRoot() {
   }, months.filter(m => data[m]).reverse().map(m => {
     const h = heldBy[m];
     const fh = f ? h.all.find(x => x.it.id === f.id) : null;
-    const sub = f ? fh ? fh.share >= .75 ? 'Held' : fh.met ? 'Some of the time' : 'A quiet month for it' : 'Not part of it yet' : [plateNotes[m], heldText(h.held)].filter(Boolean)[0] || (data[m].daysWith ? 'A quieter month' : 'Nothing recorded');
+    const open = m === monthOf(db.today);
+    const sub = open ? f ? fh && fh.met ? 'Some of the time so far' : 'Nothing yet this month' : [plateNotes[m], monthSoFar(data[m])].filter(Boolean)[0] : f ? fh ? fh.share >= .75 ? 'Held' : fh.met ? 'Some of the time' : 'A quiet month for it' : 'Not part of it yet' : [plateNotes[m], heldText(h.held)].filter(Boolean)[0] || (data[m].daysWith ? 'A quieter month' : 'Nothing recorded');
     const fact = monthFact(db, m);
     return React.createElement(Row, {
       key: m,
@@ -18341,7 +18389,7 @@ function MonthView({
         due++;
         if (evalPeriod(db, it, d, d).state === 'met') met++;
       }
-      sub = !due ? 'resting' : met ? `at the aim on ${plural(met, 'day')}` : 'a quieter month for it; nothing carries over';
+      sub = !due ? 'resting' : met ? `at the aim on ${plural(met, 'day')}${b < monthEnd(m) ? ' so far' : ''}` : b < monthEnd(m) ? 'not at the aim yet this month' : 'a quieter month for it; nothing carries over';
     } else if (c === 'week') {
       let met = 0,
         n = 0;
@@ -18350,7 +18398,7 @@ function MonthView({
         n++;
         if (evalPeriod(db, it, w, w + 6).state === 'met') met++;
       }
-      sub = met ? `settled in ${plural(met, 'week')}` : n ? 'a quieter month for it; nothing carries over' : 'part of this month';
+      sub = met ? `settled in ${plural(met, 'week')}${b < monthEnd(m) ? ' so far' : ''}` : n ? b < monthEnd(m) ? 'no week settled yet this month' : 'a quieter month for it; nothing carries over' : 'part of this month';
     } else if (c === 'month') {
       const ev = evalPeriod(db, it, monthStart(m), monthEnd(m));
       sub = ev.state === 'met' ? 'settled this month' : b < monthEnd(m) ? 'still open' : 'not settled; nothing carries over';
@@ -21930,7 +21978,7 @@ function WeeksPage({
       const ev = evalPeriod(db, it, ws, we);
       return {
         it,
-        sub: ev.state === 'met' ? 'settled' : ev.state === 'before' ? 'not started yet' : isPausedOn(it, Math.min(we, db.today)) ? 'paused' : `${progressText(db, it, ev)}`,
+        sub: ev.state === 'met' ? 'settled' : ev.state === 'before' ? 'not started yet' : isPausedOn(it, Math.min(we, db.today)) ? 'paused' : `${progressText(db, it, ev)}${we >= db.today && !RHYTHM(it) ? ' so far' : ''}`,
         met: ev.state === 'met'
       };
     }
@@ -21939,14 +21987,14 @@ function WeeksPage({
     for (let d = Math.max(0, ws); d <= Math.min(we, db.today); d++) if (evalPeriod(db, it, d, d).state === 'met') n++;
     return {
       it,
-      sub: n ? `at the aim on ${plural(n, 'day')}` : 'a quieter week for it; nothing carries over',
+      sub: n ? `at the aim on ${plural(n, 'day')}${we >= db.today ? ' so far' : ''}` : we >= db.today ? 'not at the aim yet this week' : 'a quieter week for it; nothing carries over',
       met: n > 0,
       steady: el >= 3 && n >= el - 1 && ['confirmation', 'count', 'quantity', 'serving'].includes(it.measure)
     };
   });
   const steady = rows.filter(r => r.steady);
   const rowsShown = steady.length >= 2 ? rows.filter(r => !r.steady) : rows;
-  const cmp = usual == null ? null : Math.abs(tot - usual) <= Math.max(20, usual * .15) ? 'about usual' : tot > usual ? 'more than usual' : 'quieter than usual';
+  const cmp = usual == null ? null : we >= db.today ? `${fmtDur(Math.round(tot))} so far` : Math.abs(tot - usual) <= Math.max(20, usual * .15) ? 'about usual' : tot > usual ? 'more than usual' : 'quieter than usual';
   const go = k => setWs(w => clamp(run ? k < 0 ? run.a - 7 : run.b + 7 : w + 7 * k, first, cur));
   return React.createElement(Page, {
     back: back,
@@ -25274,16 +25322,20 @@ function IntentActSheet({
   }, (dl ? dueOpts(db.today) : holdOpts(db.today, db.nowMin, db).filter(o => o[1] > db.today || o[3] > db.nowMin).slice(0, 5)).map(([l, d, lab, at]) => React.createElement("button", {
     key: l,
     className: "chip",
-    onClick: () => set(close, dl ? {
-      due: d,
-      offeredOn: null,
-      status: x.status === 'passed' ? 'held' : x.status
-    } : {
-      bring: d,
-      bringLabel: lab,
-      at,
-      status: 'held'
-    }, dl ? `By ${fmtDay(d)}` : `Back ${lab}`)
+    onClick: () => {
+      const al = !dl && lab === 'when you get home' && db.prefs.location !== 'allowed';
+      if (al) S.act.setPref('location', 'allowed');
+      set(close, dl ? {
+        due: d,
+        offeredOn: null,
+        status: x.status === 'passed' ? 'held' : x.status
+      } : {
+        bring: d,
+        bringLabel: lab,
+        at,
+        status: 'held'
+      }, dl ? `By ${fmtDay(d)}` : al ? `Back ${lab}. iOS asks for location once` : `Back ${lab}`);
+    }
   }, l))), React.createElement("button", {
     className: "btn ghost big wide",
     onClick: () => {
@@ -25921,13 +25973,13 @@ function TodayScreen() {
     });
   });
   const ints = (db.intents || []).filter(x => ['held', 'started'].includes(x.status));
-  const deadlines = ints.filter(x => x.kind === 'deadline' && x.due >= db.today && x.due - db.today <= 3).sort((a, b) => a.due - b.due);
+  const deadlines = ints.filter(x => x.kind === 'deadline' && x.due >= db.today && (x.win ? x.due === db.today : x.due - db.today <= 3)).sort((a, b) => a.due - b.due);
   const justDone = x => {
     if (!x.repeat) return false;
     const per = x.repeat === 'week' ? 7 : x.repeat === 'month' ? 28 : x.every || 14;
     return (x.log || []).some(l => l.k === 'done' && dayOf(l.t) > x.due - per);
   };
-  const dateKeys = ints.filter(x => x.kind === 'deadline' && !justDone(x) && x.due - db.today >= 4 && x.due - db.today <= 7).sort((a, b) => a.due - b.due);
+  const dateKeys = ints.filter(x => x.kind === 'deadline' && !justDone(x) && (x.due - db.today >= 4 || x.win && x.due > db.today) && x.due - db.today <= 7).sort((a, b) => a.due - b.due);
   const arrived = ints.filter(x => holdArrived(db, x)).sort((a, b) => a.bring - b.bring);
   const held = arrived.slice(0, 1);
   const heldN = (db.intents || []).filter(x => ['held', 'started', 'seen'].includes(x.status)).length;
@@ -26466,7 +26518,7 @@ function RoutinesRoot() {
     s: 18,
     w: 2.4
   }), "New routine")), groups.map(([c, label]) => {
-    const list = active.filter(it => it.cadence.type === c).filter((it, i) => q || c !== 'day' || i >= 7);
+    const list = active.filter(it => it.cadence.type === c).filter((it, i) => q || c !== 'day' || i >= dayColsMax(S));
     if (!list.length) return null;
     return React.createElement("div", {
       key: c,
@@ -26828,11 +26880,13 @@ function IntentSheet({
       })
     });
     const due = o ? o[1] : ex && ex.due;
+    const askLoc = kind === 'hold' && o && o[2] === 'when you get home' && db.prefs.location !== 'allowed';
+    if (askLoc) S.act.setPref('location', 'allowed');
     close();
     S.haptic('soft');
     S.toast({
       title: ex ? 'Updated' : 'Held',
-      sub: kind === 'hold' ? `${title.trim()}, back ${o ? o[2] : ex.bringLabel}` : `${title.trim()}, by ${fmtDay(due)}${repeat ? ', then ' + repeatWord({
+      sub: kind === 'hold' ? `${title.trim()}, back ${o ? o[2] : ex.bringLabel}${askLoc ? '. iOS asks for location once' : ''}` : `${title.trim()}, by ${fmtDay(due)}${repeat ? ', then ' + repeatWord({
         repeat,
         every
       }, due) : ''}`,
@@ -26917,7 +26971,13 @@ function IntentSheet({
   }, React.createElement(Icon, {
     n: "calendar",
     s: 14
-  }), sel === 'pick' && pick != null ? fmtDay(pick) : kind === 'hold' ? 'Pick a day' : 'Pick a date')), sel === 'pick' && React.createElement(DatePick, {
+  }), sel === 'pick' && pick != null ? fmtDay(pick) : kind === 'hold' ? 'Pick a day' : 'Pick a date')), kind === 'hold' && chosen && chosen[2] === 'when you get home' && db.prefs.location !== 'allowed' && React.createElement("p", {
+    className: "t-xs",
+    style: {
+      marginTop: 8
+    },
+    "data-loc-ask": true
+  }, "Uses your location, asked once when you hold it. Only arriving home is used, never a history."), sel === 'pick' && React.createElement(DatePick, {
     value: pick,
     onChange: setPick,
     min: db.today
@@ -31623,10 +31683,13 @@ function DevicesPage() {
   })}`;
   const ageOf = id => {
     const t = db.entries.reduce((m, e) => (!id || e.item === id) && e.t <= db.T && e.t > m ? e.t : m, 0);
+    const d = t ? dayOf(t) : null;
     return t ? React.createElement("span", {
       className: "wage tnum",
       "data-widget-age": true
-    }, fmtTime(t)) : null;
+    }, d === db.today ? fmtTime(t) : d === db.today - 1 ? `Yesterday ${fmtTime(t)}` : fmtDay(d, {
+      noDow: true
+    })) : null;
   };
   return React.createElement(Page, {
     back: back,
@@ -33750,6 +33813,17 @@ function App() {
     MI.W.haptic = haptic;
     MI.watch(screenRef.current);
   });
+  useLayoutEffect(() => {
+    const sc = screenRef.current;
+    if (!sc) return;
+    let need = 0;
+    sc.querySelectorAll('[data-livebar], [data-toast]:not(.top)').forEach(el => {
+      const p = el.offsetParent;
+      if (p) need = Math.max(need, p.clientHeight - el.offsetTop + 12 - 132);
+    });
+    const v = Math.max(0, Math.round(need)) + 'px';
+    if (sc.style.getPropertyValue('--strip') !== v) sc.style.setProperty('--strip', v);
+  });
   const prevTab = useRef(null);
   useLayoutEffect(() => {
     if (prevTab.current && prevTab.current !== tab) MI.tabTo(screenRef.current);
@@ -33762,9 +33836,16 @@ function App() {
       return 0;
     }
   })());
+  const onTodayRef = useRef(true);
+  const lastToastN = useRef(0);
   const showToast = useCallback(t => {
     clearTimeout(toastT.current);
-    const n = Date.now();
+    const n = Date.now() + (Date.now() <= lastToastN.current ? lastToastN.current - Date.now() + 1 : 0);
+    lastToastN.current = n;
+    if (onTodayRef.current && !t.top) t = {
+      ...t,
+      top: true
+    };
     if (t.hint && hintN.current < 3) {
       hintN.current++;
       try {
@@ -34311,6 +34392,7 @@ function App() {
     },
     ax,
     setAx,
+    axL: ax || followSys && sysTs >= 1.2,
     arrivedW,
     undoEntry: id => {
       const e = userRef.current.added.find(x => x.id === id);
@@ -34480,6 +34562,7 @@ function App() {
     });
   }
   const stackNow = stacks[tab];
+  onTodayRef.current = tab === 'today' && stackNow.length === 0;
   const top = stackNow[stackNow.length - 1];
   useEffect(() => {
     if (scen !== 'arrive' || user.arrived || tab !== 'today' || stacks.today.length || sheets.length) return;
@@ -34794,7 +34877,22 @@ function App() {
   }, t.act2.label), t.undo && React.createElement("button", {
     className: "undo",
     onClick: () => {
-      if (!t.out && Date.now() - t.n > 350) t.undo();
+      if (!t.out && Date.now() - t.n > 350) {
+        const n0 = lastToastN.current;
+        t.undo();
+        if (lastToastN.current === n0) {
+          const tt = typeof t.title === 'string' ? t.title.replace(/^Done, /, '') : 'that';
+          const what = /^(Done|Started|Held|Updated|Let go|Brought back|Saved|Corrected|Unlinked|Linked as one|Kept as two|Idea removed|Note removed|Context updated|Won’t be suggested)$/.test(tt) && typeof t.sub === 'string' ? t.sub.split(', ')[0] : tt;
+          showToast({
+            title: `Undone, ${what}`,
+            sub: 'Back as it was',
+            neutral: true,
+            glyph: 'undo',
+            hue: 0,
+            quick: true
+          });
+        }
+      }
     },
     "data-undo": t.out ? undefined : true,
     tabIndex: t.out ? -1 : undefined
