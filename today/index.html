@@ -69,7 +69,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 @keyframes halo{0%{transform:scale(1);opacity:.16}35%{transform:scale(1.9);opacity:.3}100%{transform:scale(1);opacity:.16}}
 .arc .arc3d{position:absolute;left:0;top:0;display:block;touch-action:pan-y}
 .arc.is3d svg{display:none}
-.arc.is3d{overflow:hidden}
+.arc.is3d{overflow:hidden;height:330px;margin-top:-72px;z-index:0;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 70px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 70px,#000 calc(100% - 36px),transparent 100%)}
+.head{z-index:2}
+.arc.is3d .arcnote{top:auto;bottom:44px}
 .l3{position:absolute;left:0;top:0;pointer-events:none;white-space:nowrap;font:500 11.5px var(--ui);color:var(--t3);will-change:transform}
 .l3.now{color:var(--sun2);font-weight:600}
 .l3.nt{color:var(--night)}
@@ -319,6 +321,7 @@ textarea.field,input.field{display:block;width:calc(100% - 40px);margin:0 var(--
 
 @media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
 </head>
 <body>
 <div class="app" id="app">
@@ -683,7 +686,7 @@ function arcSvg() {
     const size = !x ? .6 : x.m === 'amount' ? Math.min(1, e.v / 600) : x.m === 'reps' ? .5 : x.m === 'event' ? 1 : e.dur ? .5 : .6;
     const L = 5 + 12 * size; const base = col[b] != null ? col[b] : A.Y(bt) - (e.dur ? 7 : 5);
     const y0 = base, y1 = base - L; col[b] = y1 - 3.5; cnt[b] = (cnt[b] || 0) + 1;
-    const nw = U.fx.ray === e.id; marks.push({ x: bx, y0, y1, isNew: nw, n: cnt[b] - 1 });
+    const nw = U.fx.ray === e.id; marks.push({ x: bx, y0, y1, isNew: nw, n: cnt[b] - 1, t: e.t, size, dur: e.dur || 0, id: e.id });
     g += `<line class="ray${nw ? ' new' : ''}" x1="${bx}" y1="${y0.toFixed(1)}" x2="${bx}" y2="${y1.toFixed(1)}" style="--L:${L.toFixed(1)};stroke-dasharray:${L.toFixed(1)}"/>`;
   });
   // records (doses, observations): quiet marks on the horizon, never rays
@@ -698,7 +701,7 @@ function arcSvg() {
     if (Math.abs(A.X(A.wake) - sx) > 70) lbl.push(`<text class="lbl" x="${A.X(A.wake) + 4}" y="${A.hz + 22}">woke ${hm(A.wake)}</text>`);
   } else lbl.push(`<text class="lbl miss" x="${A.pad}" y="${A.hz + A.dep + 17}">${sl.none ? 'No sleep record' : 'Last night not in yet'}</text>`);
   lbl.push(sx > W - 70 ? `<text class="lbl now" x="${sx + 4}" y="${sy + 30}" text-anchor="middle">${hm(now)}</text>` : `<text class="lbl now" x="${sx + 15}" y="${sy - 12}">${hm(now)}</text>`);
-  const data = { W, A, now: nowC, noData, sleep: sl, marks, sess: S.entries.filter(e => e.k === 'b' && e.dur).map(e => [e.t - e.dur, e.t]),
+  const data = { sample: si, W, A, now: nowC, noData, sleep: sl, marks, sess: S.entries.filter(e => e.k === 'b' && e.dur).map(e => [e.t - e.dur, e.t]),
     recs: S.entries.filter(e => e.k !== 'b').map(e => ({ t: e.t, isNew: U.fx.ray === e.id })), pulse: !!U.fx.sun, mid,
     labels: { now: hm(now), night: noData ? (sl.none ? 'No sleep record' : 'Last night not in yet') : `${dur(sl.asleep)} asleep`, woke: !noData && Math.abs(A.X(A.wake) - sx) > 70 ? `woke ${hm(A.wake)}` : '' } };
   return { svg: `<svg viewBox="0 0 ${W} ${A.H}" aria-hidden="true">${g}${lbl.join('')}</svg>`, A, sx, sy, W, data };
@@ -724,7 +727,7 @@ function panels() {
       out.push(`<button class="panel" data-act="sheet" data-s="pattern" aria-label="Observation about sleep. Open">${x}<span class="k">An observation, ${m.to.toLowerCase()}</span><span class="ttl">${esc(m.title)}</span><span class="mini"><span class="prange">${r(m.a, 'b')}${r(m.b, 'a')}</span><span class="ln" style="margin-top:8px">From ${m.n} days on record. A hint, not proof.</span></span></button>`); }
     if (m.kind === 'week') { out.push(`<button class="panel" data-act="sheet" data-s="week" aria-label="Play this week back">${x}<span class="k">${m.range}, so far</span><span class="ttl">${esc(m.title)}</span><span class="mini"><span class="weekd">${m.days.map((d, i) => `<span class="c${i === 6 ? ' now' : ''}">${'<i></i>'.repeat(Math.round(d[1] / 1.5))}<span>${d[0]}</span></span>`).join('')}</span></span></button>`); }
     if (m.kind === 'sick') out.push(`<div class="panel"><span class="k">Sick, since yesterday</span><span class="ttl">Routines rest. Nothing is expected of you.</span><span class="ln">Dates you set still show. Everything else waits, and nothing counts against you.</span></div>`);
-    if (m.kind === 'day1') out.push(`<div class="panel solo"><span class="k">Day one</span><span class="ttl">Start with one thing</span><span class="ln">Log anything below and it rises on the arc above. Last night appears here once sleep is connected.</span></div>`);
+    if (m.kind === 'day1') out.push(`<div class="panel solo"><span class="k">Day one</span><span class="ttl">Start with one thing</span><span class="ln">Log anything below and it gathers on the arc above. Last night appears here once sleep is connected.</span></div>`);
     if (m.kind === 'back') out.push(`<button class="panel" data-act="sheet" data-s="back">${x}<span class="k">Since you’re back</span><span class="ttl">Water and Stretch, already</span><span class="ln">1 to 21 Nov is set aside, not missed. Your totals are where you left them.</span></button>`);
   });
   if (!out.length) return '';
@@ -790,7 +793,7 @@ function render() {
       ${heldN ? `<button class="ib" data-act="sheet" data-s="held" aria-label="Held, ${heldN}"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M5 19V3.5h11l-2.5 4 2.5 4H5"/></svg><span class="n">${heldN}</span></button>` : ''}
       <button class="ib" data-act="logsheet" aria-label="Search everything"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l4.5 4.5"/></svg></button>
     </div></header>`;
-  h += `<div class="arc" data-act="sheet" data-s="day" role="button" aria-label="Your day so far: ${S.entries.length} entries. Open the day">${a.svg}${!S.entries.length && S.dayOne ? '<div class="arcnote">What you log rises here.</div>' : ''}</div>`;
+  h += `<div class="arc" data-act="sheet" data-s="day" role="button" aria-label="Your day so far: ${S.entries.length} entries. Open the day">${a.svg}${!S.entries.length && S.dayOne ? '<div class="arcnote">What you log gathers on the day.</div>' : ''}</div>`;
   h += panels();
   if (S.welcome) h += `<p class="welcome">${S.welcome}</p>`;
   // Now
@@ -964,7 +967,7 @@ const SHEETS = {
   back() { return head('Back after 3 weeks', 'Set aside, not missed') + `<div class="sp"><p style="margin-top:8px">1 to 21 Nov is marked as away. Those weeks are left out of every aim and comparison. Everything you built before is still there, and nothing is waiting for you to catch up.</p></div>`; },
   day() {
     const es = [...S.entries].sort((a, b) => a.t - b.t);
-    return head(S.dow, `${es.length ? es.length + ' entries so far' : 'Nothing logged yet'}`) + `<div class="sp"><p style="margin-top:6px">Each thing you did stands on the arc at its time. Doses and observations sit on the horizon as quiet dots. Corrections live here.</p></div><div class="slab">Today</div><div class="slist">${S.sleep.missing || S.sleep.none ? `<div class="li"><span class="tm">—</span><span class="tx" style="color:var(--t3)">${S.sleep.none ? 'No sleep record' : 'Last night not in yet'}</span></div>` : `<div class="li"><span class="tm">${hm(S.sleep.wake)}</span><span class="dot" style="background:var(--night)"></span><span class="tx">Woke, ${dur(S.sleep.asleep)} asleep</span></div>`}${es.map(e => `<div class="li"><span class="tm">${hm(e.t)}</span><span class="dot${e.k !== 'b' ? ' q' : ''}"></span><span class="tx">${esc(entryTxt(e))}${e.k === 'dose' ? '<small>Medication, a record</small>' : e.k === 'obs' ? '<small>Observation, a record</small>' : ''}</span><button class="rm" data-act="remove" data-e="${e.id}">Remove</button></div>`).join('')}</div>`;
+    return head(S.dow, `${es.length ? es.length + ' entries so far' : 'Nothing logged yet'}`) + `<div class="sp"><p style="margin-top:6px">Each thing you did sits on the arc at its time. Doses and observations sit on the horizon as quiet dots. Corrections live here.</p></div><div class="slab">Today</div><div class="slist">${S.sleep.missing || S.sleep.none ? `<div class="li"><span class="tm">—</span><span class="tx" style="color:var(--t3)">${S.sleep.none ? 'No sleep record' : 'Last night not in yet'}</span></div>` : `<div class="li"><span class="tm">${hm(S.sleep.wake)}</span><span class="dot" style="background:var(--night)"></span><span class="tx">Woke, ${dur(S.sleep.asleep)} asleep</span></div>`}${es.map(e => `<div class="li"><span class="tm">${hm(e.t)}</span><span class="dot${e.k !== 'b' ? ' q' : ''}"></span><span class="tx">${esc(entryTxt(e))}${e.k === 'dose' ? '<small>Medication, a record</small>' : e.k === 'obs' ? '<small>Observation, a record</small>' : ''}</span><button class="rm" data-act="remove" data-e="${e.id}">Remove</button></div>`).join('')}</div>`;
   },
   context() {
     const on = S.ctx && S.ctx.label;
@@ -1052,179 +1055,238 @@ load(si);
 
 </script>
 <script type="module">
-// Meridian Today v3 — the day arc in 3D. Same data as the flat arc (app.js arcSvg → data); if WebGL is missing, the flat SVG stays.
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+// Meridian Today v3: the day arc as a hero object (3D v2).
+// Same data as the flat arc (app.js arcSvg -> data): same times, same counts, same honesty rules. No WebGL -> the flat SVG stays.
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const CREAM = 0xf3ede4, SUN = 0xff6b3d, NIGHT = 0x8e93e8, REC = 0x8f887e;
+const INK = 0x0e0d0c, CREAM = 0xf3ede4, NIGHT = 0x8e93e8, REC = 0x8f887e;
+const SUNC = new THREE.Color(1, .4, .18);
+const spring = k => 1 - Math.exp(-6 * k) * Math.cos(10 * k);
+const ease = k => 1 - Math.pow(1 - k, 3);
+const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-function probe() { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
+function probe() { try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; } }
+function tex(w, h, f, srgb) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); const im = g.createImageData(w, h);
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const k = (j * w + i) * 4; const v = f(i / (w - 1), 1 - j / (h - 1)); for (let q = 0; q < 4; q++) im.data[k + q] = Math.round(Math.max(0, Math.min(1, v[q])) * 255); }
+  g.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const radial = fn => tex(128, 128, (u, v) => fn(Math.hypot(u - .5, v - .5) * 2), true);
 
-function haloTexture() {
-  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
-  const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  r.addColorStop(0, 'rgba(255,170,120,1)'); r.addColorStop(.18, 'rgba(255,120,70,.55)'); r.addColorStop(.5, 'rgba(255,107,61,.12)'); r.addColorStop(1, 'rgba(255,107,61,0)');
-  g.fillStyle = r; g.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
-}
-function groundAlpha() { // fades in just in front of the horizon, out well before the back and the sides: the ground has no edges
-  const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'); const im = g.createImageData(N, N);
-  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const u = i / (N - 1), v = 1 - j / (N - 1);
-    const a = ss(.04, .095, v) * (1 - ss(.1, .3, v)) * (1 - ss(.1, .36, Math.abs(u - .5))); const k = (j * N + i) * 4; const q = Math.round(255 * a); im.data[k] = im.data[k + 1] = im.data[k + 2] = q; im.data[k + 3] = 255; }
-  g.putImageData(im, 0, 0); return new THREE.CanvasTexture(c);
-}
 class Arc3D {
   constructor() {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 3));
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.05;
-    this.renderer.setClearColor(0x000000, 0);
-    this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.canvas = this.renderer.domElement; this.canvas.className = 'arc3d';
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(30, 2.4, .1, 60);
-    this.halo = haloTexture(); this.galpha = groundAlpha();
-    // light: a dim sky, a soft key from the front, a cool rim from behind; the sun itself is the warm light
-    this.scene.add(new THREE.HemisphereLight(0xd6cec4, 0x0e0c0a, .32));
-    // the key light casts the day's shadow onto the ground behind it, like a sundial
-    const key = new THREE.DirectionalLight(0xfff1e0, 1.5); key.position.set(.7, 3.4, 2.4); key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048); const sc0 = key.shadow.camera; sc0.left = -2.6; sc0.right = 2.6; sc0.top = 2.2; sc0.bottom = -2.2; sc0.near = .5; sc0.far = 10; key.shadow.bias = -.0004; key.shadow.normalBias = .01; key.shadow.radius = 3;
-    this.scene.add(key);
-    const rim = new THREE.DirectionalLight(0x9da2ff, 1.4); rim.position.set(-1.5, 2.2, -4); this.scene.add(rim);
-    this.sunLight = new THREE.PointLight(0xff7a45, 2.2, 0, 2); this.scene.add(this.sunLight);
-    // ground: a matte dark plane that only shows where the sun lights it, faded at its edges
-    const gm = new THREE.MeshStandardMaterial({ color: 0x1c1814, roughness: .96, metalness: 0, transparent: true, opacity: .85, alphaMap: this.galpha, depthWrite: false });
-    this.ground = new THREE.Mesh(new THREE.PlaneGeometry(16, 12), gm); this.ground.rotation.x = -Math.PI / 2; this.ground.position.set(0, 0, -5); this.ground.renderOrder = 2; this.ground.receiveShadow = true;
-    this.scene.add(this.ground);
-    this.root = new THREE.Group(); this.scene.add(this.root);
+    const R = this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance' });
+    this.dpr = Math.min(devicePixelRatio || 1, 3); R.setPixelRatio(this.dpr);
+    R.outputColorSpace = THREE.SRGBColorSpace; R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05;
+    R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.canvas = R.domElement; this.canvas.className = 'arc3d';
+    const S = this.scene = new THREE.Scene(); S.background = new THREE.Color(INK); S.fog = new THREE.Fog(INK, 3.4, 8.5);
+    // a soft studio environment gives the tube real gradients and a specular line; kept low for a night mood
+    const pm = new THREE.PMREMGenerator(R); S.environment = pm.fromScene(new RoomEnvironment(), .04).texture; S.environmentIntensity = .3; pm.dispose();
+    this.camera = new THREE.PerspectiveCamera(50, 1, .05, 40);
+    S.add(new THREE.HemisphereLight(0xd8d0c6, 0x0b0a09, .2));
+    const key = new THREE.DirectionalLight(0xfff0e0, 1.1); key.position.set(-.8, 3.8, 2.4); key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -3, right: 3, top: 2.4, bottom: -2.4, near: .5, far: 12 });
+    key.shadow.bias = -.0004; key.shadow.normalBias = .012; key.shadow.radius = 5; S.add(key);
+    const rim = new THREE.DirectionalLight(0xa3a8ff, 1.1); rim.position.set(1.6, 1.4, -4); S.add(rim);
+    this.sunLight = new THREE.PointLight(0xff8a50, 6, 0, 2); S.add(this.sunLight);
+    // the ground: a matte pool around the foot of the day, edgeless, that takes the day's shadow and the sun's warm light
+    const fa = tex(256, 256, (u, v) => { const a = .95 * (1 - ss(.18, .5, Math.hypot(u - .5, (v - .5) * 1.5))); return [a, a, a, 1]; });
+    this.floor = new THREE.Mesh(new THREE.PlaneGeometry(9, 6), new THREE.MeshStandardMaterial({ color: 0x17130f, roughness: .9, metalness: 0, transparent: true, alphaMap: fa, depthWrite: false }));
+    this.floor.rotation.x = -Math.PI / 2; this.floor.position.set(0, 0, -.3); this.floor.receiveShadow = true; S.add(this.floor);
+    this.glowTex = radial(r => [1, .5, .28, Math.pow(Math.max(0, 1 - r), 2.4)]);
+    this.blobTex = radial(r => [0, 0, 0, .6 * Math.pow(Math.max(0, 1 - r), 1.8)]);
+    this.root = new THREE.Group(); S.add(this.root);
     this.mats = {
-      lived: new THREE.MeshStandardMaterial({ color: CREAM, roughness: .38, metalness: 0 }),
-      mark: new THREE.MeshStandardMaterial({ color: CREAM, roughness: .32, metalness: 0 }),
-      future: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .22 }),
-      tail: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .12 }),
-      night: new THREE.MeshStandardMaterial({ color: NIGHT, emissive: NIGHT, emissiveIntensity: 1.1, roughness: .45 }),
-      nightFill: new THREE.MeshBasicMaterial({ color: NIGHT, transparent: true, opacity: .13, side: THREE.DoubleSide, depthWrite: false }),
-      miss: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .3 }),
-      rec: new THREE.MeshStandardMaterial({ color: REC, roughness: .85 }),
-      sun: new THREE.MeshBasicMaterial({ color: 0xff8a55, toneMapped: false }),
-      core: new THREE.MeshBasicMaterial({ color: 0xffd9c0, toneMapped: false, transparent: true, opacity: .85 }),
-      merid: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .2 }),
-      line: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .16 }),
+      lived: new THREE.MeshPhysicalMaterial({ color: CREAM, roughness: .32, clearcoat: .6, clearcoatRoughness: .22, emissive: SUNC }),
+      ring: new THREE.MeshPhysicalMaterial({ color: CREAM, roughness: .24, clearcoat: .8, clearcoatRoughness: .15 }),
+      sleeve: new THREE.MeshPhysicalMaterial({ color: CREAM, roughness: .12, clearcoat: 1, transparent: true, opacity: .3, depthWrite: false, emissive: SUNC, emissiveIntensity: .12 }),
+      ghost: new THREE.MeshPhysicalMaterial({ color: CREAM, roughness: .15, clearcoat: 1, transparent: true, opacity: .07, depthWrite: false }),
+      future: new THREE.MeshStandardMaterial({ color: CREAM, roughness: .6, transparent: true, opacity: .28, depthWrite: false }),
+      night: new THREE.MeshPhysicalMaterial({ color: NIGHT, roughness: .35, clearcoat: .4, emissive: new THREE.Color(NIGHT), emissiveIntensity: .8 }),
+      nightFill: new THREE.MeshBasicMaterial({ color: NIGHT, transparent: true, opacity: .08, side: THREE.DoubleSide, depthWrite: false }),
+      miss: new THREE.MeshStandardMaterial({ color: CREAM, roughness: .7, transparent: true, opacity: .32 }),
+      rec: new THREE.MeshStandardMaterial({ color: REC, roughness: .75 }),
+      sun: new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 2.6, 1.2), fog: false, transparent: true, depthTest: false }),
+      merid: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .25 }),
+      line: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .09 }),
     };
-    this.anims = []; this.drag = 0; this.scrollT = 0; this.raf = 0; this.t0 = performance.now();
+    this.composer = null; this.anims = []; this.drag = 0; this.scrollT = 0; this.raf = 0; this.t0 = performance.now(); this.intro = 0; this.lastKey = null;
     const sc = document.getElementById('scroll');
-    sc.addEventListener('scroll', () => { const t = Math.min(1, sc.scrollTop / 220); if (Math.abs(t - this.scrollT) > .002) { this.scrollT = t; this.kick(); } }, { passive: true });
+    sc.addEventListener('scroll', () => { const t = Math.min(1, sc.scrollTop / 260); if (Math.abs(t - this.scrollT) > .002) { this.scrollT = t; this.kick(); } }, { passive: true });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) this.kick(); });
   }
-  clear() { for (const o of [...this.root.children]) { this.root.remove(o); o.traverse(m => { if (m.geometry) m.geometry.dispose(); if (m.material && m.material.userData.own) m.material.dispose(); }); } this.anims = []; }
-  // pixel space of the flat arc → world: 4 units across the width, y up from the horizon
+  size(W, H) {
+    if (W === this.W && H === this.H) return; this.W = W; this.H = H;
+    this.renderer.setSize(W, H, false); this.canvas.style.width = W + 'px'; this.canvas.style.height = H + 'px';
+    if (this.composer) this.composer.dispose();
+    const rt = new THREE.WebGLRenderTarget(W * this.dpr, H * this.dpr, { type: THREE.HalfFloatType, samples: 4 }); // MSAA through the chain
+    this.composer = new EffectComposer(this.renderer, rt); this.composer.setPixelRatio(this.dpr); this.composer.setSize(W, H);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    // bloom only catches what is truly bright: the sun, fresh logs, the night line
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(W, H), .55, .5, .9); this.composer.addPass(this.bloom);
+    this.composer.addPass(new OutputPass());
+  }
+  clear() {
+    for (const o of [...this.root.children]) { this.root.remove(o); o.traverse(m => { if (m.geometry) m.geometry.dispose(); if (m.material && m.material.userData.own) { if (m.material.emissiveMap) m.material.emissiveMap.dispose(); m.material.dispose(); } }); }
+    this.anims = this.anims.filter(a => a.keep);
+  }
   attach(el, d, still) {
     if (!el) return;
-    this.still = still; this.el = el; this.d = d;
-    const W = el.clientWidth || d.W, H = el.clientHeight || 160;
-    if (W !== this.W || H !== this.H) { this.W = W; this.H = H; this.renderer.setSize(W, H, false); this.canvas.style.width = W + 'px'; this.canvas.style.height = H + 'px'; }
-    const S = d.W / 4, A = d.A, wx = x => (x - d.W / 2) / S, wy = y => (A.hz - y) / S;
+    this.still = still || RM; this.el = el; this.d = d;
+    el.classList.add('is3d');
+    this.size(el.clientWidth || d.W, el.clientHeight || 330);
+    const key = d.sample + ':' + d.W, fresh = key !== this.lastKey; this.lastKey = key;
+    if (fresh) this.intro = this.still ? 0 : performance.now();
+    const A = d.A, SC = d.W / 4.2, wx = x => (x - d.W / 2) / SC, wy = y => (A.hz - y) / SC * 1.85; // height is the sun-path shape, not data, so it is drawn taller; time along the path stays to scale
     const P = t => new THREE.Vector3(wx(A.X(t)), wy(A.Y(t)), 0);
     this.clear();
-    const tube = (a, b, r, mat, seg = 140) => { if (b - a < 1) return; const pts = []; const n = Math.max(8, Math.round((b - a) / 6)); for (let i = 0; i <= n; i++) pts.push(P(a + (b - a) * i / n)); const c = new THREE.CatmullRomCurve3(pts); const m = new THREE.Mesh(new THREE.TubeGeometry(c, Math.min(seg, n * 3), r, 14, false), mat); m.castShadow = true; this.root.add(m); const cap = new THREE.SphereGeometry(r, 14, 10); [pts[0], pts[pts.length - 1]].forEach(p => { const s = new THREE.Mesh(cap, mat); s.position.copy(p); this.root.add(s); }); return m; };
-    const dashes = (a, b, r, mat, len = 0.05, gap = 0.07) => { // a dashed path made of short capsules along the curve
-      const pts = []; const n = Math.max(20, Math.round((b - a) / 2)); for (let i = 0; i <= n; i++) pts.push(P(a + (b - a) * i / n)); const c = new THREE.CatmullRomCurve3(pts); const L = c.getLength(); const geo = new THREE.CapsuleGeometry(r, len, 4, 8);
-      for (let s = gap / 2; s < L - len / 2; s += len + gap) { const u = s / L; const p = c.getPointAt(u), tg = c.getTangentAt(u); const m = new THREE.Mesh(geo, mat); m.position.copy(p); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tg); this.root.add(m); }
+    const add = m => { this.root.add(m); return m; };
+    const own = m => { m.userData.own = true; return m; };
+    const curve = (a, b) => { const n = Math.max(16, Math.round((b - a) / 4)); const pts = []; for (let i = 0; i <= n; i++) pts.push(P(a + (b - a) * i / n)); return new THREE.CatmullRomCurve3(pts, false, 'centripetal'); };
+    const tube = (c, r, mat, seg = 240, cast = true) => {
+      const m = add(new THREE.Mesh(new THREE.TubeGeometry(c, seg, r, 28, false), mat)); m.castShadow = cast;
+      const cap = new THREE.SphereGeometry(r, 28, 18); [0, 1].forEach(u => { const s = add(new THREE.Mesh(cap, mat)); s.position.copy(c.getPointAt(u)); s.castShadow = cast; }); return m;
     };
-    const now = d.now, wake = A.wake, bed = A.bed;
-    // last night under the horizon
-    if (!d.noData) {
-      tube(A.start, wake, .017, this.mats.night);
-      const sh = new THREE.Shape(); const n = 40; for (let i = 0; i <= n; i++) { const p = P(A.start + (wake - A.start) * i / n); i ? sh.lineTo(p.x, p.y) : sh.moveTo(p.x, p.y); } sh.closePath();
-      const f = new THREE.Mesh(new THREE.ShapeGeometry(sh), this.mats.nightFill); this.root.add(f);
-    } else dashes(A.start, wake, .009, this.mats.miss, .035, .06);
-    // the day: lived part a lit tube, the rest a dashed path, the night ahead fainter
-    if (now > wake) tube(wake, Math.min(now, bed), .02, this.mats.lived);
-    dashes(Math.max(wake, now) + 6, bed, .0085, this.mats.future);
-    dashes(bed, A.end, .0075, this.mats.tail);
-    // the meridian, and the horizon line on the ground
-    const mp = P(d.mid); const mh = mp.y - .14; if (mh > .05) { const g = new THREE.SphereGeometry(.0055, 8, 6); for (let y = .03; y < mh; y += .045) { const m = new THREE.Mesh(g, this.mats.merid); m.position.set(mp.x, y, 0); this.root.add(m); } }
-    { const g = new THREE.BoxGeometry(5.4, .004, .004); const m = new THREE.Mesh(g, this.mats.line); m.position.set(0, .001, .001); this.root.add(m); }
-    // sessions thicken the arc over their span
-    d.sess.forEach(([a, b]) => tube(Math.max(wake, a), Math.min(b, now), .038, this.mats.lived, 40));
-    // marks: real capsules standing on the arc at their times, stacked in their slice of the day
-    const rM = .026, GAP = .016; const cols = {};
-    d.marks.forEach(mk => { (cols[mk.x] = cols[mk.x] || []).push(mk); });
-    Object.values(cols).forEach(list => {
-      list.sort((a, b) => a.n - b.n); let base = wy(list[0].y0);
-      list.forEach(mk => {
-        const h = (mk.y0 - mk.y1) / S, len = Math.max(.001, h - 2 * rM);
-        const mat = mk.isNew ? this.mats.mark.clone() : this.mats.mark; if (mk.isNew) { mat.userData.own = true; mat.emissive = new THREE.Color(SUN); mat.emissiveIntensity = .9; }
-        const m = new THREE.Mesh(new THREE.CapsuleGeometry(rM, len, 6, 16), mat); m.castShadow = true;
-        const b0 = base; m.position.set(wx(mk.x), b0 + h / 2, 0); this.root.add(m); base += h + GAP;
-        if (mk.isNew && !this.still && !RM) { m.scale.y = .001; m.position.y = b0; this.anims.push({ dur: 760, f: k => { const s = spring(k); m.scale.y = Math.max(.001, s); m.position.y = b0 + h / 2 * s; } }, { dur: 2400, f: k => { mat.emissiveIntensity = .9 * (1 - k); } }); }
-      });
-    });
-    // records: small matte stones on the ground in front of the horizon, never on the arc
-    const rg = new THREE.SphereGeometry(.024, 16, 12);
-    d.recs.forEach(r => { const m = new THREE.Mesh(rg, this.mats.rec); m.castShadow = true; m.position.set(wx(A.X(r.t)), .024, .16); this.root.add(m); if (r.isNew && !this.still && !RM) { m.scale.setScalar(.001); this.anims.push({ dur: 500, f: k => m.scale.setScalar(Math.max(.001, ease(k))) }); } });
-    // the sun: an emissive disc that is also the scene's warm light
+    const dashes = (c, r, mat, len, gap) => { const L = c.getLength(), g = new THREE.CapsuleGeometry(r, len, 4, 10); for (let s = gap; s < L - len; s += len + gap) { const u = s / L, m = add(new THREE.Mesh(g, mat)); m.position.copy(c.getPointAt(u)); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), c.getTangentAt(u)); } };
+    const now = d.now, wake = A.wake, bed = A.bed, TR = .062;
+    // framing: every part of the day (night, apex, the night ahead, the sun) must be in view; the camera is fitted to them
+    this.fitPts = []; for (let i = 0; i <= 40; i++) this.fitPts.push(P(A.start + (A.end - A.start) * i / 40)); this.fitPts.push(new THREE.Vector3(wx(A.X(A.start)), -.12, .3), new THREE.Vector3(wx(A.X(A.end)), -.12, .3)); this.fitKey = null;
+    // last night: a glowing line under the horizon, its hollow faintly filled. Missing data is dotted and grey, never "none".
+    const cn = curve(A.start, wake);
+    if (!d.noData) { tube(cn, .03, this.mats.night, 160, false); const sh = new THREE.Shape(); cn.getPoints(60).forEach((p, i) => i ? sh.lineTo(p.x, p.y) : sh.moveTo(p.x, p.y)); add(new THREE.Mesh(new THREE.ShapeGeometry(sh), this.mats.nightFill)); }
+    else dashes(cn, .012, this.mats.miss, .04, .06);
+    // the lived day: a thick tube that warms over its last stretch, where the sun is
+    let cl = null;
+    if (now > wake + 2) {
+      cl = curve(wake, Math.min(now, bed));
+      const tf = Math.max(.14, Math.min(.6, 100 / Math.max(100, Math.min(now, bed) - wake)));
+      const em = tex(256, 4, u => { const e = .1 + .25 * u + .65 * Math.pow(ss(1 - tf, 1, u), 1.5); return [e, e, e, 1]; }, true); // the whole lived day holds a little light, most of it near now
+      const mat = own(this.mats.lived.clone()); mat.emissiveMap = em; mat.emissiveIntensity = 1.6;
+      tube(cl, TR, mat);
+    }
+    // the rest of the day ahead: the day's shape as an empty glass sleeve with a quiet dashed core; nothing in it is counted
+    if (bed > Math.max(wake, now) + 12) { const cg = curve(Math.max(wake, now), bed); add(new THREE.Mesh(new THREE.TubeGeometry(cg, 200, TR, 28, false), this.mats.ghost)); }
+    if (bed > Math.max(wake, now) + 12) dashes(curve(Math.max(wake, now) + 8, bed), .014, this.mats.future, .05, .065);
+    dashes(curve(bed, A.end), .011, this.mats.future, .035, .07);
+    // the meridian: the middle of the waking day, a dotted plumb line
+    const mp = P(d.mid); { const g = new THREE.SphereGeometry(.008, 10, 8); for (let y = .04; y < mp.y - .2; y += .055) add(new THREE.Mesh(g, this.mats.merid)).position.set(mp.x, y, 0); }
+    add(new THREE.Mesh(new THREE.BoxGeometry(10, .004, .004), this.mats.line)).position.set(0, .002, 0);
+    // contact: soft dark pools where the day meets the ground
+    const blob = (p, w) => { const m = add(new THREE.Mesh(new THREE.PlaneGeometry(w, w * .6), own(new THREE.MeshBasicMaterial({ map: this.blobTex, transparent: true, depthWrite: false })))); m.rotation.x = -Math.PI / 2; m.position.set(p.x, .004, .02); };
+    blob(P(wake), .8); blob(P(bed), .55);
+    // sessions (timed things): a sleeve over their span
+    if (cl) d.sess.forEach(([a, b]) => { a = Math.max(wake, a); b = Math.min(b, now); if (b - a > 2) tube(curve(a, b), TR * 1.32, this.mats.sleeve, 80, false); });
+    // the sun first, so a new log can travel from it
     const sp = P(now); this.sunPos = sp;
-    const sun = new THREE.Mesh(new THREE.SphereGeometry(.07, 32, 20), this.mats.sun); sun.position.copy(sp); this.root.add(sun);
-    const core = new THREE.Mesh(new THREE.SphereGeometry(.04, 24, 16), this.mats.core); core.position.copy(sp); core.position.z += .045; this.root.add(core);
-    const hm = new THREE.SpriteMaterial({ map: this.halo, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: .85, toneMapped: false }); hm.userData.own = true;
-    const halo = new THREE.Sprite(hm); halo.scale.setScalar(.8); halo.position.copy(sp); halo.position.z += .01; this.root.add(halo); this.haloS = halo;
-    this.sunLight.position.set(sp.x, sp.y + .05, .32);
-    this.baseSun = 3.2; this.sunLight.intensity = 3.2;
-    if (d.pulse && !this.still && !RM) this.anims.push({ dur: 900, f: k => { const b = Math.sin(Math.PI * k); halo.scale.setScalar(.8 * (1 + .5 * b)); this.sunLight.intensity = this.baseSun * (1 + 1.2 * b); } }, { dur: 620, f: k => { this.root.position.y = -.018 * Math.sin(Math.PI * k) * (1 - k); } }); // the settle: the day takes the weight, then rests
-    // labels in HTML, placed where the 3D points land on screen
+    if (cl) this.rings(cl, d, wake, Math.min(now, bed), TR);
+    // records (doses, observations): small matte stones on the ground in front, never on the arc
+    const rg = new THREE.SphereGeometry(.034, 24, 16);
+    d.recs.forEach(r => { const m = add(new THREE.Mesh(rg, this.mats.rec)); m.castShadow = true; m.position.set(wx(A.X(r.t)), .034, .26); if (r.isNew && !this.still) { m.scale.setScalar(.001); this.anims.push({ dur: 600, f: k => m.scale.setScalar(Math.max(.001, spring(k))) }); } });
+    // the sun: an HDR core that blooms, a wide warm glow, and the warm light it throws on the tube and ground
+    const dim = d.noData && now < wake;
+    { const sm = add(new THREE.Mesh(new THREE.SphereGeometry(.1, 48, 32), this.mats.sun)); sm.position.copy(sp); sm.renderOrder = 5; }
+    const gl = add(new THREE.Sprite(own(new THREE.SpriteMaterial({ map: this.glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .42, fog: false }))));
+    gl.scale.setScalar(1.7); gl.position.copy(sp); this.glow = gl;
+    this.sunLight.position.set(sp.x, sp.y + .05, sp.z + .35); this.baseSun = dim ? 2.5 : 5.5; this.sunLight.intensity = this.baseSun;
+    if (d.pulse && !this.still) this.anims.push({ dur: 1100, f: k => { const b = Math.sin(Math.PI * k); gl.scale.setScalar(1.7 * (1 + .4 * b)); this.sunLight.intensity = this.baseSun * (1 + 1.1 * b); } });
     this.labels(el, d, P);
-    el.classList.add('is3d'); if (this.canvas.parentNode !== el) el.prepend(this.canvas);
-    this.wire(el);
+    if (this.canvas.parentNode !== el) el.prepend(this.canvas);
+    if (!el._w3) { el._w3 = 1; this.wire(el); }
     this.kick();
+  }
+  rings(cl, d, wake, end, TR) {
+    // each log is one ring threaded on the tube at its own time; neighbours keep a ring's width apart, newest nearest the sun
+    const N = 400, tl = cl.getPoints(N), cum = [0]; for (let i = 1; i <= N; i++) cum.push(cum[i - 1] + tl[i].distanceTo(tl[i - 1]));
+    const L = cl.getLength();
+    const sOf = t => { const f = Math.max(0, Math.min(1, (t - wake) / Math.max(1, end - wake))) * N, i = Math.min(N - 1, Math.floor(f)); return (cum[i] + (cum[i + 1] - cum[i]) * (f - i)) / cum[N] * L; };
+    const logs = d.marks.map(m => ({ ...m, s: sOf(m.dur ? m.t - m.dur / 2 : m.t), th: .013 + .011 * m.size })).sort((a, b) => a.s - b.s);
+    const gap = g => g.th * 2 + .017;
+    let lim = L - .16; for (let i = logs.length - 1; i >= 0; i--) { logs[i].s = Math.min(logs[i].s, lim); lim = logs[i].s - gap(logs[i]); }
+    if (logs.length && logs[0].s < .03) { let s = .03; logs.forEach(g => { if (g.s < s) g.s = s; s = g.s + gap(g); }); } // a crowded short morning pushes forward again
+    const now = d.now;
+    logs.forEach(g => {
+      const u = Math.max(0, Math.min(1, g.s / L)), p = cl.getPointAt(u), tg = cl.getTangentAt(u);
+      const warm = Math.exp(-Math.max(0, now - g.t) / 60); // recent logs hold some of the sun's warmth
+      const mat = this.mats.ring.clone(); mat.userData.own = true; mat.emissive = SUNC.clone();
+      const rest = .3 + 1.0 * warm; mat.emissiveIntensity = g.isNew && !this.still ? 4 : rest;
+      const m = new THREE.Mesh(new THREE.TorusGeometry(TR + g.th + .014, g.th, 24, 72), mat); this.root.add(m);
+      m.position.copy(p); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tg); m.castShadow = true; m.geometry.scale(1, 1, .6); // a flat band, not a bead
+      if (g.isNew && !this.still) { // lands with weight: slides down the tube from the sun, overshoots, settles; its glow cools to its age
+        const from = cl.getPointAt(1);
+        m.scale.setScalar(.3);
+        this.anims.push({ dur: 900, f: k => { m.position.lerpVectors(from, p, ease(Math.min(1, k * 1.5))); m.scale.setScalar(.3 + .7 * spring(k)); } },
+          { dur: 2600, f: k => { mat.emissiveIntensity = 4 + (rest - 4) * ease(k); } });
+      }
+    });
   }
   labels(el, d, P) {
     el.querySelectorAll('.l3').forEach(n => n.remove());
-    const A = d.A, add = (txt, cls, p, dx, dy, anchor) => { if (!txt) return; const n = document.createElement('div'); n.className = 'l3 ' + cls; n.textContent = txt; n._p = p; n._dx = dx; n._dy = dy; n._a = anchor; el.appendChild(n); };
-    const sp = P(d.now); const right = d.A.X(d.now) > d.W - 80;
-    add(d.labels.now, 'now', sp, right ? 0 : 16, right ? 30 : -14, right ? 'c' : 's');
-    add(d.labels.night, d.noData ? 'miss' : 'nt', new THREE.Vector3(P((A.start + A.wake) / 2).x, -(A.dep + 13) / (d.W / 4), 0), 0, 0, d.noData ? 's0' : 'c');
-    add(d.labels.woke, '', P(A.wake), 6, 20, 's');
+    const A = d.A, add = (txt, cls, p, dx, dy, a) => { if (!txt) return; const n = document.createElement('div'); n.className = 'l3 ' + cls; n.textContent = txt; Object.assign(n, { _p: p, _dx: dx, _dy: dy, _a: a }); el.appendChild(n); };
+    add(d.labels.now, 'now', P(d.now), 0, -36, 'c'); { const n = el.lastChild; n._q2 = P(d.now - 25); }
+    add(d.labels.night, d.noData ? 'miss' : 'nt', P((A.start + A.wake) / 2), 0, 36, 'c');
+    add(d.labels.woke, '', P(A.wake), 12, 20, 's');
   }
-  project(v) { const p = v.clone(); this.root.updateMatrixWorld(); p.applyMatrix4(this.root.matrixWorld); p.project(this.camera); return { x: (p.x + 1) / 2 * (this.W || 390), y: (1 - p.y) / 2 * (this.H || 160) }; }
+  project(v) { const p = v.clone(); this.root.updateMatrixWorld(); p.applyMatrix4(this.root.matrixWorld).project(this.camera); return { x: (p.x + 1) / 2 * this.W, y: (1 - p.y) / 2 * this.H }; }
   placeLabels() {
-    if (!this.el) return; const ls = [...this.el.querySelectorAll('.l3')]; const box = [];
-    ls.forEach(n => { const q = this.project(n._p); const x = n._a === 's0' ? 18 : q.x + n._dx; const w = n.offsetWidth; const x0 = n._a === 'c' ? x - w / 2 : x; n.style.transform = `translate(${x0}px, ${q.y + n._dy}px) translate(0, -50%)`; n.style.visibility = 'visible';
-      const b = [x0 - 4, q.y + n._dy - 9, x0 + w + 4, q.y + n._dy + 9]; if (box.some(o => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1])) n.style.visibility = 'hidden'; else box.push(b); });
+    if (!this.el) return; const box = []; if (this.sunPos) { const q = this.project(this.sunPos); box.push([q.x - 16, q.y - 16, q.x + 16, q.y + 16]); }
+    [...this.el.querySelectorAll('.l3')].forEach(n => {
+      const q = this.project(n._p), w = n.offsetWidth;
+      let cand = [[n._dx, n._dy], [n._dx, n._dy + 22], [n._dx, n._dy - 24], [n._dx, n._dy + 44]];
+      if (n._q2) { // beside the sun: outside the arc first, then either side, then inside
+        const q2 = this.project(n._q2); const tx = q.x - q2.x, ty = q.y - q2.y, l = Math.hypot(tx, ty) || 1; let nx = ty / l, ny = -tx / l; if (ny > 0) { nx = -nx; ny = -ny; }
+        const sd = w / 2 + 30; cand = [[nx * 30, ny * 30 - 2], [sd, 0], [-sd, 0], [-nx * 30, -ny * 30 + 2]]; }
+      const at = ([dx, dy]) => { let x0 = n._a === 'c' ? q.x + dx - w / 2 : q.x + dx; x0 = Math.max(14, Math.min(this.W - w - 14, x0)); return [x0, q.y + dy]; };
+      const hit = ([x0, y]) => { const b = [x0 - 4, y - 9, x0 + w + 4, y + 9]; return y < 74 || y > this.H - 16 || box.some(o => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1]); };
+      let pos = cand.map(at).find(c => !hit(c)); const hide = !pos; if (hide) pos = at(cand[0]);
+      n.style.transform = `translate(${pos[0].toFixed(1)}px, ${pos[1].toFixed(1)}px) translate(0, -50%)`;
+      n.style.visibility = hide ? 'hidden' : 'visible'; if (!hide) box.push([pos[0] - 4, pos[1] - 9, pos[0] + w + 4, pos[1] + 9]);
+    });
   }
-  wire(el) { // drag the arc to turn it a little; a tap still opens the Day sheet
+  wire(el) {
     let x0 = null, moved = false;
     el.addEventListener('pointerdown', e => { x0 = e.clientX; moved = false; this.dragV = this.drag; });
-    el.addEventListener('pointermove', e => { if (x0 == null) return; const dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true; if (moved) { this.drag = Math.max(-.42, Math.min(.42, this.dragV + dx / 420)); this.kick(); } });
-    const up = () => { if (x0 == null) return; x0 = null; if (moved && !RM) { const from = this.drag; this.anims.push({ dur: 900, f: k => { this.drag = from * (1 - spring(k)); } }); this.kick(); } else if (moved) { this.drag = 0; this.kick(); } };
+    el.addEventListener('pointermove', e => { if (x0 == null) return; const dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true; if (moved) { this.drag = Math.max(-.5, Math.min(.5, this.dragV + dx / 360)); this.kick(); } });
+    const up = () => { if (x0 == null) return; x0 = null; if (moved && !RM) { const from = this.drag; this.anims.push({ keep: true, dur: 1200, f: k => { this.drag = from * (1 - spring(k)); } }); this.kick(); } else if (moved) { this.drag = 0; this.kick(); } };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('pointerleave', up);
-    el.addEventListener('click', e => { if (moved) { e.stopPropagation(); moved = false; } });
+    el.addEventListener('click', e => { if (moved) { e.stopPropagation(); moved = false; } }, true);
   }
   frame(ts) {
-    this.raf = 0;
-    const W = this.W, H = this.H; const asp = W / H;
-    // frame the arc so its ends sit near the screen edges, as in the flat layout
-    const fov = 40, tanh = Math.tan(fov / 2 * Math.PI / 180), dist = 2.0 / (tanh * asp);
-    const look = new THREE.Vector3(-.12, .12, -.12);
-    const lift = .95 + .5 * this.scrollT; // scrolling lifts the camera, so the day is seen more from above as it leaves
-    this.camera.fov = fov; this.camera.aspect = asp; this.camera.updateProjectionMatrix();
-    const yaw = -.22 + this.drag; /* a slight three-quarter view: the morning side nearer, the evening receding */ this.camera.position.set(Math.sin(yaw) * dist, look.y + lift, Math.cos(yaw) * dist); this.camera.lookAt(look);
-    this.root.rotation.x = -.5;
-    // idle: the sun breathes very slowly (stops under Reduce Motion and in shots)
-    const live = !this.still && !RM;
-    if (live && this.haloS) { const b = .5 + .5 * Math.sin((ts - this.t0) / 1400); this.haloS.material.opacity = .72 + .16 * b; if (!this.anims.length) this.sunLight.intensity = this.baseSun * (.92 + .1 * b); }
-    // run animations
-    const now = ts; this.anims = this.anims.filter(a => { a.s = a.s || now; const k = Math.min(1, (now - a.s) / a.dur); a.f(k); return k < 1; });
-    this.renderer.render(this.scene, this.camera);
+    this.raf = 0; if (!this.composer || !this.el) return;
+    const W = this.W, H = this.H, asp = W / H, cam = this.camera, live = !this.still;
+    // camera: low and close, three-quarter view down the day from its morning end; eases in on load, drifts while idle
+    let k0 = 1; if (this.intro) { k0 = Math.min(1, (ts - this.intro) / 1800); if (k0 >= 1) this.intro = 0; }
+    const ki = ease(k0), drift = live ? Math.sin((ts - this.t0) / 5600) * .05 : 0;
+    cam.fov = 50; cam.aspect = asp; cam.updateProjectionMatrix();
+    const fk = W + 'x' + H; if (this.fitKey !== fk) { this.fit(); this.fitKey = fk; }
+    const yaw = this.yaw0 + this.drag + drift + (1 - ki) * .3;
+    const look = this.look, dist = this.dist * (1 + (1 - ki) * .35);
+    const h = this.h0 + .55 * this.scrollT + (1 - ki) * .4;
+    cam.position.set(look.x + Math.sin(yaw) * dist, look.y + h, look.z + Math.cos(yaw) * dist); cam.lookAt(look);
+    this.anims = this.anims.filter(a => { a.s = a.s || ts; const k = Math.min(1, (ts - a.s) / a.dur); a.f(k); return k < 1; });
+    if (live && this.glow && !this.anims.some(a => !a.keep)) { const b = .5 + .5 * Math.sin((ts - this.t0) / 1600); this.glow.material.opacity = .38 + .08 * b; this.sunLight.intensity = this.baseSun * (.94 + .1 * b); }
+    this.composer.render();
     this.placeLabels();
-    const visible = this.el && this.el.isConnected && this.el.getBoundingClientRect().bottom > 0;
-    if (this.anims.length || (live && visible && !document.hidden)) this.raf = requestAnimationFrame(t => this.frame(t));
+    const r = this.el.isConnected ? this.el.getBoundingClientRect() : null, visible = r && r.bottom > 0 && r.top < innerHeight;
+    if (this.anims.length || this.intro || (live && visible && !document.hidden)) this.raf = requestAnimationFrame(t => this.frame(t));
+  }
+  fit() {
+    // the smallest distance at which the whole day sits inside a safe frame (the top band is under the header)
+    const cam = this.camera, pts = this.fitPts, bb = new THREE.Box3().setFromPoints(pts);
+    this.yaw0 = -.82; this.h0 = .12;
+    this.look = new THREE.Vector3((bb.min.x + bb.max.x) / 2 + .1, (bb.min.y + bb.max.y) / 2 + .02, 0);
+    const ok = dist => { cam.position.set(this.look.x + Math.sin(this.yaw0) * dist, this.look.y + this.h0, this.look.z + Math.cos(this.yaw0) * dist); cam.lookAt(this.look); cam.updateMatrixWorld();
+      return pts.every(v => { const p = v.clone().project(cam); return p.z < 1 && Math.abs(p.x) < .95 && p.y < .56 && p.y > -.7; }); };
+    let d = 1.6; while (d < 9 && !ok(d)) d += .04; this.dist = d;
   }
   kick() { if (!this.raf) this.raf = requestAnimationFrame(t => this.frame(t)); }
 }
-const spring = k => 1 - Math.exp(-6.5 * k) * Math.cos(9 * k); // overshoots a little, then settles
-const ease = k => 1 - Math.pow(1 - k, 3);
 
 if (probe() && !new URLSearchParams(location.search).has('flat')) {
   try {
