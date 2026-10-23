@@ -67,6 +67,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .arc .halo{fill:var(--sun);opacity:.16;transform-box:fill-box;transform-origin:center}
 .arc .halo.pulse{animation:halo .9s var(--ease)}
 @keyframes halo{0%{transform:scale(1);opacity:.16}35%{transform:scale(1.9);opacity:.3}100%{transform:scale(1);opacity:.16}}
+.arc .arc3d{position:absolute;left:0;top:0;display:block;touch-action:pan-y}
+.arc.is3d svg{display:none}
+.arc.is3d{overflow:hidden}
+.l3{position:absolute;left:0;top:0;pointer-events:none;white-space:nowrap;font:500 11.5px var(--ui);color:var(--t3);will-change:transform}
+.l3.now{color:var(--sun2);font-weight:600}
+.l3.nt{color:var(--night)}
 .arcnote{position:absolute;right:var(--gut);top:132px;text-align:right;font:400 14px/1.35 var(--ui);color:var(--t3);pointer-events:none}
 
 /* results strip */
@@ -667,7 +673,7 @@ function arcSvg() {
   // rays: every log of something done, stacked outward where they share a place
   // each log stands on the arc at its own time as a short mark; logs that share a 7 px slice of the day stack upward, so a busy hour stands taller
   const bs = S.entries.filter(e => e.k === 'b').sort((a, b) => b.t - a.t); // latest first, so the newest stand nearest the sun
-  const sxNow = A.X(Math.max(A.start, Math.min(A.end, now))); const BW = 6, CAP = 4; const col = {}, cnt = {};
+  const sxNow = A.X(Math.max(A.start, Math.min(A.end, now))); const BW = 6, CAP = 4; const col = {}, cnt = {}; const marks = [];
   const bMin = Math.ceil(A.X(A.wake) / BW);
   bs.forEach(e => {
     const x = byId(e.item); const t = e.dur ? e.t - e.dur / 2 : e.t;
@@ -677,7 +683,7 @@ function arcSvg() {
     const size = !x ? .6 : x.m === 'amount' ? Math.min(1, e.v / 600) : x.m === 'reps' ? .5 : x.m === 'event' ? 1 : e.dur ? .5 : .6;
     const L = 5 + 12 * size; const base = col[b] != null ? col[b] : A.Y(bt) - (e.dur ? 7 : 5);
     const y0 = base, y1 = base - L; col[b] = y1 - 3.5; cnt[b] = (cnt[b] || 0) + 1;
-    const nw = U.fx.ray === e.id;
+    const nw = U.fx.ray === e.id; marks.push({ x: bx, y0, y1, isNew: nw, n: cnt[b] - 1 });
     g += `<line class="ray${nw ? ' new' : ''}" x1="${bx}" y1="${y0.toFixed(1)}" x2="${bx}" y2="${y1.toFixed(1)}" style="--L:${L.toFixed(1)};stroke-dasharray:${L.toFixed(1)}"/>`;
   });
   // records (doses, observations): quiet marks on the horizon, never rays
@@ -692,7 +698,10 @@ function arcSvg() {
     if (Math.abs(A.X(A.wake) - sx) > 70) lbl.push(`<text class="lbl" x="${A.X(A.wake) + 4}" y="${A.hz + 22}">woke ${hm(A.wake)}</text>`);
   } else lbl.push(`<text class="lbl miss" x="${A.pad}" y="${A.hz + A.dep + 17}">${sl.none ? 'No sleep record' : 'Last night not in yet'}</text>`);
   lbl.push(sx > W - 70 ? `<text class="lbl now" x="${sx + 4}" y="${sy + 30}" text-anchor="middle">${hm(now)}</text>` : `<text class="lbl now" x="${sx + 15}" y="${sy - 12}">${hm(now)}</text>`);
-  return { svg: `<svg viewBox="0 0 ${W} ${A.H}" aria-hidden="true">${g}${lbl.join('')}</svg>`, A, sx, sy, W };
+  const data = { W, A, now: nowC, noData, sleep: sl, marks, sess: S.entries.filter(e => e.k === 'b' && e.dur).map(e => [e.t - e.dur, e.t]),
+    recs: S.entries.filter(e => e.k !== 'b').map(e => ({ t: e.t, isNew: U.fx.ray === e.id })), pulse: !!U.fx.sun, mid,
+    labels: { now: hm(now), night: noData ? (sl.none ? 'No sleep record' : 'Last night not in yet') : `${dur(sl.asleep)} asleep`, woke: !noData && Math.abs(A.X(A.wake) - sx) > 70 ? `woke ${hm(A.wake)}` : '' } };
+  return { svg: `<svg viewBox="0 0 ${W} ${A.H}" aria-hidden="true">${g}${lbl.join('')}</svg>`, A, sx, sy, W, data };
 }
 function skyTint() {
   const n = S.now; const c = n < 360 ? '91,104,255' : n < 600 ? '255,138,91' : n < 1020 ? '255,184,120' : n < 1200 ? '255,107,61' : '140,110,255';
@@ -798,6 +807,7 @@ function render() {
   if (S.dayOne) h += `<button class="addbtn" data-act="toast-add"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>Add a routine</button>`;
   h += `<div class="foot"><button data-act="next-sample">Different data, ${si + 1} of ${SAMPLES.length}: ${esc(S.label)}</button></div>`;
   scrollEl.innerHTML = h;
+  if (window.Arc3D) { try { window.Arc3D.attach(scrollEl.querySelector('.arc'), a.data, STILL); } catch (err) { window.Arc3D = null; } }
   scrollEl.scrollTop = sv;
   $('#topbar').textContent = S.short;
   skyTint(); renderLive();
@@ -1039,6 +1049,190 @@ document.addEventListener('keydown', e => { if (e.key === 'd' && !e.target.close
 window.__meridian = { load: i => load(i), log, openSheet, closeSheet, get S() { return S; }, endLive, render };
 load(si);
 })();
+
+</script>
+<script type="module">
+// Meridian Today v3 — the day arc in 3D. Same data as the flat arc (app.js arcSvg → data); if WebGL is missing, the flat SVG stays.
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const CREAM = 0xf3ede4, SUN = 0xff6b3d, NIGHT = 0x8e93e8, REC = 0x8f887e;
+
+function probe() { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
+
+function haloTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  r.addColorStop(0, 'rgba(255,170,120,1)'); r.addColorStop(.18, 'rgba(255,120,70,.55)'); r.addColorStop(.5, 'rgba(255,107,61,.12)'); r.addColorStop(1, 'rgba(255,107,61,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function groundAlpha() { // fades in just in front of the horizon, out well before the back and the sides: the ground has no edges
+  const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'); const im = g.createImageData(N, N);
+  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const u = i / (N - 1), v = 1 - j / (N - 1);
+    const a = ss(.04, .095, v) * (1 - ss(.1, .3, v)) * (1 - ss(.1, .36, Math.abs(u - .5))); const k = (j * N + i) * 4; const q = Math.round(255 * a); im.data[k] = im.data[k + 1] = im.data[k + 2] = q; im.data[k + 3] = 255; }
+  g.putImageData(im, 0, 0); return new THREE.CanvasTexture(c);
+}
+class Arc3D {
+  constructor() {
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 3));
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.05;
+    this.renderer.setClearColor(0x000000, 0);
+    this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.canvas = this.renderer.domElement; this.canvas.className = 'arc3d';
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(30, 2.4, .1, 60);
+    this.halo = haloTexture(); this.galpha = groundAlpha();
+    // light: a dim sky, a soft key from the front, a cool rim from behind; the sun itself is the warm light
+    this.scene.add(new THREE.HemisphereLight(0xd6cec4, 0x0e0c0a, .32));
+    // the key light casts the day's shadow onto the ground behind it, like a sundial
+    const key = new THREE.DirectionalLight(0xfff1e0, 1.5); key.position.set(.7, 3.4, 2.4); key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048); const sc0 = key.shadow.camera; sc0.left = -2.6; sc0.right = 2.6; sc0.top = 2.2; sc0.bottom = -2.2; sc0.near = .5; sc0.far = 10; key.shadow.bias = -.0004; key.shadow.normalBias = .01; key.shadow.radius = 3;
+    this.scene.add(key);
+    const rim = new THREE.DirectionalLight(0x9da2ff, 1.4); rim.position.set(-1.5, 2.2, -4); this.scene.add(rim);
+    this.sunLight = new THREE.PointLight(0xff7a45, 2.2, 0, 2); this.scene.add(this.sunLight);
+    // ground: a matte dark plane that only shows where the sun lights it, faded at its edges
+    const gm = new THREE.MeshStandardMaterial({ color: 0x1c1814, roughness: .96, metalness: 0, transparent: true, opacity: .85, alphaMap: this.galpha, depthWrite: false });
+    this.ground = new THREE.Mesh(new THREE.PlaneGeometry(16, 12), gm); this.ground.rotation.x = -Math.PI / 2; this.ground.position.set(0, 0, -5); this.ground.renderOrder = 2; this.ground.receiveShadow = true;
+    this.scene.add(this.ground);
+    this.root = new THREE.Group(); this.scene.add(this.root);
+    this.mats = {
+      lived: new THREE.MeshStandardMaterial({ color: CREAM, roughness: .38, metalness: 0 }),
+      mark: new THREE.MeshStandardMaterial({ color: CREAM, roughness: .32, metalness: 0 }),
+      future: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .22 }),
+      tail: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .12 }),
+      night: new THREE.MeshStandardMaterial({ color: NIGHT, emissive: NIGHT, emissiveIntensity: 1.1, roughness: .45 }),
+      nightFill: new THREE.MeshBasicMaterial({ color: NIGHT, transparent: true, opacity: .13, side: THREE.DoubleSide, depthWrite: false }),
+      miss: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .3 }),
+      rec: new THREE.MeshStandardMaterial({ color: REC, roughness: .85 }),
+      sun: new THREE.MeshBasicMaterial({ color: 0xff8a55, toneMapped: false }),
+      core: new THREE.MeshBasicMaterial({ color: 0xffd9c0, toneMapped: false, transparent: true, opacity: .85 }),
+      merid: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .2 }),
+      line: new THREE.MeshBasicMaterial({ color: CREAM, transparent: true, opacity: .16 }),
+    };
+    this.anims = []; this.drag = 0; this.scrollT = 0; this.raf = 0; this.t0 = performance.now();
+    const sc = document.getElementById('scroll');
+    sc.addEventListener('scroll', () => { const t = Math.min(1, sc.scrollTop / 220); if (Math.abs(t - this.scrollT) > .002) { this.scrollT = t; this.kick(); } }, { passive: true });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) this.kick(); });
+  }
+  clear() { for (const o of [...this.root.children]) { this.root.remove(o); o.traverse(m => { if (m.geometry) m.geometry.dispose(); if (m.material && m.material.userData.own) m.material.dispose(); }); } this.anims = []; }
+  // pixel space of the flat arc → world: 4 units across the width, y up from the horizon
+  attach(el, d, still) {
+    if (!el) return;
+    this.still = still; this.el = el; this.d = d;
+    const W = el.clientWidth || d.W, H = el.clientHeight || 160;
+    if (W !== this.W || H !== this.H) { this.W = W; this.H = H; this.renderer.setSize(W, H, false); this.canvas.style.width = W + 'px'; this.canvas.style.height = H + 'px'; }
+    const S = d.W / 4, A = d.A, wx = x => (x - d.W / 2) / S, wy = y => (A.hz - y) / S;
+    const P = t => new THREE.Vector3(wx(A.X(t)), wy(A.Y(t)), 0);
+    this.clear();
+    const tube = (a, b, r, mat, seg = 140) => { if (b - a < 1) return; const pts = []; const n = Math.max(8, Math.round((b - a) / 6)); for (let i = 0; i <= n; i++) pts.push(P(a + (b - a) * i / n)); const c = new THREE.CatmullRomCurve3(pts); const m = new THREE.Mesh(new THREE.TubeGeometry(c, Math.min(seg, n * 3), r, 14, false), mat); m.castShadow = true; this.root.add(m); const cap = new THREE.SphereGeometry(r, 14, 10); [pts[0], pts[pts.length - 1]].forEach(p => { const s = new THREE.Mesh(cap, mat); s.position.copy(p); this.root.add(s); }); return m; };
+    const dashes = (a, b, r, mat, len = 0.05, gap = 0.07) => { // a dashed path made of short capsules along the curve
+      const pts = []; const n = Math.max(20, Math.round((b - a) / 2)); for (let i = 0; i <= n; i++) pts.push(P(a + (b - a) * i / n)); const c = new THREE.CatmullRomCurve3(pts); const L = c.getLength(); const geo = new THREE.CapsuleGeometry(r, len, 4, 8);
+      for (let s = gap / 2; s < L - len / 2; s += len + gap) { const u = s / L; const p = c.getPointAt(u), tg = c.getTangentAt(u); const m = new THREE.Mesh(geo, mat); m.position.copy(p); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tg); this.root.add(m); }
+    };
+    const now = d.now, wake = A.wake, bed = A.bed;
+    // last night under the horizon
+    if (!d.noData) {
+      tube(A.start, wake, .017, this.mats.night);
+      const sh = new THREE.Shape(); const n = 40; for (let i = 0; i <= n; i++) { const p = P(A.start + (wake - A.start) * i / n); i ? sh.lineTo(p.x, p.y) : sh.moveTo(p.x, p.y); } sh.closePath();
+      const f = new THREE.Mesh(new THREE.ShapeGeometry(sh), this.mats.nightFill); this.root.add(f);
+    } else dashes(A.start, wake, .009, this.mats.miss, .035, .06);
+    // the day: lived part a lit tube, the rest a dashed path, the night ahead fainter
+    if (now > wake) tube(wake, Math.min(now, bed), .02, this.mats.lived);
+    dashes(Math.max(wake, now) + 6, bed, .0085, this.mats.future);
+    dashes(bed, A.end, .0075, this.mats.tail);
+    // the meridian, and the horizon line on the ground
+    const mp = P(d.mid); const mh = mp.y - .14; if (mh > .05) { const g = new THREE.SphereGeometry(.0055, 8, 6); for (let y = .03; y < mh; y += .045) { const m = new THREE.Mesh(g, this.mats.merid); m.position.set(mp.x, y, 0); this.root.add(m); } }
+    { const g = new THREE.BoxGeometry(5.4, .004, .004); const m = new THREE.Mesh(g, this.mats.line); m.position.set(0, .001, .001); this.root.add(m); }
+    // sessions thicken the arc over their span
+    d.sess.forEach(([a, b]) => tube(Math.max(wake, a), Math.min(b, now), .038, this.mats.lived, 40));
+    // marks: real capsules standing on the arc at their times, stacked in their slice of the day
+    const rM = .026, GAP = .016; const cols = {};
+    d.marks.forEach(mk => { (cols[mk.x] = cols[mk.x] || []).push(mk); });
+    Object.values(cols).forEach(list => {
+      list.sort((a, b) => a.n - b.n); let base = wy(list[0].y0);
+      list.forEach(mk => {
+        const h = (mk.y0 - mk.y1) / S, len = Math.max(.001, h - 2 * rM);
+        const mat = mk.isNew ? this.mats.mark.clone() : this.mats.mark; if (mk.isNew) { mat.userData.own = true; mat.emissive = new THREE.Color(SUN); mat.emissiveIntensity = .9; }
+        const m = new THREE.Mesh(new THREE.CapsuleGeometry(rM, len, 6, 16), mat); m.castShadow = true;
+        const b0 = base; m.position.set(wx(mk.x), b0 + h / 2, 0); this.root.add(m); base += h + GAP;
+        if (mk.isNew && !this.still && !RM) { m.scale.y = .001; m.position.y = b0; this.anims.push({ dur: 760, f: k => { const s = spring(k); m.scale.y = Math.max(.001, s); m.position.y = b0 + h / 2 * s; } }, { dur: 2400, f: k => { mat.emissiveIntensity = .9 * (1 - k); } }); }
+      });
+    });
+    // records: small matte stones on the ground in front of the horizon, never on the arc
+    const rg = new THREE.SphereGeometry(.024, 16, 12);
+    d.recs.forEach(r => { const m = new THREE.Mesh(rg, this.mats.rec); m.castShadow = true; m.position.set(wx(A.X(r.t)), .024, .16); this.root.add(m); if (r.isNew && !this.still && !RM) { m.scale.setScalar(.001); this.anims.push({ dur: 500, f: k => m.scale.setScalar(Math.max(.001, ease(k))) }); } });
+    // the sun: an emissive disc that is also the scene's warm light
+    const sp = P(now); this.sunPos = sp;
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(.07, 32, 20), this.mats.sun); sun.position.copy(sp); this.root.add(sun);
+    const core = new THREE.Mesh(new THREE.SphereGeometry(.04, 24, 16), this.mats.core); core.position.copy(sp); core.position.z += .045; this.root.add(core);
+    const hm = new THREE.SpriteMaterial({ map: this.halo, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: .85, toneMapped: false }); hm.userData.own = true;
+    const halo = new THREE.Sprite(hm); halo.scale.setScalar(.8); halo.position.copy(sp); halo.position.z += .01; this.root.add(halo); this.haloS = halo;
+    this.sunLight.position.set(sp.x, sp.y + .05, .32);
+    this.baseSun = 3.2; this.sunLight.intensity = 3.2;
+    if (d.pulse && !this.still && !RM) this.anims.push({ dur: 900, f: k => { const b = Math.sin(Math.PI * k); halo.scale.setScalar(.8 * (1 + .5 * b)); this.sunLight.intensity = this.baseSun * (1 + 1.2 * b); } }, { dur: 620, f: k => { this.root.position.y = -.018 * Math.sin(Math.PI * k) * (1 - k); } }); // the settle: the day takes the weight, then rests
+    // labels in HTML, placed where the 3D points land on screen
+    this.labels(el, d, P);
+    el.classList.add('is3d'); if (this.canvas.parentNode !== el) el.prepend(this.canvas);
+    this.wire(el);
+    this.kick();
+  }
+  labels(el, d, P) {
+    el.querySelectorAll('.l3').forEach(n => n.remove());
+    const A = d.A, add = (txt, cls, p, dx, dy, anchor) => { if (!txt) return; const n = document.createElement('div'); n.className = 'l3 ' + cls; n.textContent = txt; n._p = p; n._dx = dx; n._dy = dy; n._a = anchor; el.appendChild(n); };
+    const sp = P(d.now); const right = d.A.X(d.now) > d.W - 80;
+    add(d.labels.now, 'now', sp, right ? 0 : 16, right ? 30 : -14, right ? 'c' : 's');
+    add(d.labels.night, d.noData ? 'miss' : 'nt', new THREE.Vector3(P((A.start + A.wake) / 2).x, -(A.dep + 13) / (d.W / 4), 0), 0, 0, d.noData ? 's0' : 'c');
+    add(d.labels.woke, '', P(A.wake), 6, 20, 's');
+  }
+  project(v) { const p = v.clone(); this.root.updateMatrixWorld(); p.applyMatrix4(this.root.matrixWorld); p.project(this.camera); return { x: (p.x + 1) / 2 * (this.W || 390), y: (1 - p.y) / 2 * (this.H || 160) }; }
+  placeLabels() {
+    if (!this.el) return; const ls = [...this.el.querySelectorAll('.l3')]; const box = [];
+    ls.forEach(n => { const q = this.project(n._p); const x = n._a === 's0' ? 18 : q.x + n._dx; const w = n.offsetWidth; const x0 = n._a === 'c' ? x - w / 2 : x; n.style.transform = `translate(${x0}px, ${q.y + n._dy}px) translate(0, -50%)`; n.style.visibility = 'visible';
+      const b = [x0 - 4, q.y + n._dy - 9, x0 + w + 4, q.y + n._dy + 9]; if (box.some(o => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1])) n.style.visibility = 'hidden'; else box.push(b); });
+  }
+  wire(el) { // drag the arc to turn it a little; a tap still opens the Day sheet
+    let x0 = null, moved = false;
+    el.addEventListener('pointerdown', e => { x0 = e.clientX; moved = false; this.dragV = this.drag; });
+    el.addEventListener('pointermove', e => { if (x0 == null) return; const dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true; if (moved) { this.drag = Math.max(-.42, Math.min(.42, this.dragV + dx / 420)); this.kick(); } });
+    const up = () => { if (x0 == null) return; x0 = null; if (moved && !RM) { const from = this.drag; this.anims.push({ dur: 900, f: k => { this.drag = from * (1 - spring(k)); } }); this.kick(); } else if (moved) { this.drag = 0; this.kick(); } };
+    el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('pointerleave', up);
+    el.addEventListener('click', e => { if (moved) { e.stopPropagation(); moved = false; } });
+  }
+  frame(ts) {
+    this.raf = 0;
+    const W = this.W, H = this.H; const asp = W / H;
+    // frame the arc so its ends sit near the screen edges, as in the flat layout
+    const fov = 40, tanh = Math.tan(fov / 2 * Math.PI / 180), dist = 2.0 / (tanh * asp);
+    const look = new THREE.Vector3(-.12, .12, -.12);
+    const lift = .95 + .5 * this.scrollT; // scrolling lifts the camera, so the day is seen more from above as it leaves
+    this.camera.fov = fov; this.camera.aspect = asp; this.camera.updateProjectionMatrix();
+    const yaw = -.22 + this.drag; /* a slight three-quarter view: the morning side nearer, the evening receding */ this.camera.position.set(Math.sin(yaw) * dist, look.y + lift, Math.cos(yaw) * dist); this.camera.lookAt(look);
+    this.root.rotation.x = -.5;
+    // idle: the sun breathes very slowly (stops under Reduce Motion and in shots)
+    const live = !this.still && !RM;
+    if (live && this.haloS) { const b = .5 + .5 * Math.sin((ts - this.t0) / 1400); this.haloS.material.opacity = .72 + .16 * b; if (!this.anims.length) this.sunLight.intensity = this.baseSun * (.92 + .1 * b); }
+    // run animations
+    const now = ts; this.anims = this.anims.filter(a => { a.s = a.s || now; const k = Math.min(1, (now - a.s) / a.dur); a.f(k); return k < 1; });
+    this.renderer.render(this.scene, this.camera);
+    this.placeLabels();
+    const visible = this.el && this.el.isConnected && this.el.getBoundingClientRect().bottom > 0;
+    if (this.anims.length || (live && visible && !document.hidden)) this.raf = requestAnimationFrame(t => this.frame(t));
+  }
+  kick() { if (!this.raf) this.raf = requestAnimationFrame(t => this.frame(t)); }
+}
+const spring = k => 1 - Math.exp(-6.5 * k) * Math.cos(9 * k); // overshoots a little, then settles
+const ease = k => 1 - Math.pow(1 - k, 3);
+
+if (probe() && !new URLSearchParams(location.search).has('flat')) {
+  try {
+    const a = new Arc3D();
+    window.Arc3D = { attach: (el, d, still) => a.attach(el, d, still) };
+    window.__meridian && window.__meridian.render();
+  } catch (e) { window.Arc3D = null; }
+}
 
 </script>
 </body>
