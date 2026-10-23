@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0B1019">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<style>.status,.island,.homebar{display:none!important}html,body{height:100%;background:#0B1019}.mobile{position:fixed;top:0;right:0;bottom:0;left:0}.mobile .screen{width:100%!important;height:100%!important}@media (display-mode: standalone){.mobile{top:calc(env(safe-area-inset-top,0px) - 54px)}}</style>
+<style>.status,.island,.homebar{display:none!important}html,body{height:100%;background:#0B1019}.mobile{position:fixed;top:0;right:0;bottom:0;left:0}.mobile .screen{width:100%!important;height:100%!important}.mobile{top:calc(env(safe-area-inset-top,0px) - 54px)}</style>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
@@ -1948,8 +1948,6 @@ body, .screen { font-family: var(--f-text); }
 .qrow.hue:not(.neutral) .act:not(.live):active { transform: translateY(3px) !important; box-shadow: inset 0 0 0 1px rgba(205,220,245,.09), 0 0 0 #0A0D14 !important; }
 .qrow.hue:not(.neutral) .act.seated { background: oklch(.62 .15 var(--h)) !important; color: #fff !important; box-shadow: inset 0 0 0 1px oklch(.85 .08 var(--h) / .3), 0 1px 0 oklch(.4 .1 var(--h)) !important; transform: translateY(2px); }
 .preset.on, .qpresets .preset.on { background: oklch(.62 .15 var(--h)) !important; color: #fff !important; box-shadow: inset 0 0 0 1px oklch(.85 .08 var(--h) / .3), 0 1px 0 oklch(.4 .1 var(--h)) !important; transform: translateY(2px); }
-.btn.acc { background: oklch(.62 .15 var(--h)) !important; color: #fff !important; box-shadow: inset 0 0 0 1px oklch(.85 .08 var(--h) / .3), 0 3px 0 oklch(.4 .1 var(--h)) !important; }
-.btn.acc:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px oklch(.85 .08 var(--h) / .3), 0 0 0 oklch(.4 .1 var(--h)) !important; }
 
 /* plates: deep ink with a hairline, no shadow, ruled rows inside */
 .list, .card:not(.sug-lead) { background: var(--plate) !important; border-radius: 20px !important; box-shadow: inset 0 0 0 1px var(--plate-edge) !important; }
@@ -1991,7 +1989,8 @@ body, .screen { font-family: var(--f-text); }
 .ys-big small { white-space: nowrap; }
 /* pass 5b: expected slots in the Today glass: outlined, dim, never lit */
 .tl-exp { position: absolute; inset: 0; pointer-events: none; }
-.tl-exp i { position: absolute; border-radius: 3px 3px 0 0; border: 1px solid oklch(.8 .06 var(--h) / .3); border-bottom: 0; background: linear-gradient(0deg, oklch(.8 .06 var(--h) / .07), transparent); }
+.tl-exp i { position: absolute; width: 2px; height: 7px; border-radius: 1px; background: oklch(.8 .1 var(--h) / .55); }
+.tl-shell { position: absolute; inset: 0; pointer-events: none; }
 .tcard.tall .tc-big { font-family: var(--f-disp); font-weight: 300; font-size: calc(64px * var(--ts, 1)); letter-spacing: -.05em; line-height: .9; margin-right: 6px; }
 .tcard.tall .tc-t { display: flex; align-items: baseline; font-size: calc(20px * var(--ts, 1)) !important; }
 .tc-run { margin-bottom: -22px !important; }
@@ -2002,6 +2001,63 @@ body, .screen { font-family: var(--f-text); }
 .lr-n { font-family: var(--f-disp); font-weight: 400 !important; font-size: calc(17px * var(--ts, 1)) !important; }
 .tl-n .n, [data-tl-count] { font-weight: 200 !important; }
 .sec-h h2 { font-family: var(--f-text); font-weight: 500 !important; font-size: calc(13px * var(--ts, 1)) !important; letter-spacing: .02em !important; color: var(--ink-3) !important; }
+/* pass 5c: You's module key under the glass */
+.ys-key { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.ys-key i { font-style: normal; display: inline-flex; align-items: center; gap: 6px; color: rgba(233,237,244,.75); }
+.ys-key i::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: oklch(.76 .15 var(--h)); }
+.ys-key i.off { color: rgba(233,237,244,.4); }
+.ys-key i.off::before { background: rgba(6,9,14,.9); box-shadow: inset 0 0 0 1px rgba(205,220,245,.25); }
+.ys-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 7px; vertical-align: 1px; background: oklch(.76 .17 var(--h)); }
+
+/* pass 5c: no pale keys on the dark page. A routine's primary key is its flat hue; a neutral primary key is a raised ink key; a chosen chip is lit ink. */
+.hue:not(.neutral) .btn.acc { background: oklch(.62 .15 var(--h)) !important; color: #fff !important; box-shadow: inset 0 0 0 1px oklch(.85 .08 var(--h) / .3), 0 3px 0 oklch(.4 .1 var(--h)) !important; }
+.hue:not(.neutral) .btn.acc:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px oklch(.85 .08 var(--h) / .3), 0 0 0 oklch(.4 .1 var(--h)) !important; }
+:root:not([data-theme="light"]) :is(.sheet .btn:not(.acc):not(.sec2):not(.ghost), .btn:not(.acc):not(.sec2):not(.ghost):not(.sec):not(.danger):not(.warn):not(.del), .toast .undo, .watch .wbtn.acc, .qrow .act.live),
+:root:not([data-theme="light"]) :is(.neutral .btn.acc, .hue.neutral .btn.acc, .sheet .btn.acc, .stagebox .btn.acc, .hero .btn.acc, .onboard .btn.acc, .wclose .btn.acc, .btn.big.wide.acc):not(.hue:not(.neutral) *) {
+  background: #263043 !important; color: #F2F5FA !important; box-shadow: inset 0 0 0 1px rgba(205,220,245,.2), 0 3px 0 #090C12 !important; }
+:root:not([data-theme="light"]) :is(.chip.on, .chip.small.on, .hchip.ctx-on, .ctip, .heldbtn .hb, .seg .thumb, .stagebox .seg .thumb, .hero .seg .thumb):not([style*="background"]) {
+  background: #2C374D !important; color: #F2F5FA !important; box-shadow: inset 0 0 0 1px rgba(205,220,245,.3) !important; }
+:root:not([data-theme="light"]) .chip.on svg, :root:not([data-theme="light"]) .chip.small.on svg { color: #F2F5FA; }
+:root:not([data-theme="light"]) .hue:not(.neutral) .chip.on:not([style*="background"]), :root:not([data-theme="light"]) .hue:not(.neutral).chip.on { background: oklch(.36 .08 var(--h)) !important; box-shadow: inset 0 0 0 1px oklch(.75 .12 var(--h) / .45) !important; }
+.howcalc { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.howcalc summary { cursor: pointer; list-style: none; font-size: calc(13.5px * var(--ts, 1)); color: var(--ink-3); min-height: 32px; display: flex; align-items: center; }
+.howcalc summary::-webkit-details-marker { display: none; }
+.howcalc summary::after { content: "›"; margin-left: 6px; transition: transform .15s; }
+.howcalc[open] summary::after { transform: rotate(90deg); }
+.howcalc p { margin-top: 6px; }
+/* pass 5c: one dark ground. The stage is no longer a rounded box (its dark-on-dark edge meant nothing): page and stage are the same ink */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0B1019; --stage: #0B1019; } }
+:root[data-theme="dark"] { --bg: #0B1019; --stage: #0B1019; }
+:root:not([data-theme="light"]) .stagebox { border-radius: 0 !important; }
+/* the date is a label now; the day's count is the one big number */
+.t-hero.title { font-size: calc(30px * var(--tsd, 1)) !important; font-weight: 400 !important; letter-spacing: -.025em !important; }
+.tl-n .n { font-size: calc(84px * var(--tsd, 1)) !important; }
+.tl { height: calc(186px - (var(--ts, 1) - 1) * 90px) !important; }
+/* cards: no peek, so nothing is cut mid-glyph; the dots say there is more */
+.stagebox .tc-track .tcard { width: 100% !important; }
+.stagebox .tc-track:not(.one)::after { display: none !important; }
+/* the run card: compact, the tube beside its figure */
+.tcard.tall { display: grid !important; grid-template-columns: 54% minmax(0, 1fr); column-gap: 12px; align-content: start; }
+.tcard.tall .tc-run { grid-column: 1; grid-row: 1 / span 4; margin: 0 0 0 -8px !important; align-self: center; }
+.tcard.tall > .tc-k, .tcard.tall > .tc-t, .tcard.tall > .tc-m, .tcard.tall > .tc-s { grid-column: 2; }
+.tcard.tall > .tc-k { margin-top: 14px; }
+.tcard.tall .tc-big { font-size: calc(40px * var(--ts, 1)) !important; }
+.tcard.tall .tc-t { font-size: calc(16px * var(--ts, 1)) !important; flex-wrap: wrap; }
+.tcard.tall .tc-m, .tcard.tall .tc-s { font-size: calc(13px * var(--ts, 1)); }
+.ax .tcard.tall { grid-template-columns: 1fr; } .ax .tcard.tall .tc-run { grid-row: auto; } .ax .tcard.tall > * { grid-column: 1 !important; }
+/* pass 5c: the mono time column (proof3d idea 0): when it usually happens, from his own history */
+.qt { display: flex; flex-direction: column; justify-content: center; font-family: ui-monospace, "SF Mono", Menlo, "DejaVu Sans Mono", monospace; line-height: 1.15; color: var(--ink-2); }
+.qt b { font-weight: 400; font-size: calc(14px * var(--ts, 1)); color: var(--ink); }
+.qt small { font-size: calc(11px * var(--ts, 1)); color: var(--ink-3); }
+.qrow.qrow:has(> .qt):not(:has(.tok.tumbler)) { grid-template-columns: 50px 34px minmax(0, 1fr) auto !important; column-gap: 10px !important; }
+.qrow:has(> .qt) .tok.rib { width: 34px !important; height: 34px !important; }
+.qrow:has(> .qt) .qpresets, .qrow:has(> .qt) .qs[data-first-step], .qrow:has(> .qt) .qs.qfirst { grid-column: 3 / -1 !important; }
+.lrow:has(> .qt) { grid-template-columns: 50px 28px minmax(0, 1fr) auto !important; }
+.ax .qrow.qrow:has(> .qt):not(:has(.tok.tumbler)), .ax .lrow.lrow:has(> .qt) { grid-template-columns: 0 34px minmax(0, 1fr) auto !important; }
+.ax .qt { display: none; }
+.qrow.qrow:has(> .qt):has(.tok.tumbler) { grid-template-columns: 50px auto minmax(0, 1fr) auto !important; column-gap: 10px !important; }
+.ax .qrow.qrow:has(> .qt):has(.tok.tumbler) { grid-template-columns: 0 auto minmax(0, 1fr) auto !important; }
+.qrow.qrow:has(> .qt) .qpresets { grid-column: 2 / -1 !important; }
 </style>
 <div id="root"></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js"}}</script>
@@ -2135,8 +2191,8 @@ class Run extends Stage {
     const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2; const sc = 3.1 / Math.max(Math.max(...xs) - Math.min(...xs), (Math.max(...ys) - Math.min(...ys)) * 1.2, 1e-6);
     // height: the ground's altitude, smoothed; a flat route stays flat (at least a 15 m range maps to the full lift)
     const alt0 = d.alt || raw.map(() => 0); const alt = alt0.map((v, i, A) => { const w = A.slice(Math.max(0, i - 6), i + 7); return w.reduce((x, y) => x + y, 0) / w.length; });
-    const lo = Math.min(...alt), hi = Math.max(...alt); const rng = Math.max(15, hi - lo); this.hMax = .1 + (hi - lo) / rng * .85;
-    const hAt = i => .1 + (alt[i] - lo) / rng * .85;
+    const lo = Math.min(...alt), hi = Math.max(...alt); const rng = Math.max(15, hi - lo); this.hMax = .32 + (hi - lo) / rng * .85;
+    const hAt = i => .32 + (alt[i] - lo) / rng * .85; /* pass 5c: the route floats a little above its plate, so it throws a floor shadow */
     const P = i => new T.Vector3((pts[i][0] - cx) * sc, hAt(i), (pts[i][1] - cy) * sc);
     this.segs = []; const g = new T.Group(); this.root.add(g); this.g = g;
     const minP = Math.min(...d.pace), maxP = Math.max(...d.pace);
@@ -2144,11 +2200,11 @@ class Run extends Stage {
       const f = maxP === minP ? .5 : (d.pace[j] - minP) / (maxP - minP);
       const ps = []; for (let i = s.a; i <= s.b; i++) ps.push(P(i));
       if (ps.length < 2) return;
-      const geo = new T.TubeGeometry(new T.CatmullRomCurve3(ps), Math.max(8, ps.length * 2), .085, 12, false);
+      const geo = new T.TubeGeometry(new T.CatmullRomCurve3(ps), Math.max(8, ps.length * 2), .12, 16, false); /* pass 5c: a fuller tube */
       const mat = gem(ok(.9 - f * .4, .16 - f * .03, 162 + f * 30), { flatShading: false, roughness: .07, transparent: true, envMapIntensity: 1.6 });
       const m = new T.Mesh(geo, mat); m.castShadow = true; m.userData.pick = s.ks[0]; g.add(m); this.picks.push(m);
       // rounded ends where the route starts and stops
-      if (j === 0 || j === d.segs.length - 1) { const cap = new T.Mesh(new T.SphereGeometry(.085, 16, 12), mat); cap.position.copy(j === 0 ? ps[0] : ps[ps.length - 1]); g.add(cap); }
+      if (j === 0 || j === d.segs.length - 1) { const cap = new T.Mesh(new T.SphereGeometry(.12, 16, 12), mat); cap.position.copy(j === 0 ? ps[0] : ps[ps.length - 1]); g.add(cap); }
       this.segs.push({ ks: s.ks, m, op: sp(1), lift: sp(0) });
     });
     const foot = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts.map(p => new T.Vector3((p[0] - cx) * sc, .014, (p[1] - cy) * sc))), Math.min(600, pts.length * 2), .02, 5, false), new T.MeshStandardMaterial({ color: ok(.55, .02, 250), roughness: .9, transparent: true, opacity: .6 }));
@@ -2157,11 +2213,11 @@ class Run extends Stage {
     const W = (Math.max(...xs) - Math.min(...xs)) * sc + .7, D = (Math.max(...ys) - Math.min(...ys)) * sc + .7;
     const sh = new T.Shape(); const rr = Math.min(.35, W / 2, D / 2); const x0 = -W / 2, z0 = -D / 2;
     sh.moveTo(x0 + rr, z0); sh.lineTo(x0 + W - rr, z0); sh.quadraticCurveTo(x0 + W, z0, x0 + W, z0 + rr); sh.lineTo(x0 + W, z0 + D - rr); sh.quadraticCurveTo(x0 + W, z0 + D, x0 + W - rr, z0 + D); sh.lineTo(x0 + rr, z0 + D); sh.quadraticCurveTo(x0, z0 + D, x0, z0 + D - rr); sh.lineTo(x0, z0 + rr); sh.quadraticCurveTo(x0, z0, x0 + rr, z0);
-    const plate = new T.Mesh(new T.ShapeGeometry(sh, 6), new T.MeshStandardMaterial({ color: ok(.26, .012, 255), roughness: .95, transparent: true, opacity: .55, envMapIntensity: .3 })); plate.rotation.x = Math.PI / 2; plate.position.y = .004; plate.receiveShadow = true; g.add(plate);
+    const plate = new T.Mesh(new T.ShapeGeometry(sh, 6), new T.MeshStandardMaterial({ color: ok(.34, .014, 255), roughness: .95, transparent: true, opacity: .8, envMapIntensity: .3 })); plate.rotation.x = Math.PI / 2; /* pass 5c: a floor light enough to take the tube's shadow */ plate.position.y = .004; plate.receiveShadow = true; g.add(plate);
     // start: a small round marker where the visible route begins (the first 200 m round home stay private)
     const st = new T.Mesh(new T.SphereGeometry(.075, 20, 14), gem(ok(.95, .05, 165), { flatShading: false })); st.position.copy(P(0)); st.position.y += .18; st.castShadow = true; g.add(st); this.start = st; this.startY = st.position.y;
     this.R = Math.max(...pts.map(p => Math.hypot((p[0] - cx) * sc, (p[1] - cy) * sc))) + .12;
-    this.tilt = this.opts.small ? .8 : .78; this.idle = true;
+    this.tilt = this.opts.small ? .8 : 1.0; this.yaw = this.opts.small ? 0 : .55; this.idle = true; /* pass 5c: seen from higher and turned off-axis, so the route reads as a shape with depth, not a worm side-on */
   }
   // fit the camera to the route's bounds at any turn, with an 8% margin, whatever the stage's shape
   frame() {
@@ -2182,7 +2238,7 @@ class Run extends Stage {
     });
     if (!RM && !this.spinning && !this.drag) this.ang.x += (Math.sin(now * .25) * .35 - this.ang.x) * dt * .5;
     const sp_ = this.scrollP.x;
-    this.g.rotation.y = this.ang.x + sp_ * 1.1; this.g.rotation.x = this.lean.y.x * .22 + sp_ * .35; this.g.rotation.z = -this.lean.x.x * .18;
+    this.g.rotation.y = (this.yaw || 0) + this.ang.x + sp_ * 1.1; this.g.rotation.x = this.lean.y.x * .22 + sp_ * .35; this.g.rotation.z = -this.lean.x.x * .18;
     this.g.position.y = -this.press.x * .06 - Math.max(0, sp_) * .5; this.g.scale.setScalar(.82 + .18 * this.enter.x - this.press.x * .03);
     this.start.position.y = this.startY + Math.sin(now * 2.2) * (RM ? 0 : .03);
     return live;
@@ -5452,8 +5508,9 @@ const yestT = (db, it) => {
   return dayT(db.today - 1, 0, u ? Math.round(u.median) : 12 * 60);
 };
 function usualTimes(db, it) {
-  const list = (db.byItem[it.id] || []).filter(e => e.t >= db.T - 60 * DAY && e.t < db.today * DAY && e.kind !== 'complete');
-  if (list.length < 4) return null;
+  if (it.measure === 'passive' || db.today - firstUse(db) < 14) return null;
+  const list = (db.byItem[it.id] || []).filter(e => e.t >= db.T - 60 * DAY && e.t < db.today * DAY && e.kind !== 'complete' && e.src !== 'watch' && e.src !== 'health');
+  if (list.length < 4 || new Set(list.map(e => dayOf(e.t))).size < 5) return null;
   const mins = list.map(e => minOf(e.t));
   const wdc = [0, 0, 0, 0, 0, 0, 0];
   const daysWith = new Set();
@@ -8444,6 +8501,166 @@ function lgDraw(c, cv, ribs, w, height, ox, rw, base, top, bg) {
   gl.uniform1f(U.uDen, den);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
+function LGSlabs({
+  ribs,
+  rw,
+  base,
+  top,
+  avail,
+  height,
+  uid
+}) {
+  const pad = Math.max(1.5, rw * .09);
+  const rx = Math.min(4, rw * .12);
+  const H = base - top;
+  return React.createElement("g", {
+    "data-lg-object": true
+  }, React.createElement("defs", null, React.createElement("linearGradient", {
+    id: uid + 'sp',
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, React.createElement("stop", {
+    offset: "0",
+    stopColor: "#fff",
+    stopOpacity: ".55"
+  }), React.createElement("stop", {
+    offset: ".6",
+    stopColor: "#fff",
+    stopOpacity: ".12"
+  }), React.createElement("stop", {
+    offset: "1",
+    stopColor: "#fff",
+    stopOpacity: "0"
+  })), React.createElement("linearGradient", {
+    id: uid + 'rim',
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, React.createElement("stop", {
+    offset: "0",
+    stopColor: "#fff",
+    stopOpacity: ".42"
+  }), React.createElement("stop", {
+    offset: "1",
+    stopColor: "#fff",
+    stopOpacity: ".1"
+  }))), ribs.map((r, i) => {
+    const x0 = i * rw + pad,
+      ww = Math.max(1, rw - pad * 2);
+    const k = r.k == null ? 1 : r.k;
+    const shell = React.createElement("rect", {
+      x: x0,
+      y: top,
+      width: ww,
+      height: H,
+      rx: rx,
+      fill: r.frost ? 'rgba(226,233,246,.06)' : r.pre ? `url(#${uid}h)` : 'rgba(205,220,245,.035)',
+      stroke: `url(#${uid}rim)`,
+      strokeWidth: ".8",
+      opacity: r.future ? .55 : 1
+    });
+    const spec = React.createElement("rect", {
+      x: x0 + ww * .14,
+      y: top + 3,
+      width: Math.max(.8, ww * .09),
+      height: H * .7,
+      rx: ww * .05,
+      fill: `url(#${uid}sp)`,
+      opacity: r.future ? .4 : .8
+    });
+    let lit = null;
+    if (r.segs) {
+      const n = r.segs.length;
+      const gap = 2;
+      const sh = (H - gap * (n - 1)) / n;
+      lit = r.segs.map((s, j) => {
+        const y = base - (j + 1) * sh - j * gap;
+        const c = s.hue != null ? lgCol({
+          hue: s.hue
+        }) : null;
+        return s.off ? React.createElement("rect", {
+          key: j,
+          x: x0 + 1,
+          y: y,
+          width: ww - 2,
+          height: sh,
+          rx: rx * .7,
+          fill: "rgba(6,9,14,.75)"
+        }) : s.on ? React.createElement("g", {
+          key: j
+        }, React.createElement("rect", {
+          x: x0 + 1,
+          y: y,
+          width: ww - 2,
+          height: sh,
+          rx: rx * .7,
+          fill: tlCss(c, .92)
+        }), React.createElement("rect", {
+          x: x0 + 1,
+          y: y,
+          width: ww - 2,
+          height: 1.2,
+          fill: tlCss(c.map(v => v * .4 + .6), .95)
+        })) : React.createElement("rect", {
+          key: j,
+          x: x0 + 1.5,
+          y: y + .5,
+          width: ww - 3,
+          height: sh - 1,
+          rx: rx * .7,
+          fill: "none",
+          stroke: tlCss(c, .3),
+          strokeWidth: ".8"
+        });
+      });
+    } else if (r.h > 0) {
+      const hh = avail * Math.min(1, r.h);
+      const c = lgCol(r.hues && r.hues.length ? {
+        hue: r.hues[0]
+      } : r);
+      lit = React.createElement("g", {
+        opacity: r.dim ? .55 : 1
+      }, React.createElement("rect", {
+        x: x0 + 1,
+        y: base - hh,
+        width: ww - 2,
+        height: hh,
+        rx: rx * .7,
+        fill: `url(#${uid}c${i})`
+      }), React.createElement("rect", {
+        x: x0 + 1,
+        y: base - hh,
+        width: ww - 2,
+        height: Math.min(hh, 3),
+        rx: 1,
+        fill: tlCss(c.map(v => v * .4 + .6), .95 * k)
+      }), React.createElement("rect", {
+        x: x0 + 1,
+        y: base + 1.5,
+        width: ww - 2,
+        height: Math.min(hh * .45, height - base),
+        fill: tlCss(c, .5 * k),
+        mask: `url(#${uid}m)`
+      }));
+    }
+    const frost = r.frost ? React.createElement("rect", {
+      x: x0,
+      y: top,
+      width: ww,
+      height: H,
+      rx: rx,
+      fill: "rgba(226,233,246,.2)"
+    }) : null;
+    return React.createElement("g", {
+      key: i
+    }, shell, React.createElement("g", {
+      opacity: r.frost ? .5 : 1
+    }, lit), frost, spec);
+  }));
+}
 function LightGlass({
   ribs,
   height = 150,
@@ -8460,7 +8677,8 @@ function LightGlass({
   data,
   maxRw = 64,
   gl: glWant,
-  tagWrap
+  tagWrap,
+  object
 }) {
   const wrap = useRef(null);
   const [w, setW] = useState(0);
@@ -8574,7 +8792,9 @@ function LightGlass({
       top: 0,
       width: w,
       height,
-      display: glOk ? 'block' : 'none'
+      display: glOk ? 'block' : 'none',
+      opacity: object ? .7 : 1,
+      filter: object ? 'blur(3px)' : null
     },
     "aria-hidden": "true"
   }), w > 0 && React.createElement("svg", {
@@ -8676,7 +8896,7 @@ function LightGlass({
     width: w,
     height: Math.max(4, height - base),
     fill: `url(#${uid}rf)`
-  }))), ribs.map((r, i) => r.frost ? React.createElement("rect", {
+  }))), !object && ribs.map((r, i) => r.frost ? React.createElement("rect", {
     key: 'f' + i,
     x: i * rw + .5,
     y: top,
@@ -8698,7 +8918,23 @@ function LightGlass({
     width: Math.max(.5, rw - 1),
     height: base - top,
     fill: "rgba(205,220,245,.035)"
-  }) : null), Array.from({
+  }) : null), object && React.createElement("ellipse", {
+    cx: rw * n / 2,
+    cy: base + 3,
+    rx: rw * n * .52,
+    ry: 7,
+    fill: "#000",
+    opacity: ".55",
+    filter: `url(#${uid}g)`
+  }), object ? React.createElement(LGSlabs, {
+    ribs: ribs,
+    rw: rw,
+    base: base,
+    top: top,
+    avail: avail,
+    height: height,
+    uid: uid
+  }) : Array.from({
     length: n + 1
   }, (_, i) => (i > 0 && i < n || ox > 1) && React.createElement("line", {
     key: 's' + i,
@@ -8708,7 +8944,7 @@ function LightGlass({
     y2: base + 5,
     stroke: ribs[i] && ribs[i].band ? 'rgba(205,220,245,.2)' : 'rgba(205,220,245,.11)',
     strokeWidth: "1"
-  })), rw >= 5 && ribs.map((r, i) => React.createElement("line", {
+  })), !object && rw >= 5 && ribs.map((r, i) => React.createElement("line", {
     key: 'sp' + i,
     x1: i * rw + rw * .26,
     x2: i * rw + rw * .26,
@@ -8716,7 +8952,7 @@ function LightGlass({
     y2: base - 1,
     stroke: "rgba(255,255,255,.07)",
     strokeWidth: Math.max(.7, rw * .07)
-  })), React.createElement("line", {
+  })), !object && React.createElement("line", {
     x1: "0",
     x2: rw * n,
     y1: top + .5,
@@ -8735,7 +8971,7 @@ function LightGlass({
     y2: base - avail * aim,
     stroke: "rgba(255,240,220,.35)",
     strokeDasharray: "2 4"
-  })), !glOk && ribs.map((r, i) => {
+  })), !glOk && !object && ribs.map((r, i) => {
     if (!(r.h > 0)) return null;
     const pad = rw * (r.wide ? .06 : .16);
     const x0 = i * rw + pad,
@@ -8748,7 +8984,7 @@ function LightGlass({
     const cap = tlCss(c.map(v => v * .55 + .45), .9 * kk);
     return React.createElement("g", {
       key: 'l' + i,
-      opacity: r.dim ? .55 : 1
+      opacity: r.dim || r.frost ? .5 : 1
     }, React.createElement("rect", {
       x: x0 - 3,
       y: base - hh * .85,
@@ -9088,6 +9324,7 @@ function ItemObject({
         padding: '10px var(--gut) 0'
       }
     }, React.createElement(LightGlass, {
+      object: true,
       ribs: ribs,
       height: 150,
       label: lab,
@@ -9149,6 +9386,7 @@ function ItemObject({
         padding: '10px var(--gut) 4px'
       }
     }, React.createElement(LightGlass, {
+      object: true,
       ribs: ribs,
       height: 170,
       aim: 1,
@@ -9174,6 +9412,7 @@ function ItemObject({
       padding: '10px var(--gut) 4px'
     }
   }, React.createElement(LightGlass, {
+    object: true,
     ribs: ribs,
     height: 140,
     label: label,
@@ -10359,7 +10598,15 @@ function QuietRow({
       morph: MI.morphFrom(e.currentTarget.parentElement)
     }),
     "aria-label": `Open ${it.name}`
-  }), React.createElement("span", {
+  }), (() => {
+    const u = usualTimes(S.db, it);
+    const nx = nextUsualMin(u, S.db.nowMin);
+    const m = nx != null && nx > S.db.nowMin + 15 ? Math.round(nx) : null;
+    return React.createElement("span", {
+      className: "qt tnum",
+      "aria-hidden": "true"
+    }, React.createElement("b", null, m != null ? fmtHM(m) : 'now'), m != null && React.createElement("small", null, "usually"));
+  })(), React.createElement("span", {
     className: cx('tok', gl ? 'tumbler' : 'rib', gl && fq > 0 && 'has-lv'),
     ref: tokRef,
     style: {
@@ -12248,13 +12495,6 @@ function searchSettings(db, S) {
     sub: 'One idea a day among the suggestions',
     sw: v => S.act.setPref('ideas', v),
     on: !!S.db.prefs.ideas
-  }, {
-    l: 'Sleep summary score',
-    kw: 'score, sleep score, summary',
-    icon: 'moon',
-    sub: 'Optional, shows its ingredients',
-    sw: v => S.act.setPref('sleepScore', v),
-    on: !!S.db.prefs.sleepScore
   }, {
     l: 'Appearance',
     kw: 'dark mode, light, theme, colours, colors',
@@ -16052,32 +16292,7 @@ function SettingsSection({
       k: 'target',
       id: it.id
     })
-  }), !obs && lensOk(it) && React.createElement("div", {
-    className: "row indent",
-    "data-lens-row": true
-  }, React.createElement("div", {
-    className: "tok"
-  }, React.createElement(Icon, {
-    n: "sliders",
-    s: 20
-  })), React.createElement("div", {
-    className: "main"
-  }, React.createElement("div", {
-    className: "ttl"
-  }, "How progress shows"), React.createElement("div", {
-    className: "sub"
-  }, RHYTHM(it) ? 'When you last did it' : 'How many so far')), React.createElement(Seg, {
-    options: LENS_OPTS,
-    value: RHYTHM(it) ? 'rhythm' : 'count',
-    onChange: v => S.updateItem(it.id, {
-      lens: v
-    }),
-    style: {
-      width: 168,
-      flex: 'none'
-    },
-    label: "How progress shows"
-  })), !obs && React.createElement(Row, {
+  }), !obs && React.createElement(Row, {
     icon: "bell",
     title: "Reminder",
     sub: it.reminder ? remText(it.reminder, it.cadence.type) : undefined,
@@ -16834,7 +17049,7 @@ function ReminderSheet({
   const [win, setWin] = useState(r0 && r0.win ? r0.win : REM_WINS[2][0]);
   const [cue, setCue] = useState(r0 && r0.cue ? r0.cue : 'workend');
   const [device, setDevice] = useState(r0 && r0.device ? r0.device : db.prefs.remDevice || 'both');
-  const [taper, setTaper] = useState(r0 ? !!r0.taper : true);
+  const taper = true;
   const cal = !!db.prefs.calendar;
   const loc = db.prefs.location === 'allowed';
   const draft = mode === 'off' ? null : mode === 'preset' ? {
@@ -17035,38 +17250,10 @@ function ReminderSheet({
   }, o)), mode === 'preset' && sel === o && React.createElement(Icon, {
     n: "check",
     s: 20
-  }))))), mode !== 'off' && React.createElement(React.Fragment, null, React.createElement("div", {
-    className: "eyebrow",
+  }))))), mode !== 'off' && React.createElement(React.Fragment, null, React.createElement(Why, {
+    lines: ['It fires at the moment you picked and is skipped if the thing is already done.', 'When it’s going well (six days in two weeks of doing it first) it goes quiet by itself. The routine page shows that and can restore it.'],
     style: {
-      margin: '20px 0 8px'
-    }
-  }, "Arrives on"), React.createElement(Seg, {
-    options: [{
-      v: 'phone',
-      l: 'iPhone'
-    }, {
-      v: 'watch',
-      l: 'Watch'
-    }, {
-      v: 'both',
-      l: 'Both'
-    }],
-    value: device,
-    onChange: setDevice,
-    label: "Arrives on"
-  }), React.createElement("div", {
-    className: "list",
-    style: {
-      margin: '14px 0 0'
-    }
-  }, React.createElement(Toggle, {
-    on: taper,
-    onChange: setTaper,
-    label: "Fade out when it\u2019s going well"
-  })), React.createElement(Why, {
-    lines: ['It fires at the moment you picked and is skipped if the thing is already done.', 'With fade on, after six days in two weeks of doing it first, it goes quiet. The routine page shows that and can restore it.'],
-    style: {
-      marginTop: 4
+      marginTop: 14
     }
   }), text && React.createElement("p", {
     className: "t-xs",
@@ -18595,7 +18782,25 @@ function TimeRoot() {
     s: 14
   }))), React.createElement("div", {
     className: "sec"
-  }, React.createElement("div", {
+  }, !f && (() => {
+    const ws = weekStart(db.today);
+    const wa = weekAims(db, ws);
+    const t = metText(wa.met);
+    return React.createElement("div", {
+      className: "figlist",
+      style: {
+        marginBottom: 22
+      },
+      "data-thisweek": true
+    }, React.createElement(Tile, {
+      title: "This week",
+      sub: t || (wa.any ? 'Logged, no aim met yet' : 'Nothing yet'),
+      big: wa.met.length || null,
+      unit: wa.met.length ? 'at their aim' : null,
+      onClick: () => S.openWeekClose(ws),
+      "data-thisweek-row": true
+    }));
+  })(), React.createElement("div", {
     className: "sec-h"
   }, React.createElement("h2", null, "Reports and patterns")), React.createElement("div", {
     className: "figlist",
@@ -18973,6 +19178,11 @@ function yearSlabs(db, data, heldBy, f) {
       pre: true,
       m
     };
+    if (f && monthEnd(m) < f.created) return {
+      pre: true,
+      m,
+      before: f
+    };
     const days = md.days.filter(o => !o.future && o.d >= fu);
     const n = days.length || 1;
     const aside = days.filter(o => ['away', 'vacation', 'sick'].includes(o.ctx)).length;
@@ -18983,13 +19193,20 @@ function yearSlabs(db, data, heldBy, f) {
     };
     const all = H.all.filter(x => !x.it.neutral);
     const nh = all.filter(x => x.share >= .75).length;
+    const wl = x => {
+      const z = 1.64,
+        nn = x.n,
+        p = x.met / nn;
+      return (p + z * z / (2 * nn) - z * Math.sqrt(p * (1 - p) / nn + z * z / (4 * nn * nn))) / (1 + z * z / nn);
+    };
     let dom = null;
     if (f) dom = f;else {
-      const s = all.filter(x => x.met > 0).sort((p, q) => q.share - p.share || q.met - p.met);
+      const s = all.filter(x => x.met > 0).sort((p, q) => wl(q) - wl(p) || q.met - p.met);
       dom = s.length ? s[0].it : null;
     }
     const share = dom ? (all.find(x => x.it.id === dom.id) || {}).share || 0 : 0;
     const v = f ? done / n : all.length ? nh / all.length : 0;
+    const dx = dom ? all.find(x => x.it.id === dom.id) : null;
     return {
       m,
       h: done ? .16 + .84 * v : 0,
@@ -19005,7 +19222,9 @@ function yearSlabs(db, data, heldBy, f) {
       nh,
       na: all.length,
       share,
-      aside
+      aside,
+      dMet: dx ? dx.met : 0,
+      dN: dx ? dx.n : 0
     };
   });
 }
@@ -19030,8 +19249,14 @@ function YearSlabs({
       });
     }
   };
-  const say = r => r.future ? 'Still ahead' : r.pre ? 'Before Meridian' : !r.done ? r.frost ? 'Set aside' : 'Nothing recorded' : [r.dom ? `${r.dom.short || r.dom.name} ${f ? `on ${plural(r.done, 'day')}` : r.share >= .75 ? 'held its aim' : 'met its aim most'}` : 'Logged, no aim met', r.frost ? 'mostly set aside' : null, !f && r.done ? `${plural(r.done, 'day')} with something done` : null].filter(Boolean).join(', ');
-  const lab = `2026 as one glass of twelve slabs, one a month, each lit in the hue of the routine that met its aim most and as tall as the share of days with something done; frosted where set aside, clear where still ahead. ${MONTHS[m]}: ${say(r)}`;
+  const PW = {
+    day: 'day',
+    week: 'week',
+    month: 'month'
+  };
+  const domSay = r => `${r.dom.short || r.dom.name}, ${r.dMet} of ${plural(r.dN, PW[r.dom.cadence.type] || 'period')} at its aim`;
+  const say = r => !f && r.done != null && !r.na && !r.frost ? 'Too early to read aims' : r.future ? 'Still ahead' : r.pre ? r.before ? `Before ${r.before.short || r.before.name}` : 'Before Meridian' : !r.done ? r.frost ? 'Set aside' : 'Nothing recorded' : [r.dom ? f ? `${r.dom.short || r.dom.name} on ${plural(r.done, 'day')}` : r.dN ? domSay(r) : `${r.dom.short || r.dom.name} met its aim` : 'Logged, no aim met', r.frost ? 'mostly set aside' : null, !f && r.done ? `${plural(r.done, 'day')} with something done` : null].filter(Boolean).join(', ');
+  const lab = f ? `2026 as one glass of twelve slabs, one a month, as tall as the share of days with ${f.short || f.name}; hatched before it existed, frosted where set aside, clear where still ahead. ${MONTHS[m]}: ${say(r)}` : `2026 as one glass of twelve slabs, one a month, as tall as the share of routines at their aim (closed periods), each lit in the hue of the routine that held its aim most reliably; frosted where set aside, clear where still ahead. ${MONTHS[m]}: ${say(r)}`;
   return React.createElement("div", {
     className: "ys",
     "data-year-glass": true,
@@ -19042,6 +19267,7 @@ function YearSlabs({
     }
   }, React.createElement(LightGlass, {
     gl: true,
+    object: true,
     ribs: ribs,
     height: 190,
     maxRw: 80,
@@ -19064,15 +19290,27 @@ function YearSlabs({
     "aria-live": "polite"
   }, r.done != null && (f ? React.createElement("span", {
     className: "ys-big tnum"
-  }, r.done, React.createElement("small", null, "of ", r.n, " days")) : React.createElement("span", {
+  }, r.done, React.createElement("small", null, "of ", r.n, " days")) : r.na > 0 ? React.createElement("span", {
     className: "ys-big tnum"
-  }, r.nh, React.createElement("small", null, "of ", r.na, " at their aim"))), React.createElement("span", {
+  }, r.nh, React.createElement("small", null, "of ", r.na, " at their aim")) : null), React.createElement("span", {
     className: "ys-txt"
   }, React.createElement("b", null, MONTHS[m], m === cm ? ', so far' : ''), React.createElement("span", {
     "data-year-cap": true
-  }, say(r)))));
+  }, r.dom && React.createElement("i", {
+    className: "ys-dot",
+    style: {
+      '--h': r.dom.hue
+    },
+    "aria-hidden": "true"
+  }), say(r)))));
 }
 const YOU_K = 14;
+const YOU_HUE = {
+  feel: 48,
+  med: 205,
+  obs: 300,
+  checks: 150
+};
 function youDays(db, mods) {
   const a = db.today - YOU_K + 1;
   const z = () => Array(YOU_K).fill(0);
@@ -19128,13 +19366,20 @@ function YouGlass({
     if (!on.length) return {
       frost: true
     };
-    const c = on.filter(k => o[k][i] > 0).length;
+    const lit = on.filter(k => o[k][i] > 0);
     return {
-      h: c ? .25 + .75 * c / on.length : 0,
-      k: .45 + .4 * c / on.length,
-      hue: 48,
+      h: lit.length ? lit.length / 4 : 0,
+      k: .5,
+      hues: lit.map(k => YOU_HUE[k]),
+      hue: lit.length ? YOU_HUE[lit[0]] : null,
       wide: true,
-      cur: d === db.today
+      cur: d === db.today,
+      segs: L.map(k => mods[k] ? {
+        hue: YOU_HUE[k],
+        on: o[k][i] > 0
+      } : {
+        off: true
+      })
     };
   }), [a, o, on.join()]);
   const days = ribs.filter(r => r.h > 0).length;
@@ -19148,17 +19393,26 @@ function YouGlass({
     }
   }, React.createElement(LightGlass, {
     gl: true,
+    object: true,
     ribs: ribs,
     height: 170,
     label: `The last ${YOU_K} days as one glass, a rib a day, lit as high as the share of your switched-on modules that recorded something: ${days} of ${known} days`,
     data: "modules"
   })), React.createElement("div", {
     className: "ys-read"
-  }, React.createElement("span", {
+  }, on.length > 0 && React.createElement("span", {
     className: "ys-big tnum"
   }, days, React.createElement("small", null, "of ", known, " days")), React.createElement("span", {
     className: "ys-txt"
-  }, React.createElement("b", null, "With a record"), React.createElement("span", null, on.length ? `${on.map(k => N[k]).join(', ')}${on.length < 4 ? `; ${L.filter(k => !mods[k]).map(k => N[k]).join(', ')} off` : ''}` : 'Every module is off'))));
+  }, React.createElement("b", null, on.length ? 'With a record' : 'Every module is off'), React.createElement("span", {
+    className: "ys-key"
+  }, on.length ? L.map(k => React.createElement("i", {
+    key: k,
+    className: mods[k] ? null : 'off',
+    style: {
+      '--h': YOU_HUE[k]
+    }
+  }, N[k], mods[k] ? '' : ' off')) : 'Turn one on in its page below'))));
 }
 function Tile(p) {
   const {
@@ -26595,7 +26849,7 @@ function TodayCard({
         "aria-hidden": "true"
       }, React.createElement(MomentRun, {
         w: w,
-        height: 150,
+        height: 124,
         big: true
       }));
       if (w.dist) bigT = React.createElement(React.Fragment, null, React.createElement("span", {
@@ -27250,7 +27504,14 @@ function LaterLine({
       id: it.id
     }),
     "aria-label": `${it.name}${st ? ', ' + st : ''}. Open`
-  }), React.createElement("span", {
+  }), (() => {
+    const w = x.why || '';
+    const u = w.startsWith('usual:') ? +w.slice(6) : (usualTimes(S.db, it) || {}).median;
+    return React.createElement("span", {
+      className: "qt tnum",
+      "aria-hidden": "true"
+    }, u != null ? React.createElement(React.Fragment, null, React.createElement("b", null, fmtHM(Math.round(u))), React.createElement("small", null, "usually")) : React.createElement(React.Fragment, null, React.createElement("b", null, "any"), React.createElement("small", null, "time")));
+  })(), React.createElement("span", {
     className: "tok",
     "aria-hidden": "true"
   }, React.createElement(Icon, {
@@ -27724,10 +27985,10 @@ vec3 scene(float x,float y){
   float pres=0.;
   for(int i=0;i<${N};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue; float d=max(0.,abs(x-L.x)-L.y); pres=max(pres,exp(-.5*d*d/(mix(.49,.09,uDen)*w*w))*mix(1.,step(uBase-L.z-3.,y),uDen)); /* R12-02: in a dense glass presence stays inside its own rib and below its own top */ }
   c*=pres;
-  c+=spec*vec3(.75,.82,1.)*(.022*exp(-(y-uTop)/160.)+.008)*calm+pow(au,6.)*.006*calm*vec3(.8,.85,1.);
+  /* pass 5c: no sheen on empty ribs. The texture of faint reeds across the whole field read as a grille behind the title; only lit ribs show glass */
   /* pass 5: the glass as an object: a crisp lit edge on each rib, a brighter specular streak where light passes through, and a cut top edge */
   float edge=exp(-pow((u+.93)/.05,2.))*step(y,uBase)*smoothstep(uTop-30.,uTop+30.,y);
-  c+=edge*(.018+lum*.22)*vec3(.85,.9,1.);
+  c+=edge*lum*.22*pres*vec3(.85,.9,1.);
   c+=spec*local*.16*pres;
   c*=mix(1.,.78,smoothstep(uNowX-2.,uNowX+6.,x));
   return c;
@@ -28159,12 +28420,12 @@ function TodayLight({
     const M = todayModel(db);
     if (M.calm) return [];
     const seen = new Set();
-    return [...M.inplay, ...M.later].filter(x => x.it.kind === 'routine' && !x.it.neutral && x.ev && x.ev.state !== 'met' && x.u && x.u.median > db.nowMin + 15 && x.u.median < TL_T1 * 60).map(x => ({
+    return [...M.inplay, ...M.later].filter(x => x.it.kind === 'routine' && !x.it.neutral && x.it.measure !== 'passive' && x.ev && x.ev.state !== 'met' && x.u && x.u.median > db.nowMin + 15 && x.u.median < TL_T1 * 60).map(x => ({
       id: x.it.id,
       m: Math.round(x.u.median),
       hue: x.it.hue,
       name: x.it.short || x.it.name
-    })).filter(e => {
+    })).sort((p, q) => p.m - q.m).filter(e => {
       const k = Math.round(e.m / 30);
       if (seen.has(k)) return false;
       seen.add(k);
@@ -28205,25 +28466,68 @@ function TodayLight({
   }) : React.createElement("canvas", {
     ref: cv,
     className: "tl-cv"
-  }), dim.w > 0 && exp.length > 0 && React.createElement("div", {
+  }), dim.w > 0 && React.createElement("svg", {
+    className: "tl-shell",
+    width: dim.w,
+    height: dim.h,
+    "aria-hidden": "true"
+  }, React.createElement("defs", null, React.createElement("linearGradient", {
+    id: "tlrim",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, React.createElement("stop", {
+    offset: "0",
+    stopColor: "#fff",
+    stopOpacity: ".5"
+  }), React.createElement("stop", {
+    offset: "1",
+    stopColor: "#fff",
+    stopOpacity: ".08"
+  }))), drawn.map((L, k) => {
+    const x0 = L.r0 * rw + 1,
+      ww = Math.max(2, (L.r1 - L.r0 + 1) * rw - 2),
+      hh = (base - TL_TOP) * Math.min(.98, L.hT),
+      y = base - hh;
+    const c = L.col;
+    return React.createElement("g", {
+      key: k
+    }, React.createElement("rect", {
+      x: x0,
+      y: y,
+      width: ww,
+      height: hh,
+      rx: Math.min(3, ww / 3),
+      fill: "none",
+      stroke: "url(#tlrim)",
+      strokeWidth: ".8"
+    }), React.createElement("rect", {
+      x: x0 + ww * .16,
+      y: y + 3,
+      width: Math.max(.8, ww * .1),
+      height: hh * .6,
+      fill: "#fff",
+      opacity: ".22"
+    }), c && React.createElement("rect", {
+      x: x0,
+      y: y,
+      width: ww,
+      height: 1.4,
+      fill: tlCss(c.map(v => v * .4 + .6), .9)
+    }));
+  })), dim.w > 0 && exp.length > 0 && React.createElement("div", {
     className: "tl-exp",
     "aria-hidden": "true",
     "data-tl-expected": exp.length
-  }, exp.map(e => {
-    const cx0 = xs(e.m / 60);
-    const ww = Math.max(4, rw * .7);
-    const hh = (base - TL_TOP) * .46;
-    return React.createElement("i", {
-      key: e.id,
-      style: {
-        left: cx0 - ww / 2,
-        width: ww,
-        top: base - hh,
-        height: hh,
-        '--h': e.hue
-      }
-    });
-  })), React.createElement("div", {
+  }, exp.map(e => React.createElement("i", {
+    key: e.id,
+    style: {
+      left: xs(e.m / 60) - 1,
+      top: base - 7,
+      '--h': e.hue
+    }
+  }))), React.createElement("div", {
     className: "tl-axis",
     "aria-hidden": "true"
   }, hrs.map(hh => React.createElement("span", {
@@ -29990,7 +30294,7 @@ function CreateRoutine({
       it.everyTime = true;
       it.everyTimeFrom = S.db.today;
     }
-    if (lens && cad !== 'day' && !notice) it.lens = lens;
+    if (cad !== 'day' && cad !== 'none' && !notice && ['event', 'confirmation'].includes(it.measure) && it.targets && it.targets[0] && it.targets[0].v <= 2) it.lens = 'rhythm';
     S.act.createItem(it);
     close();
     S.haptic(notice ? 'soft' : 'success');
@@ -30562,23 +30866,7 @@ function CreateRoutine({
       }), 320);
     },
     "data-create-todate": true
-  }, "Give it a date instead")), cad !== 'day' && cad !== 'none' && !notice && React.createElement(React.Fragment, null, React.createElement("div", {
-    className: "eyebrow",
-    style: {
-      margin: '18px 0 8px'
-    }
-  }, "How progress shows"), React.createElement(Seg, {
-    options: LENS_OPTS,
-    value: lens || 'count',
-    onChange: setLens,
-    label: "How progress shows"
-  }), React.createElement("p", {
-    className: "t-xs",
-    style: {
-      marginTop: 6
-    },
-    "data-create-lens": true
-  }, (lens || 'count') === 'rhythm' ? 'Shows when you last did it, not a tally.' : 'Shows how many so far.')), (measure === 'session' || measure === 'duration') && healthOn(db) && React.createElement(React.Fragment, null, React.createElement("div", {
+  }, "Give it a date instead")), (measure === 'session' || measure === 'duration') && healthOn(db) && React.createElement(React.Fragment, null, React.createElement("div", {
     className: "eyebrow",
     style: {
       margin: '18px 0 8px'
@@ -32506,16 +32794,6 @@ function ContextSheet() {
   })))), !range && cur.filter(x => REST_CTX.includes(x.type)).slice(0, 1).map(x => React.createElement(KeepList, {
     key: x.id,
     c: x
-  })), React.createElement("div", {
-    className: "list",
-    style: {
-      margin: '16px 0 0'
-    },
-    "data-ctx-rem": true
-  }, React.createElement(Toggle, {
-    on: (db.prefs.ctxRem || 'pause') === 'pause',
-    onChange: v => S.act.setPref('ctxRem', v ? 'pause' : 'keep'),
-    label: "Pause cues on sick and away days"
   })), React.createElement("button", {
     className: "row indent",
     style: {
@@ -33914,50 +34192,12 @@ function RemindersPage() {
       margin: '10px var(--gut) 0'
     },
     "data-rem-cap": cap
-  }, "Past ", cap, ", the rest wait on the widget. Deadlines don\u2019t count."), React.createElement("div", {
-    className: "eyebrow",
+  }, "Past ", cap, ", the rest wait on the widget. Deadlines don\u2019t count."), React.createElement("p", {
+    className: "t-xs",
     style: {
-      margin: '16px var(--gut) 8px'
+      margin: '6px var(--gut) 0'
     }
-  }, "Each cue"), React.createElement("div", {
-    style: {
-      padding: '0 var(--gut)'
-    }
-  }, React.createElement(Seg, {
-    options: [{
-      v: 0,
-      l: 'Once'
-    }, {
-      v: 1,
-      l: 'One repeat'
-    }],
-    value: p.remRepeat || 0,
-    onChange: v => S.act.setPref('remRepeat', v),
-    label: "Each cue repeats"
-  })), React.createElement("div", {
-    className: "eyebrow",
-    style: {
-      margin: '16px var(--gut) 8px'
-    }
-  }, "On the Watch, a day"), React.createElement("div", {
-    style: {
-      padding: '0 var(--gut)'
-    }
-  }, React.createElement(Seg, {
-    options: [{
-      v: 1,
-      l: '1'
-    }, {
-      v: 2,
-      l: '2'
-    }, {
-      v: 3,
-      l: 'All'
-    }],
-    value: p.remWatchMax || 3,
-    onChange: v => S.act.setPref('remWatchMax', v),
-    label: "Cues on the Watch a day"
-  }))), React.createElement("div", {
+  }, "Each cue comes once, never repeated.")), React.createElement("div", {
     className: "sec"
   }, React.createElement("div", {
     className: "sec-h"
@@ -35174,30 +35414,20 @@ function SleepScoreSection({
 }) {
   const S = useStore();
   const db = S.db;
-  const on = !!db.prefs.sleepScore;
-  const sc = on ? sleepScore(db, night) : null;
+  const sc = sleepScore(db, night);
+  if (!sc) return null;
   return React.createElement("div", {
     className: "sec",
     "data-sleepscore": true
   }, React.createElement("div", {
     className: "sec-h"
-  }, React.createElement("h2", null, "Summary score")), React.createElement("div", {
-    className: "list"
-  }, React.createElement(Toggle, {
-    on: on,
-    onChange: v => S.act.setPref('sleepScore', v),
-    label: "Show a summary score",
-    sub: on ? 'One number for the night, with everything that went into it' : 'Off, the report above stays as it is'
-  })), on && sc && (sc.few ? React.createElement("p", {
+  }, React.createElement("h2", null, "Summary")), sc.few ? React.createElement("p", {
     className: "t-s",
     style: {
-      margin: '12px var(--gut) 0'
+      margin: '0 var(--gut)'
     }
-  }, "Not yet: it compares a night with your own usual, which needs at least 7 earlier nights (", sc.have, " so far).") : React.createElement("div", {
+  }, "A score comes after 7 nights: it compares a night with your own usual (", sc.have, " so far).") : React.createElement("div", {
     className: "card",
-    style: {
-      marginTop: 12
-    },
     "data-sleepscore-card": true
   }, React.createElement("div", {
     style: {
@@ -35209,17 +35439,9 @@ function SleepScoreSection({
     className: "fig fig-l tnum"
   }, sc.score), React.createElement("span", {
     className: "t-s"
-  }, "of 100, compared with your last ", plural(sc.nPrior, 'night'))), React.createElement("div", {
-    className: "eyebrow",
-    style: {
-      margin: '14px 0 4px'
-    }
-  }, "Ingredients, equal weight"), sc.parts.map(p => React.createElement("div", {
+  }, "of 100, against your last ", plural(sc.nPrior, 'night'))), sc.parts.map(p => React.createElement("div", {
     key: p.k,
-    className: "kv",
-    style: {
-      alignItems: 'flex-start'
-    }
+    className: "kv"
   }, React.createElement("span", {
     className: "k"
   }, React.createElement("b", {
@@ -35227,15 +35449,18 @@ function SleepScoreSection({
       color: 'var(--ink)',
       fontWeight: 600
     }
-  }, p.k), ", ", p.fact, React.createElement("br", null), React.createElement("span", {
-    className: "t-xs"
-  }, p.how)), React.createElement("span", {
+  }, p.k), ", ", p.fact), React.createElement("span", {
     className: "v tnum"
-  }, p.v))), React.createElement("p", {
-    className: "t-xs",
-    style: {
-      marginTop: 10
-    }
+  }, p.v))), React.createElement("details", {
+    className: "howcalc",
+    "data-sleepscore-how": true
+  }, React.createElement("summary", null, "How it\u2019s worked out"), React.createElement("p", {
+    className: "t-xs"
+  }, "Three ingredients, equal weight, each out of 100:"), sc.parts.map(p => React.createElement("p", {
+    key: p.k,
+    className: "t-xs"
+  }, React.createElement("b", null, p.k), ": ", p.how, ".")), React.createElement("p", {
+    className: "t-xs"
   }, "Not a health measure."))));
 }
 const WHO5 = ['I have felt cheerful and in good spirits', 'I have felt calm and relaxed', 'I have felt active and vigorous', 'I woke up feeling fresh and rested', 'My daily life has been filled with things that interest me'];
