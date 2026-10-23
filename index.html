@@ -1180,6 +1180,9 @@ svg { display: block; }
 .lg-tags { position: absolute; left: 0; right: 0; bottom: 2px; height: 16px; pointer-events: none; }
 .lg-tags span { position: absolute; transform: translateX(-50%); font-size: calc(10.5px * var(--ts, 1)); font-weight: 600; color: var(--on-deep-3, rgba(237,241,246,.5)); }
 .lg-tags span.on { color: var(--on-deep, #EDF1F6); }
+/* AX-04: module names sit in their own rib's width and may take two lines; they never run into each other */
+.lg-tags.wrap { height: auto; bottom: 0; }
+.lg-tags.wrap span { bottom: 0; text-align: center; white-space: normal; line-height: 1.1; overflow-wrap: normal; font-size: calc(10.5px * min(var(--ts, 1), 1.12)); }
 /* L3-13: without 3D the year is still drawn, as twelve flat stones, so the caption sits under an object */
 .yflat { display: grid; grid-template-columns: repeat(12, 1fr); align-items: end; gap: 2px; padding: 26px var(--gut) 18px; }
 .yflat span { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -2499,6 +2502,7 @@ const fmtL = ml => {
   const l = ml / 1000;
   return l >= 10 ? `${Math.round(l)}` : (Math.round(l * 100) / 100).toFixed(l < 1 ? 2 : 2).replace(/0$/, '').replace(/\.$/, '');
 };
+const newTag = (db, it) => !!it.isNew && db.today - (it.created == null ? db.today : it.created) < 3 && !(db.byItem && db.byItem[it.id] || []).length;
 const lcN = (it, full) => {
   const n = full ? it.name : it.short || it.name;
   return it.isNew || /^[A-Z0-9]{2}/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1);
@@ -2982,7 +2986,8 @@ const ITEMS0 = [{
     v: 1
   }],
   created: 95,
-  fits: ['Evening', 'At home']
+  fits: ['Evening', 'At home'],
+  est: 10
 }, {
   id: 'vitd',
   name: 'Vitamin D',
@@ -3002,13 +3007,13 @@ const ITEMS0 = [{
   everyTime: true,
   about: 'Recorded as taken. Recording it says nothing about whether it works.'
 }, {
-  id: 'plants',
-  name: 'Water the plants',
-  short: 'Plants',
+  id: 'tidy',
+  name: 'Tidy the flat',
+  short: 'Tidy',
   kind: 'routine',
   measure: 'confirmation',
-  hue: 140,
-  glyph: 'plant',
+  hue: 48,
+  glyph: 'broom',
   cadence: {
     type: 'week'
   },
@@ -3627,7 +3632,7 @@ function generateDataset() {
     }
     if (ws + 0 >= 60 && r() < .8 * m + .1) {
       const d = ws;
-      if (days.includes(d)) add('plants', dayT(d, 18, 40) + jitter(15));
+      if (days.includes(d)) add('tidy', dayT(d, 18, 40) + jitter(15));
     }
     if (ws >= 31 && r() < .78 * m + .1) {
       const d = ws + (r() < .55 ? 4 : 5);
@@ -3697,7 +3702,7 @@ function generateDataset() {
   });
   W8(298, [[7, 50, 250], [10, 20, 500], [12, 40, 330], [15, 10, 500], [19, 10, 330], [21, 0, 250]]);
   add('vitd', dayT(298, 8, 4));
-  add('plants', dayT(298, 18, 40));
+  add('tidy', dayT(298, 18, 40));
   add('meals', dayT(298, 8, 25));
   add('meals', dayT(298, 13, 5));
   add('meals', dayT(298, 20, 0));
@@ -5641,7 +5646,7 @@ const THRESH = {
   events: [1, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
 };
 function lifetime(db, it) {
-  const all = cappedFor(it, countingEntries(db, it, 0, db.today));
+  const all = countingEntries(db, it, 0, db.today);
   const count = valueOf(it.measure === 'quantity' || it.measure === 'reps' || it.measure === 'duration' || it.measure === 'passive' ? {
     measure: 'session'
   } : it, all);
@@ -5742,7 +5747,7 @@ function primaryAccum(it, L) {
   };
 }
 function milestones(db, it) {
-  const all = cappedFor(it, countingEntries(db, it, 0, db.today));
+  const all = countingEntries(db, it, 0, db.today);
   const out = [];
   const scan = (list, metric, key, fmt) => {
     let acc = 0,
@@ -5965,7 +5970,7 @@ function bestsFirsts(db, it) {
 }
 const periodLabelShort = (it, p) => p.tg.v === 1 ? it.cadence.type === 'month' ? 'month' : it.cadence.type === 'week' ? 'week' : it.cadence.type === 'everyN' ? 'window' : 'day' : it.cadence.type === 'month' ? `${p.tg.v}-${unitWord(it, 1)} month` : it.cadence.type === 'week' ? `${p.tg.v}-${unitWord(it, 1)} week` : it.cadence.type === 'everyN' ? 'window' : 'day';
 function cumulativeSeries(db, it) {
-  const all = cappedFor(it, countingEntries(db, it, 0, db.today));
+  const all = countingEntries(db, it, 0, db.today);
   const m = it.measure;
   const metric = m === 'quantity' ? isML(it) ? e => e.v / 1000 : e => e.v : m === 'duration' || m === 'passive' ? e => e.v / 60 : m === 'reps' ? e => e.v : () => 1;
   const pts = [];
@@ -6152,7 +6157,7 @@ function monthHeld(db, m) {
       }
       d = Math.max(d + 1, pb + 1);
     }
-    if (n && (!openM || n >= 2)) all.push({
+    if (n >= 2) all.push({
       it,
       n,
       met,
@@ -6214,7 +6219,7 @@ function monthFact(db, m) {
     b = Math.min(monthEnd(m), db.today);
   const runs = db.workouts.filter(w => w.type === 'run' && w.d >= a && w.d <= b && w.dist);
   const km = sum(runs.map(w => w.dist));
-  return km >= 1 ? `${Math.round(km)} km run` : '';
+  return km >= 1 ? `${Math.round(km)} km of running` : '';
 }
 const _notesCache = new WeakMap();
 function monthNotes(db) {
@@ -8268,6 +8273,50 @@ function NightObject({
   }));
 }
 const lgCol = r => r.quiet || r.hue == null ? TL_MED : tlMix(tlOklch(.8, .12, r.hue), .45);
+const LG_MAX = 64;
+let _lgFS = null;
+function lgDraw(c, cv, ribs, w, height, ox, rw, base, top, bg) {
+  const {
+    gl,
+    U
+  } = c;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const cw = Math.round(w * dpr),
+    ch = Math.round(height * dpr);
+  if (cv.width !== cw || cv.height !== ch) {
+    cv.width = cw;
+    cv.height = ch;
+  }
+  gl.viewport(0, 0, cw, ch);
+  const aL = new Float32Array(LG_MAX * 4),
+    aC = new Float32Array(LG_MAX * 3);
+  let k = 0;
+  ribs.forEach((r, i) => {
+    if (!(r.h > 0) || k >= LG_MAX) return;
+    const hs = r.hues && r.hues.length > 1 ? r.hues : null;
+    const col = hs ? [0, 1, 2].map(j => hs.reduce((s, h) => s + lgCol({
+      hue: h
+    })[j], 0) / hs.length) : lgCol(r);
+    aL.set([(i + .5) * rw, r.wide ? rw * .2 : 0, (base - top) * Math.min(.98, r.h), (r.k == null ? 1 : r.k) * (r.dim ? .55 : 1)], k * 4);
+    aC.set(col, k * 3);
+    k++;
+  });
+  gl.uniform2f(U.uRes, w, height);
+  gl.uniform1f(U.uOx, ox);
+  gl.uniform1f(U.uDpr, dpr);
+  gl.uniform1f(U.uTime, 0);
+  gl.uniform1f(U.uShim, 0);
+  gl.uniform1f(U.uNowX, w + 1e4);
+  gl.uniform1f(U.uBase, base);
+  gl.uniform1f(U.uTop, top + 4);
+  gl.uniform1f(U.uReed, Math.max(2, rw));
+  gl.uniform4fv(U.uL, aL);
+  gl.uniform3fv(U.uC, aC);
+  gl.uniform1i(U.uN, k);
+  gl.uniform3fv(U.uBg, bg);
+  gl.uniform1f(U.uWide, 1 / Math.max(1, k / 6));
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
 function LightGlass({
   ribs,
   height = 150,
@@ -8282,11 +8331,42 @@ function LightGlass({
   className,
   style,
   data,
-  maxRw = 64
+  maxRw = 64,
+  gl: glWant,
+  tagWrap
 }) {
   const wrap = useRef(null);
   const [w, setW] = useState(0);
   const drag = useRef(null);
+  const S0 = useStore();
+  const useGL = !!glWant && !S0.rm;
+  const cv = useRef(null);
+  const ctx = useRef(null);
+  const [glOk, setGlOk] = useState(false);
+  useEffect(() => {
+    if (!useGL || !w || !cv.current) return;
+    let c = null;
+    try {
+      if (!_lgFS) _lgFS = tlFS(LG_MAX);
+      c = tlGL(cv.current, _lgFS);
+    } catch (e) {
+      c = null;
+    }
+    if (!c) {
+      setGlOk(false);
+      return;
+    }
+    const sc = getComputedStyle(wrap.current).getPropertyValue('--stage').trim();
+    c.bg = /^#[0-9a-f]{6}$/i.test(sc) ? tlHexLin(sc) : TL_BG;
+    ctx.current = c;
+    setGlOk(true);
+    return () => {
+      const lx = c.gl.getExtension('WEBGL_lose_context');
+      lx && lx.loseContext();
+      ctx.current = null;
+      setGlOk(false);
+    };
+  }, [useGL, w > 0]);
   useLayoutEffect(() => {
     const el = wrap.current;
     if (!el) return;
@@ -8329,6 +8409,9 @@ function LightGlass({
     }
   };
   const blur = Math.max(.8, Math.min(2.6, rw * .22));
+  useEffect(() => {
+    if (glOk && ctx.current && cv.current && w) lgDraw(ctx.current, cv.current, ribs, w, height, ox, rw, base, top, ctx.current.bg);
+  });
   return React.createElement("div", {
     ref: wrap,
     className: cx('lg', className),
@@ -8344,12 +8427,28 @@ function LightGlass({
     onPointerLeave: () => {
       drag.current = null;
     },
-    "data-lightglass": data || n
-  }, w > 0 && React.createElement("svg", {
+    "data-lightglass": data || n,
+    "data-lg-mode": glOk ? 'gl' : 'flat'
+  }, useGL && w > 0 && React.createElement("canvas", {
+    ref: cv,
+    className: "lg-cv",
+    style: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: w,
+      height,
+      display: glOk ? 'block' : 'none'
+    },
+    "aria-hidden": "true"
+  }), w > 0 && React.createElement("svg", {
     width: w,
     height: height,
     viewBox: `${-ox} 0 ${w} ${height}`,
-    "aria-hidden": "true"
+    "aria-hidden": "true",
+    style: glOk ? {
+      position: 'relative'
+    } : null
   }, React.createElement("defs", null, React.createElement("filter", {
     id: uid + 'b',
     x: "-50%",
@@ -8439,7 +8538,7 @@ function LightGlass({
     y2: base - avail * aim,
     stroke: "rgba(255,240,220,.35)",
     strokeDasharray: "2 4"
-  })), ribs.map((r, i) => {
+  })), !glOk && ribs.map((r, i) => {
     if (!(r.h > 0)) return null;
     const pad = rw * (r.wide ? .06 : .16);
     const x0 = i * rw + pad,
@@ -8499,13 +8598,16 @@ function LightGlass({
     strokeWidth: "1",
     rx: "2"
   })), tags && React.createElement("div", {
-    className: "lg-tags",
+    className: cx('lg-tags', tagWrap && 'wrap'),
     "aria-hidden": "true"
   }, tags.map(t => React.createElement("span", {
     key: t.i + ':' + t.t,
     className: t.on ? 'on' : undefined,
     style: {
-      left: ox + (t.i + .5) * rw
+      left: ox + (t.i + .5) * rw,
+      ...(tagWrap ? {
+        width: Math.max(30, rw - 6)
+      } : {})
     }
   }, t.t))), sr && React.createElement("div", null, sr.map(s => React.createElement("button", {
     key: s.i,
@@ -8578,7 +8680,7 @@ function yearRibs(db, f) {
     const hues = f ? [f.hue] : x.met.slice(0, 4).map(it => it.hue);
     return {
       ws,
-      frost: x.aside && !cnt[i],
+      frost: !!x.aside,
       h: v ? .3 + .7 * v : 0,
       k: .55 + .45 * v,
       hues,
@@ -8649,10 +8751,22 @@ function ItemObject({
   const slots = useMemo(() => {
     if (amount || recs || m === 'report') return null;
     if (RHYTHM(it)) {
-      const l = (db.byItem[it.id] || []).filter(e => !e.kind && dayOf(e.t) > db.today - 92 && dayOf(e.t) <= db.today).slice(-8);
-      return l.length ? l.map(() => ({
-        on: true
-      })) : null;
+      const w0 = weekStart(db.today);
+      const cs = [];
+      for (let k = 12; k >= 0; k--) {
+        const a = w0 - 7 * k;
+        cs.push(a + 6 < it.created ? null : countingEntries(db, it, Math.max(0, a), Math.min(db.today, a + 6)).length);
+      }
+      if (!cs.some(v => v)) return null;
+      const mx = Math.max(...cs.filter(v => v != null));
+      const r = cs.map((v, k) => ({
+        on: !!v,
+        h: v ? .25 + .75 * v / mx : 0,
+        cur: k === 12 && !v,
+        fut: v == null
+      }));
+      r.lab = `The last 13 weeks, a rib a week, taller with more: ${cs.filter(v => v).length} weeks with one or more`;
+      return r;
     }
     if (tg.cmp === 'none' || c === 'none') {
       const ws = weekStart(db.today);
@@ -8681,6 +8795,23 @@ function ItemObject({
         cur: !done && k === pos,
         fut: k > pos
       }));
+    }
+    if (tg.cmp !== 'at_most' && (tgTop(tg) || 1) <= 1) {
+      const P = c === 'day' ? 14 : 8;
+      const r = [];
+      let d = db.today;
+      for (let k = 0; k < P; k++) {
+        const [a, b] = periodOf(it, d);
+        if (b < it.created) break;
+        const on = countingEntries(db, it, a, b).length > 0;
+        r.unshift({
+          on,
+          cur: k === 0 && !on
+        });
+        d = a - 1;
+      }
+      r.lab = `The last ${plural(r.length, c === 'day' ? 'day' : c === 'month' ? 'month' : c === 'everyN' ? 'window' : 'week')}, a rib each, lit where done: ${r.filter(s => s.on).length} lit`;
+      return r;
     }
     const n = Math.min(16, tg.cmp === 'at_most' ? Math.max(tg.v || 1, ev.v) : tgTop(tg) || 1);
     return Array.from({
@@ -8763,13 +8894,24 @@ function ItemObject({
     fallback: fallback
   }));
   if (amount) {
-    const ribs = Array.from({
-      length: 9
-    }, () => ({
-      h: f,
+    const pe = countingEntries(db, it, ev.a, Math.min(ev.b, db.today)).filter(e => !e.kind);
+    let acc = 0;
+    const iAim = pe.findIndex(e => (acc += e.v || 0) >= tg.v);
+    const pe2 = iAim >= 0 ? pe.slice(0, iAim + 1) : pe;
+    acc = 0;
+    const ribs = pe2.length ? pe2.map(e => {
+      acc += e.v || 0;
+      return {
+        h: clamp(acc / tg.v, .04, 1),
+        hue: it.hue,
+        wide: pe2.length <= 3
+      };
+    }).slice(-16) : [{
+      h: 0,
       hue: it.hue,
+      cur: true,
       wide: true
-    }));
+    }];
     return React.createElement("div", {
       className: "m3-item lg-item",
       "data-item-fill": true
@@ -8792,7 +8934,7 @@ function ItemObject({
     cur: s.cur,
     future: s.fut && !s.on
   }));
-  const label = quiet ? `${plural(ev.v, 'entry', 'entries')} this period, as quiet grey light. Noticed, not rewarded` : `This period as ${plural(slots.length, 'rib')} of glass, ${slots.filter(x => x.on).length} lit`;
+  const label = slots.lab || (quiet ? `${plural(ev.v, 'entry', 'entries')} this period, as quiet grey light. Noticed, not rewarded` : `This period as ${plural(slots.length, 'rib')} of glass, ${slots.filter(x => x.on).length} lit`);
   return React.createElement("div", {
     className: "m3-item lg-item",
     "data-item-slots": true
@@ -8830,7 +8972,7 @@ function YearObject({
       m: mm
     });
   };
-  const say = (r, ws) => r.future ? 'Still ahead' : f ? r.x.met.some(it => it.id === f.id) ? `${f.short || f.name} met its aim` : r.h ? 'Logged, short of its aim' : r.frost ? 'Set aside' : 'Nothing logged' : r.x.met.length ? metText(r.x.met) : r.frost ? 'Set aside' : r.x.any ? 'Logged, no aim met' : ws + 6 < db.today ? 'Nothing logged' : 'Nothing yet';
+  const say = (r, ws) => r.future ? 'Still ahead' : f ? r.x.met.some(it => it.id === f.id) ? `${f.short || f.name} met its aim` : r.h ? 'Logged, short of its aim' : r.frost ? 'Set aside' : 'Nothing logged' : r.x.met.length ? r.frost ? `Set aside · ${metText(r.x.met)}` : metText(r.x.met) : r.frost ? 'Set aside' : r.x.any ? 'Logged, no aim met' : ws + 6 < db.today ? 'Nothing logged' : 'Nothing yet';
   const cap = say(r, ws);
   const lab = `2026 as ${YEAR_WEEKS.length} weeks of light behind ribbed glass, one rib a week, lit in the colours of the routines that met their aim, frosted where set aside, clear where still ahead. Week of ${fmtDay(Math.max(0, ws), {
     noDow: true
@@ -8843,6 +8985,7 @@ function YearObject({
       padding: '18px var(--gut) 0'
     }
   }, React.createElement(LightGlass, {
+    gl: true,
     ribs: ribs,
     height: 150,
     label: lab,
@@ -8948,7 +9091,7 @@ function DayColumns({
       s: 18
     }), React.createElement("i", {
       className: "cn"
-    }, it.colName || it.short || it.name, it.isNew ? ', new' : ''), React.createElement("b", {
+    }, it.colName || it.short || it.name, newTag(db, it) ? ', new' : ''), React.createElement("b", {
       className: "cv tnum"
     }, val));
   })), React.createElement("div", {
@@ -9046,7 +9189,7 @@ function ModuleStones({
     feel: 'Feel',
     med: 'Medication',
     obs: 'Observations',
-    checks: 'Questionnaire'
+    checks: 'Checks'
   };
   const a = db.today - 29;
   const inWin = t => dayOf(t) >= a && dayOf(t) <= db.today;
@@ -9076,7 +9219,11 @@ function ModuleStones({
     }
   }, React.createElement(LightGlass, {
     ribs: ribs,
-    height: 120,
+    height: S.ax ? 150 : 132,
+    foot: S.ax ? 52 : 38,
+    maxRw: 140,
+    gl: true,
+    tagWrap: true,
     tags: L.map((k, i) => ({
       i,
       t: N[k],
@@ -10558,7 +10705,9 @@ const nextDow = (d, t) => {
 const holdOpts = (today, now = 0, db = null) => {
   const wk = dow(today) === 6 || dow(today) === 0;
   const ev = db ? calEvents(db, today).filter(e => e.b > now).sort((a, b) => a.b - b.b)[0] : null;
-  return [['When work ends', now < 17 * 60 + 30 ? today : today + 1, 'when work ends', 17 * 60 + 30], ['When I get home', now < 18 * 60 + 30 ? today : today + 1, 'when you get home', 18 * 60 + 30], ...(ev ? [[`After ${ev.title}`, today, `after ${ev.title}`, ev.b]] : []), ['This weekend', wk ? today : nextDow(today, 6), 'at the weekend', 10 * 60], ['Next time I open Meridian', today + 1, 'next time you open Meridian', 0], ['Keep it visible', today, 'now, and it stays in view', 0], ['No particular time', 9999, 'whenever you look in Held', 0], ['Tomorrow morning', today + 1, 'tomorrow morning', 8 * 60], ['Next week', weekStart(today) + 7, 'next week', 8 * 60], ['In a month', today + 30, 'in a month', 8 * 60]];
+  const we = db ? workSpan(db)[1] : WORK_SPAN[1];
+  const hm = Math.min(23 * 60, we + 60);
+  return [[db ? `When work ends, ${fmtHM(we)}` : 'When work ends', now < we ? today : today + 1, 'when work ends', we], ['When I get home', now < hm ? today : today + 1, 'when you get home', hm], ...(ev ? [[`After ${ev.title}`, today, `after ${ev.title}`, ev.b]] : []), ['This weekend', wk ? today : nextDow(today, 6), 'at the weekend', 10 * 60], ['Next time I open Meridian', today + 1, 'next time you open Meridian', 0], ['Keep it visible', today, 'now, and it stays in view', 0], ['No particular time', 9999, 'whenever you look in Held', 0], ['Tomorrow morning', today + 1, 'tomorrow morning', 8 * 60], ['Next week', weekStart(today) + 7, 'next week', 8 * 60], ['In a month', today + 30, 'in a month', 8 * 60]];
 };
 function heldWhen(db, x) {
   if (x.bring != null && x.bring >= 9000) return 'No particular time, here in Held';
@@ -10604,7 +10753,7 @@ function intentLine(db, x) {
   if (x.due < db.today) return `Passed ${fmtDay(x.due, {
     noDow: true
   })}`;
-  return (x.status === 'started' ? 'Started, ' : '') + (x.due === db.today ? 'Due today' : `By ${fmtDay(x.due)}`) + rp + (x.due - db.today <= 7 ? `, ${lastCallTxt(x)}${x.due === db.today ? '' : ' on the day'}` : '');
+  return (x.status === 'started' ? 'Started, ' : '') + (x.due === db.today ? 'Due today' : `By ${fmtDay(x.due)}`) + rp + (x.win && x.due - db.today <= 7 ? `, ${lastCallTxt(x)}${x.due === db.today ? '' : ' on the day'}` : '');
 }
 function IntentMoment({
   x
@@ -11188,6 +11337,11 @@ function suggestModel(db, model, mins) {
     const ev = x.ev;
     const need = ev && ev.tg && ev.tg.v ? ev.tg.v : 1;
     pushIt(x, it, it.cadence.type === 'none' ? .3 : .35 + clamp((need - (ev ? ev.v : 0)) / need, 0, 1) * .3);
+  }
+  if (mins) for (const x of model.inplay) {
+    const it = x.it;
+    if (it.kind !== 'routine' || it.measure === 'passive' || it.measure === 'quantity' || x.ev && x.ev.state === 'met' || cand.some(c => c.id === it.id)) continue;
+    pushIt(x, it, .3);
   }
   cand.sort((a, b) => b.score - a.score);
   let idea = null;
@@ -11790,14 +11944,12 @@ function searchPlaces(db, S) {
   }], ['Connections', 'Apple Health, Watch, data, permissions, privacy, read, write, State of Mind, calendar', 'health', {
     k: 'connections'
   }], ['Screen Time', 'screen, phone use, apps, feasibility, awake estimate', 'clock', {
-    k: 'screentime'
+    k: 'connections'
   }], ['Suggestions', 'suggest, suggestions, a good moment, ideas, not now, prompts, recommendations', 'sparkle', {
     k: 'suggestions'
   }], ['Ideas', 'ideas, suggest, suggestions, things to try, library, my ideas', 'sparkle', {
     k: 'ideas'
-  }], ['Things with a date', 'deadline, deadlines, due, by a date, dates, rubbish, bins, repeat, weekly', 'calendar', null, () => S.nav.reset('routines')], ['Shared routines', 'share, shared, together, partner, friend, social, invite', 'people', {
-    k: 'shared'
-  }], ['Apple Reminders', 'reminders app, apple reminders, lists, to do, import', 'list', {
+  }], ['Things with a date', 'deadline, deadlines, due, by a date, dates, rubbish, bins, repeat, weekly', 'calendar', null, () => S.nav.reset('routines')], ['Apple Reminders', 'reminders app, apple reminders, lists, to do, import', 'list', {
     k: 'connections'
   }], ['Sleep summary score', 'score, sleep score, summary, rating', 'moon', {
     k: 'sleep',
@@ -11861,11 +12013,10 @@ const PLACE_SUB = {
   'Reminders': 'Which ones are on, and when',
   'Quiet hours': 'Under Reminders',
   'Connections': 'Apple Health, Watch, Calendar: what is read',
-  'Screen Time': 'Not available yet',
+  'Screen Time': 'Under Connections, not available yet',
   'Suggestions': 'How a good moment is chosen',
   'Ideas': 'Your own and the library',
   'Things with a date': 'Under Routines › Intentions',
-  'Shared routines': 'A preview, not available yet',
   'Apple Reminders': 'Under Connections',
   'Sleep summary score': 'Optional, in the sleep report',
   'Your usual week and work hours': 'Under Context',
@@ -14498,7 +14649,7 @@ function ItemPage({
     style: {
       fontSize: fs(18)
     }
-  }, "this week")) : single ? React.createElement("div", {
+  }, perShort(db, it))) : single ? React.createElement("div", {
     className: "state-head",
     "data-state-head": true,
     style: quiet1 ? {
@@ -14773,7 +14924,7 @@ function ResultsSection({
   const db = S.db;
   const data = useMemo(() => resultSeries(db, it), [db, it]);
   const [sel, setSel] = useState(null);
-  const obs0 = it.kind === 'observation' && it.measure !== 'event';
+  const obs0 = it.kind === 'observation';
   const q = it.measure === 'quantity';
   const obs = obs0 && targetOn(it, db.today).cmp === 'at_most';
   const sum0 = summarize(it, data);
@@ -14798,7 +14949,7 @@ function ResultsSection({
     "data-results": true
   }, React.createElement("div", {
     className: "sec-h"
-  }, React.createElement("h2", null, obs0 ? 'Weeks' : 'Results'), React.createElement("span", {
+  }, React.createElement("h2", null, obs0 && it.cadence.type === 'week' ? 'Weeks' : 'Results'), React.createElement("span", {
     className: "aside"
   }, it.cadence.type === 'day' ? 'last 3 weeks' : it.cadence.type === 'month' ? 'by month' : it.cadence.type === 'everyN' ? `by ${nWin(it.cadence.n)} window` : 'by week')), React.createElement("div", {
     className: "card"
@@ -15979,7 +16130,7 @@ function TargetSheet({
   const db = S.db;
   const it = db.byId[id];
   const cur = targetOn(it, db.today);
-  const [cmp, setCmp] = useState(cur.cmp === 'none' ? 'at_least' : isRange(cur) ? 'range' : cur.cmp);
+  const [cmp, setCmp] = useState(cur.cmp === 'none' ? it.kind === 'observation' ? 'at_most' : 'at_least' : isRange(cur) ? 'range' : cur.cmp);
   const [v, setV] = useState(cur.v || 1);
   const [ns, np] = periodOf(it, db.today);
   const nextStart = np + 1;
@@ -19135,7 +19286,7 @@ function TimeRoot() {
   }, React.createElement("h2", null, "Months")), React.createElement("div", {
     className: "list",
     "data-year": true
-  }, months.filter(m => data[m]).reverse().map(m => {
+  }, months.filter(m => data[m] && (m >= monthOf(firstUse(db)) || data[m].daysWith || monthFact(db, m))).reverse().map(m => {
     const h = heldBy[m];
     const fh = f ? h.all.find(x => x.it.id === f.id) : null;
     const open = m === monthOf(db.today);
@@ -20513,7 +20664,16 @@ function WeekClose({
     it: s.it
   }))) || 'Some of it' : 'A quieter week'), React.createElement("div", {
     className: "wc-plate"
-  }, weekMet.map(s => glyphRow(s.it, 'done')), dayRows.slice(0, 4).map(s => glyphRow(s.it, freq(s.n))), others.slice(0, 3).map(s => glyphRow(s.it, s.n === 1 ? 'once' : `${s.n} times`)))), (n.length > 0 || hl.ctx.length + hl.items.filter(h => h.kind !== 'milestone').length > 0) && React.createElement("div", {
+  }, weekMet.map(s => glyphRow(s.it, 'done')), dayRows.filter(s => s.n >= 6).slice(0, 4).map(s => glyphRow(s.it, freq(s.n)))), (dayRows.some(s => s.n < 6) || others.length > 0) && React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "eyebrow",
+    style: {
+      color: 'var(--on-deep-2)',
+      marginTop: 18
+    }
+  }, "Also done"), React.createElement("div", {
+    className: "wc-plate",
+    "data-wc-also": true
+  }, dayRows.filter(s => s.n < 6).slice(0, 4).map(s => glyphRow(s.it, freq(s.n))), others.slice(0, 3).map(s => glyphRow(s.it, s.n === 1 ? 'once' : `${s.n} times`))))), (n.length > 0 || hl.ctx.length + hl.items.filter(h => h.kind !== 'milestone').length > 0) && React.createElement("div", {
     key: "c"
   }, hl.ctx.length + hl.items.filter(h => h.kind !== 'milestone').length > 0 && React.createElement("div", {
     className: "eyebrow",
@@ -22858,7 +23018,8 @@ function WeeksPage({
     back
   } = useRoute();
   const cur = weekStart(db.today);
-  const first = weekStart(0);
+  const first = Math.min(cur, weekStart(firstUse(db)));
+  const hOn = healthOn(db);
   const [ws, setWs] = useState(ws0 != null ? ws0 : Math.max(first, cur - 7));
   const we = ws + 6;
   const days = [];
@@ -23041,7 +23202,10 @@ function WeeksPage({
     className: "aside"
   }, "by day")), React.createElement("div", {
     className: "card"
-  }, React.createElement(Bars, {
+  }, !hOn && React.createElement("p", {
+    className: "t-s",
+    "data-week-nohealth": true
+  }, "Workouts and sleep come from Apple Health, which is off."), hOn && React.createElement(React.Fragment, null, React.createElement(Bars, {
     data: bars,
     fmt: v => v ? fmtDur(v) : 'no workout',
     id: "weekact",
@@ -23087,7 +23251,7 @@ function WeeksPage({
       maxWidth: '60%',
       fontWeight: 500
     }
-  }, cmp)), React.createElement("div", {
+  }, cmp))), React.createElement("div", {
     className: "chips",
     style: {
       marginTop: 10
@@ -23100,7 +23264,7 @@ function WeeksPage({
       d
     }),
     "data-week-day": d
-  }, DOW3[dow(d)], " ", dom(d)))))), React.createElement("div", {
+  }, DOW3[dow(d)], " ", dom(d)))))), hOn && React.createElement("div", {
     className: "sec"
   }, React.createElement("div", {
     className: "sec-h"
@@ -23153,7 +23317,7 @@ function WeeksPage({
     sub: "About twenty seconds",
     onClick: () => S.openWeekClose(ws),
     "data-week-story": true
-  })))), " ", React.createElement("div", {
+  })))), " ", hOn && React.createElement("div", {
     className: "sec",
     "data-week-all": true
   }, React.createElement("div", {
@@ -25726,7 +25890,7 @@ const winTxt = x => x && x.win ? `${fmtHM(x.win[0])}–${fmtHM(x.win[1])}` : '';
 const winDay = (d, today) => d === today ? 'Today' : d === today + 1 ? 'Tomorrow' : d - today <= 6 ? DOW3[dow(d)] : fmtDay(d, {
   noDow: true
 });
-const lastCallMin = x => x.win ? Math.max(x.win[0], x.win[1] - 45) : 18 * 60;
+const lastCallMin = x => x.win ? Math.max(x.win[0], x.win[1] - 45) : null;
 const lastCallTxt = x => x.status === 'started' ? 'last call off, you’re on it' : `last call ${fmtHM(lastCallMin(x))}`;
 const dueWord = (db, x) => {
   if (x.win) {
@@ -25798,7 +25962,7 @@ function useTodayCards(db, w, nowHeldId) {
       id: 'fw' + w.id,
       kind: 'fresh',
       w,
-      at: w.t + (w.dur || 0) * 60000
+      at: w.t + (w.dur || 0)
     });
     const n = db.sleep[db.today];
     if (n) {
@@ -26406,7 +26570,7 @@ function DeadlineRow({
     className: "qs"
   }, React.createElement("b", null, x.due < db.today ? `Passed ${fmtDay(x.due, {
     noDow: true
-  })}` : dueWord(db, x)), x.repeat ? `, ${x.repeat === 'week' && dueWord(db, x).startsWith(DOW3[dow(x.due)]) ? 'weekly' : repeatWord(x)}` : '', x.status === 'started' ? ', started' : '', x.due === db.today ? `, ${lastCallTxt(x)}` : '')), React.createElement("div", {
+  })}` : dueWord(db, x)), x.repeat ? `, ${x.repeat === 'week' && dueWord(db, x).startsWith(DOW3[dow(x.due)]) ? 'weekly' : repeatWord(x)}` : '', x.status === 'started' ? ', started' : '', x.win && x.due === db.today ? `, ${lastCallTxt(x)}` : '')), React.createElement("div", {
     className: "qkeys"
   }, React.createElement("button", {
     className: "act word",
@@ -26528,10 +26692,18 @@ function LaterLine({
     ...x,
     why: ''
   }) || (['session', 'duration'].includes(it.measure) && usualKnown(S.db, it) ? `usually ${usualKnown(S.db, it)} min` : '');
-  const sess = ['session', 'duration'].includes(it.measure);
+  const ws = watchSess(S.db, it);
+  const sess = ['session', 'duration'].includes(it.measure) && !ws;
   const live = S.live && S.live.id === it.id;
-  const amt = sess ? null : chipAmount(S, it);
+  const amt = sess || ws ? null : chipAmount(S, it);
   const [, h] = useTapHold(e => {
+    if (ws) {
+      S.sheet.open({
+        k: 'log',
+        id: it.id
+      });
+      return;
+    }
     if (sess) {
       if (live) {
         if (!S.liveFresh()) S.endLive();
@@ -26541,7 +26713,7 @@ function LaterLine({
     k: 'log',
     id: it.id
   }));
-  const what = sess ? live ? `End ${it.name}` : `Start ${it.name}` : chipWhat(S, it);
+  const what = ws ? `Log ${it.name}` : sess ? live ? `End ${it.name}` : `Start ${it.name}` : chipWhat(S, it);
   return React.createElement("div", {
     className: cx('lrow', hueCls(it)),
     style: hueStyle(it),
@@ -26576,7 +26748,7 @@ function LaterLine({
     "aria-label": `${what}. Hold for more`,
     "aria-keyshortcuts": "Shift+F10",
     "data-later-key": it.id
-  }), sess ? React.createElement(React.Fragment, null, React.createElement(Icon, {
+  }), ws ? 'Log…' : sess ? React.createElement(React.Fragment, null, React.createElement(Icon, {
     n: live ? 'stop' : 'play',
     s: 13
   }), live ? 'End' : 'Start') : amt === '+1' ? React.createElement(Icon, {
@@ -26985,13 +27157,13 @@ function tlDrawn(lights, T0) {
   });
 }
 const tlLiquid = k => k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-6.2 * k) * Math.cos(4.2 * k) * (1 - k * .15);
-const TL_FS = `precision highp float;
-uniform vec2 uRes; uniform float uDpr,uTime,uNowX,uBase,uTop,uReed,uShim,uWide;
-uniform vec4 uL[${TL_MAX}]; uniform vec3 uC[${TL_MAX}]; uniform int uN; uniform vec3 uBg;
+const tlFS = N => `precision highp float;
+uniform vec2 uRes; uniform float uOx,uDpr,uTime,uNowX,uBase,uTop,uReed,uShim,uWide;
+uniform vec4 uL[${N}]; uniform vec3 uC[${N}]; uniform int uN; uniform vec3 uBg;
 float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
 vec3 field(float x,float y,float bx){
   vec3 acc=vec3(0.);
-  for(int i=0;i<${TL_MAX};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
+  for(int i=0;i<${N};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
     float d=max(0.,abs(x-L.x)-L.y), s=sqrt(9.+bx*bx);
     float g=exp(-.5*d*d/(s*s)), halo=exp(-.5*d*d/(9.*s*s));
     float h=L.z, top=uBase-h, soft=8.+h*.3;
@@ -27017,14 +27189,14 @@ vec3 scene(float x,float y){
   /* T9-04: light reaches about one rib either side of a log and no further. After the gamma, even a faint tail of the soft terms read as lit glass,
      so an empty hour on a busy day glowed like a log on a quiet one. The glass sheen is added after, so empty ribs match the flat picture. */
   float pres=0.;
-  for(int i=0;i<${TL_MAX};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue; float d=max(0.,abs(x-L.x)-L.y); pres=max(pres,exp(-.5*d*d/(.49*w*w))); }
+  for(int i=0;i<${N};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue; float d=max(0.,abs(x-L.x)-L.y); pres=max(pres,exp(-.5*d*d/(.49*w*w))); }
   c*=pres;
   c+=spec*vec3(.75,.82,1.)*(.022*exp(-(y-uTop)/160.)+.008)*calm+pow(au,6.)*.006*calm*vec3(.8,.85,1.);
   c*=mix(1.,.78,smoothstep(uNowX-2.,uNowX+6.,x));
   return c;
 }
 void main(){
-  vec2 px=vec2(gl_FragCoord.x,uRes.y*uDpr-gl_FragCoord.y)/uDpr; float x=px.x,y=px.y;
+  vec2 px=vec2(gl_FragCoord.x,uRes.y*uDpr-gl_FragCoord.y)/uDpr; float x=px.x-uOx,y=px.y;
   vec3 c=scene(x,y);
   c=min(c,vec3(2.2)); /* T9-04: clamp before the tone map so a stacked base cannot wash to white */
   c=1.-exp(-c*1.5);
@@ -27046,7 +27218,8 @@ void main(){
   col+=(hash(gl_FragCoord.xy+fract(uTime))-.5)/255.;
   gl_FragColor=vec4(col,1.);
 }`;
-function tlGL(cv) {
+const TL_FS = tlFS(TL_MAX);
+function tlGL(cv, fsrc = TL_FS) {
   let gl = null;
   try {
     gl = cv.getContext('webgl', {
@@ -27069,7 +27242,7 @@ function tlGL(cv) {
   try {
     const pr = gl.createProgram();
     gl.attachShader(pr, sh(gl.VERTEX_SHADER, 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));
-    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, TL_FS));
+    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fsrc));
     gl.linkProgram(pr);
     if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return null;
     gl.useProgram(pr);
@@ -27080,7 +27253,7 @@ function tlGL(cv) {
     gl.enableVertexAttribArray(ap);
     gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
     const U = {};
-    ['uRes', 'uDpr', 'uTime', 'uNowX', 'uBase', 'uTop', 'uReed', 'uShim', 'uWide', 'uL', 'uC', 'uN', 'uBg'].forEach(k => U[k] = gl.getUniformLocation(pr, k));
+    ['uRes', 'uOx', 'uDpr', 'uTime', 'uNowX', 'uBase', 'uTop', 'uReed', 'uShim', 'uWide', 'uL', 'uC', 'uN', 'uBg'].forEach(k => U[k] = gl.getUniformLocation(pr, k));
     return {
       gl,
       U
@@ -27724,7 +27897,8 @@ function TodayScreen() {
   const dateKeys = ints.filter(x => x.kind === 'deadline' && !justDone(x) && (x.due - db.today >= 4 || x.win && x.due > db.today) && x.due - db.today <= 7).sort((a, b) => a.due - b.due);
   const arrived = ints.filter(x => holdArrived(db, x)).sort((a, b) => a.bring - b.bring);
   const held = arrived.slice(0, 1);
-  const heldN = (db.intents || []).filter(x => ['held', 'started', 'seen'].includes(x.status)).length;
+  const openI = (db.intents || []).filter(x => ['held', 'started', 'seen'].includes(x.status));
+  const heldN = openI.filter(x => x.kind === 'hold').length;
   const cards = useTodayCards(db, pick.w, held[0] && held[0].id);
   const nowN = deadlines.length + held.length + routines.length;
   const [allNow, setAllNow] = useState(false);
@@ -27761,7 +27935,7 @@ function TodayScreen() {
     if (prevOrderKey.current !== orderKey) lockNow(S.rm ? 600 : 950);
     prevOrderKey.current = orderKey;
   }, [orderKey]);
-  const firstI = S.axL ? -1 : nowShown.findIndex(r => r.k === 'r' && r.x.it.first && !r.x.holding && !(S.live && S.live.id === r.x.it.id) && notStarted(db, r.x.it, r.x.ev));
+  const firstI = S.axL ? -1 : nowShown.findIndex(r => r.k === 'r' && (r.x.it.first || ['session', 'duration'].includes(r.x.it.measure)) && !r.x.holding && !(S.live && S.live.id === r.x.it.id) && notStarted(db, r.x.it, r.x.ev));
   const laterSorted = useMemo(() => [...later].filter(x => !hold[x.it.id]).sort((a, b) => (a.ev.b ?? 9999) - (b.ev.b ?? 9999) || b.score - a.score), [later, hold]);
   const ctxToday = model.ctxToday.filter(c => c.type !== 'away');
   const n = db.sleep[db.today];
@@ -27803,17 +27977,17 @@ function TodayScreen() {
   }, React.createElement(Icon, {
     n: "feel",
     s: 20
-  })), heldN > 0 && React.createElement("button", {
+  })), openI.length > 0 && React.createElement("button", {
     className: "iconbtn heldbtn",
     onClick: () => S.nav.push({
       k: 'held'
     }),
-    "aria-label": `Held, ${heldN}${arrived.length ? ', something is back' : ''}`,
+    "aria-label": `Held${heldN ? ', ' + heldN : ''}${arrived.length ? ', something is back' : ''}`,
     "data-heldbtn": true
   }, React.createElement(Icon, {
     n: "flag",
     s: 20
-  }), React.createElement("span", {
+  }), heldN > 0 && React.createElement("span", {
     className: "hb tnum",
     "data-held-dot": true
   }, heldN)), " ", React.createElement("button", {
@@ -28155,7 +28329,7 @@ function RoutinesRoot() {
   const paused = routines.filter(it => statusNow(db, it) === 'paused');
   const retired = routines.filter(it => statusNow(db, it) === 'retired');
   const obs = db.items.filter(it => it.kind === 'observation' && match(it));
-  const measures = db.items.filter(it => (it.kind === 'measure' || it.kind === 'module') && match(it));
+  const measures = db.items.filter(it => (it.kind === 'measure' || it.kind === 'module') && match(it) && !(it.kind === 'measure' && !healthOn(db)));
   const groups = [['day', 'Every day'], ['week', 'Every week'], ['month', 'Every month'], ['everyN', 'On their own interval'], ['none', 'No target']];
   const row = it => {
     const ev = currentEval(db, it);
@@ -28171,7 +28345,7 @@ function RoutinesRoot() {
       val: st === 'active' ? it.cadence.type === 'everyN' && !ev.v ? `every ${everyNText(it.cadence.n)}` : rowVal(db, it, ev) : null,
       onClick: e => openItem(S, it, e),
       "aria-label": st === 'active' ? `${it.name}, ${rowSub(db, it, ev)}` : undefined
-    }, it.isNew && React.createElement("span", {
+    }, newTag(db, it) && React.createElement("span", {
       className: "state",
       style: {
         marginLeft: 6
@@ -28792,10 +28966,10 @@ function IntentSheet({
       marginTop: 12
     },
     "data-intent-copy": true
-  }, kind === 'hold' ? null : repeat ? `Due ${chosen ? fmtDay(chosen[1]) : ex ? fmtDay(ex.due) : ''}, then ${repeatWord({
+  }, kind === 'hold' ? null : repeat && (chosen || ex) ? `Due ${chosen ? fmtDay(chosen[1]) : fmtDay(ex.due)}, then ${repeatWord({
     repeat,
     every
-  }, chosen ? chosen[1] : ex ? ex.due : db.today)}.` : null), ex && React.createElement("div", {
+  }, chosen ? chosen[1] : ex.due)}.` : repeat ? 'Pick the first day, then it repeats from there.' : null), ex && React.createElement("div", {
     style: {
       display: 'grid',
       gap: 8,
@@ -28805,10 +28979,10 @@ function IntentSheet({
     className: "btn big wide",
     onClick: e => {
       close();
-      S.startIntent(ex, 15, e);
+      S.startIntent(ex, ex.est || 15, e);
     },
     "data-intent-start": true
-  }, ex.status === 'started' ? 'Another 15 minutes' : 'Make a start, 15 minutes'), ex.kind === 'deadline' && ex.status !== 'started' && React.createElement("button", {
+  }, ex.est ? `${ex.status === 'started' ? 'Another' : 'Start'} ${ex.est} min` : ex.status === 'started' ? 'Back on it' : 'On it'), ex.kind === 'deadline' && ex.status !== 'started' && React.createElement("button", {
     className: "btn sec2 big wide",
     onClick: () => {
       S.intent.update(ex.id, {
@@ -28965,8 +29139,8 @@ function CreateRoutine({
   const [measure, setMeasure] = useState(null);
   const [lens, setLens] = useState(null);
   const [cad, setCad] = useState('month');
-  const [n, setN] = useState(4);
-  const [nU, setNU] = useState('days');
+  const [n, setN] = useState(2);
+  const [nU, setNU] = useState('weeks');
   const [cmp, setCmp] = useState('at_least');
   const [v, setV] = useState(1);
   const [hi, setHi] = useState(4);
@@ -30203,14 +30377,6 @@ function YouRoot() {
     onChange: S.setFollowSys,
     label: "Follow the system text size"
   })), React.createElement(Row, {
-    icon: "clock",
-    title: "Coming later",
-    sub: "Screen Time and shared routines",
-    onClick: () => S.nav.push({
-      k: 'screentime'
-    }),
-    "data-you-later": true
-  }), " ", React.createElement(Row, {
     icon: "watch",
     title: "Watch, widgets and Lock Screen",
     sub: (() => {
@@ -32817,7 +32983,42 @@ function ConnectionsPage() {
       className: cx('chip small', on && 'on'),
       onClick: () => S.act.setPref('calList', on ? l.filter(x => x !== c) : [...l, c])
     }, c);
-  }))))), React.createElement(RemindersAppSection, null), React.createElement(SyncSection, null), React.createElement("div", {
+  }))))), React.createElement("div", {
+    className: "sec",
+    "data-st-connection": true
+  }, React.createElement("div", {
+    className: "sec-h"
+  }, React.createElement("h2", null, "Screen Time"), React.createElement("span", {
+    className: "aside"
+  }, "not available yet")), React.createElement("div", {
+    className: "list"
+  }, React.createElement("div", {
+    className: "row indent"
+  }, React.createElement("div", {
+    className: "tok"
+  }, React.createElement(Icon, {
+    n: "clock",
+    s: 20
+  })), React.createElement("div", {
+    className: "main"
+  }, React.createElement("div", {
+    className: "ttl"
+  }, "Tell me when it works"), React.createElement("div", {
+    className: "sub"
+  }, (db.prefs.screenTime || 'off') === 'asked' ? 'Meridian asks once, then reads nothing until you allow it' : 'Off')), React.createElement(Switch, {
+    on: db.prefs.screenTime === 'asked',
+    onChange: v => S.act.setPref('screenTime', v ? 'asked' : 'off'),
+    label: "Tell me when Screen Time works"
+  }))), React.createElement("details", {
+    className: "aboutnote",
+    "data-st-how": true,
+    style: {
+      marginTop: 8
+    }
+  }, React.createElement("summary", null, React.createElement(Icon, {
+    n: "info",
+    s: 16
+  }), "How it would work"), React.createElement(ScreenSample, null))), React.createElement(RemindersAppSection, null), React.createElement(SyncSection, null), React.createElement("div", {
     className: "sec"
   }, React.createElement("div", {
     className: "sec-h"
@@ -32842,77 +33043,6 @@ function ConnectionsPage() {
   }, "Medication records"), React.createElement("span", {
     className: "v"
   }, db.meds.filter(m => m.src === 'health').length)))), React.createElement(ProtoFailSection, null));
-}
-function ScreenTimePage() {
-  const S = useStore();
-  const {
-    back
-  } = useRoute();
-  const st = S.db.prefs.screenTime || 'off';
-  return React.createElement(Page, {
-    back: back,
-    title: "Coming later",
-    scrollKey: "screentime"
-  }, React.createElement("div", {
-    className: "plainhead",
-    "data-screentime": true
-  }, React.createElement("h1", {
-    className: "t-hero"
-  }, "Coming later"), React.createElement("p", {
-    className: "t-s"
-  }, "Not available on this iPhone yet.")), React.createElement("div", {
-    className: "sec-h",
-    style: {
-      marginTop: 18
-    }
-  }, React.createElement("h2", null, "Shared routines")), React.createElement("div", {
-    className: "sec"
-  }, React.createElement("div", {
-    className: "list"
-  }, React.createElement("div", {
-    className: "row",
-    "data-you-shared": true
-  }, React.createElement("div", {
-    className: "main"
-  }, React.createElement("div", {
-    className: "ttl"
-  }, "Tell me when it works"), React.createElement("div", {
-    className: "sub"
-  }, S.db.prefs.sharedAsk ? 'On' : 'Off')), React.createElement(Switch, {
-    on: !!S.db.prefs.sharedAsk,
-    onChange: v => S.act.setPref('sharedAsk', v),
-    label: "Notify me if shared routines become available"
-  })))), React.createElement("div", {
-    className: "sec-h",
-    style: {
-      marginTop: 18
-    }
-  }, React.createElement("h2", null, "Screen Time")), React.createElement("div", {
-    className: "sec"
-  }, React.createElement("div", {
-    className: "list"
-  }, React.createElement("div", {
-    className: "row",
-    "data-st-connection": true
-  }, React.createElement("div", {
-    className: "main"
-  }, React.createElement("div", {
-    className: "ttl"
-  }, "Tell me when it works"), React.createElement("div", {
-    className: "sub"
-  }, st === 'asked' ? 'Meridian asks once, then reads nothing until you allow it' : 'Off')), React.createElement(Switch, {
-    on: st === 'asked',
-    onChange: v => S.act.setPref('screenTime', v ? 'asked' : 'off'),
-    label: "Tell me when Screen Time works"
-  })))), React.createElement("div", {
-    className: "sec"
-  }, React.createElement("details", {
-    className: "aboutnote",
-    "data-st-how": true
-  }, React.createElement("summary", null, React.createElement(Icon, {
-    n: "info",
-    s: 16
-  }), "How it would work"), React.createElement(ScreenSample, null))));
 }
 function PrivacyPage() {
   const S = useStore();
@@ -33562,7 +33692,7 @@ function DevicesPage() {
       if (dl.status !== 'started') S.intent.update(dl.id, {
         status: 'started'
       });
-      S.startIntent(dl, 15, e);
+      S.startIntent(dl, dl.est || 15, e);
     },
     "data-lock-dl": "start"
   }, "I\u2019m on it"), React.createElement("button", {
@@ -34883,46 +35013,6 @@ function FocusSheet() {
     onClick: close
   }, "Don\u2019t save"))));
 }
-function SharedPage() {
-  const S = useStore();
-  const db = S.db;
-  const {
-    back
-  } = useRoute();
-  return React.createElement(Page, {
-    back: back,
-    title: "Shared routines",
-    scrollKey: "shared"
-  }, React.createElement("div", {
-    className: "plainhead",
-    "data-shared-page": true
-  }, React.createElement("h1", {
-    className: "t-hero"
-  }, "Shared routines"), React.createElement("p", {
-    className: "t-s"
-  }, "Not available yet")), React.createElement("div", {
-    className: "sec"
-  }, React.createElement("div", {
-    className: "list"
-  }, React.createElement("div", {
-    className: "row indent"
-  }, React.createElement("div", {
-    className: "tok"
-  }, React.createElement(Icon, {
-    n: "bell",
-    s: 20
-  })), React.createElement("div", {
-    className: "main"
-  }, React.createElement("div", {
-    className: "ttl"
-  }, "Notify me"), React.createElement("div", {
-    className: "sub"
-  }, db.prefs.sharedAsk ? 'On' : 'Off')), React.createElement(Switch, {
-    on: !!db.prefs.sharedAsk,
-    onChange: v => S.act.setPref('sharedAsk', v),
-    label: "Notify me if shared routines become available"
-  })))));
-}
 const REM_LISTS = ['Home', 'Errands', 'Work'];
 const remAppSeeds = (today, lists) => [{
   id: 'r-parcel',
@@ -35211,16 +35301,12 @@ function routeTitle(r, db) {
       return 'How you feel';
     case 'contexts':
       return 'Context';
-    case 'screentime':
-      return 'Coming later';
     case 'suggestions':
       return 'Suggestions';
     case 'ideas':
       return 'Ideas';
     case 'checks':
       return 'Questionnaire and focus';
-    case 'shared':
-      return 'Shared routines';
     case 'connections':
       return 'Connections';
     case 'privacy':
@@ -35292,16 +35378,12 @@ function RouteView({
       return React.createElement(FeelPage, null);
     case 'contexts':
       return React.createElement(ContextsPage, null);
-    case 'screentime':
-      return React.createElement(ScreenTimePage, null);
     case 'suggestions':
       return React.createElement(SuggestionsPage, null);
     case 'ideas':
       return React.createElement(IdeasPage, null);
     case 'checks':
       return React.createElement(ChecksPage, null);
-    case 'shared':
-      return React.createElement(SharedPage, null);
     case 'connections':
       return React.createElement(ConnectionsPage, null);
     case 'reminders':
@@ -35440,7 +35522,7 @@ const SheetView = ({
       return null;
   }
 };
-const PLAIN_ROUTES = new Set(['privacy', 'suggestions', 'ideas', 'patterns', 'meds', 'contexts', 'connections', 'screentime', 'reminders', 'devices', 'observations', 'checks', 'shared', 'held']);
+const PLAIN_ROUTES = new Set(['privacy', 'suggestions', 'ideas', 'patterns', 'meds', 'contexts', 'connections', 'reminders', 'devices', 'observations', 'checks', 'held']);
 const emptyUser = () => ({
   itemPatch: {},
   newItems: [],
@@ -35557,6 +35639,7 @@ function App() {
   const toastT = useRef(null);
   const hapT = useRef(null);
   const burstRef = useRef(null);
+  const firstAskRef = useRef(null);
   const rm = useMemo(() => prefersReduced(), []);
   const userRef = useRef(user);
   userRef.current = user;
@@ -35755,18 +35838,36 @@ function App() {
       const yy = pt ? pt.y : null;
       const tgt = opts.e && opts.e.target;
       const fromNow = !!(tgt && tgt.closest && tgt.closest('[data-inplay], [data-evening-close]'));
-      const toastL = opts.silent ? () => {} : opts.note ? t => showToast({
+      const it = db.byId[itemId];
+      if (!it) return null;
+      const askFirst = it.kind === 'routine' && ['session', 'duration'].includes(it.measure) && !it.first && !it.firstAsked && !extra.kind && !(db.byItem[itemId] || []).some(x => !x.kind);
+      if (askFirst) {
+        updateItem(itemId, {
+          firstAsked: true
+        });
+        firstAskRef.current = itemId;
+      }
+      const fa = t => askFirst ? {
+        ...t,
+        sub: 'Note a first step for next time? (optional)',
+        act2: {
+          label: 'Note one',
+          run: () => sheet.open({
+            k: 'itemdet',
+            id: itemId
+          })
+        }
+      } : t;
+      const toastL = opts.silent ? () => {} : opts.note ? t => showToast(fa({
         ...t,
         y: yy,
         top: fromNow || t.top,
         sub: `${opts.note}, ${t.sub}`
-      }) : t => showToast({
+      })) : t => showToast(fa({
         ...t,
         y: yy,
         top: fromNow || t.top
-      });
-      const it = db.byId[itemId];
-      if (!it) return null;
+      }));
       const t = opts.t != null ? Math.min(opts.t, db.T) : db.T;
       const e = {
         id: uid('u'),
@@ -36457,13 +36558,11 @@ function App() {
     }
     const mins = Math.max(1, Math.round((now - started) / 60000));
     setLive(null);
-    const firstEver = it.measure === 'session' && !it.first && !it.firstAsked && !(db.byItem[it.id] || []).some(e => !e.kind);
+    firstAskRef.current = null;
     const eid = act.log(it.id, mins, {}, {
       silent: true
     });
-    if (eid && firstEver) updateItem(it.id, {
-      firstAsked: true
-    });
+    const firstEver = firstAskRef.current === it.id;
     if (eid) showToast({
       title: `${it.short || it.name}, ${fmtDur(mins)} saved`,
       hue: it.hue,
@@ -36504,7 +36603,7 @@ function App() {
       setArrivedW(ARRIVE_W);
       haptic('soft');
       const w = BASE.workouts.find(x => x.id === ARRIVE_W);
-      setAnnounce(`New from your Watch: ${w.dist ? `${w.dist.toFixed(1)} km run` : 'a workout'}, last night.`);
+      setAnnounce(`New from your Watch: ${w.dist ? `a ${w.dist.toFixed(1)} km run` : 'a workout'}, last night.`);
     }, 2600);
     return () => clearTimeout(t);
   }, [scen, user.arrived, tab, stacks.today.length, sheets.length]);
