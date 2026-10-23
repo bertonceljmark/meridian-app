@@ -371,7 +371,6 @@ svg { display: block; }
 .today-head { padding: 64px var(--gut) 0; }
 .today-head .dateline { display: flex; align-items: center; justify-content: space-between; height: 44px; }
 .today-head .title { margin-top: 2px; }
-.headchips { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 .hchip { min-height: 34px; padding: 0 12px 0 10px; border-radius: 17px; display: inline-flex; align-items: center; gap: 7px; font-size: calc(13.5px * var(--ts, 1)); font-weight: 560; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); transition: transform .2s var(--spring); }
 .hchip:active { transform: scale(.95); }
 .hchip .k { color: var(--ink-3); font-weight: 520; }
@@ -790,17 +789,8 @@ svg { display: block; }
 .ax .state { white-space: normal; max-width: 100%; }
 .ax .plate svg { width: 100%; height: auto; max-width: 96px; }
 /* L3-01: at large text the first screen keeps 3 Now rows: one row of header chips, a 96 pt object band, a one-line summary */
-.ax .headchips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-top: 12px; }
-.ax .headchips::-webkit-scrollbar { display: none; }
-.ax .headchips .hchip { flex: none; white-space: nowrap; }
-.ax .headchips [data-sleepchip] .k, .ax .headchips [data-feelchip] span { display: none; }
-.ax .thero-obj > div, .ax .thero-obj .m3-moment { height: 96px !important; min-height: 0 !important; }
-.ax .thero-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* L4-02: at large text the run line drops "Yesterday," instead of cutting the pace, and a first step gets two lines */
-.ax .thero-sub[data-halfsplit] .tw, .ax .thero-sub:not([data-night-timing]):not([data-ring-sub]) .tw { display: none; }
 .ax .qrow .qs[data-first-step] { -webkit-line-clamp: 2; }
-.ax .thero-sub .tp { display: none; }
-.ax .thero-fig .fig { font-size: calc(44px * var(--tsd, 1)); }
 .ax .qpresets { flex-wrap: nowrap !important; gap: 6px !important; }
 .ax .qpresets .preset { flex: 1 1 0; min-width: 44px !important; padding: 0 4px !important; }
 .ax .qrow .qs.qfirst { display: -webkit-box; -webkit-line-clamp: 2; /* L4-02 */ -webkit-box-orient: vertical; overflow: hidden; }
@@ -1426,33 +1416,10 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 /* ---- Today: a smaller date, one object on the ground, one line of news ---- */
 .today-head { padding-top: 54px; }
 .today-head .title { font-size: calc(34px * var(--tsd, 1)); letter-spacing: -.035em; margin-top: 0; }
-.today-head .headchips { margin-top: 12px; }
 .heldbtn .hb { position: absolute; right: 3px; top: 4px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--key-hi); color: #0B1019; font-size: 10.5px; font-weight: 700; display: grid; place-items: center; line-height: 1; }
 .stagebox { padding-bottom: 18px; }
-.thero { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "kick kick" "obj obj" "fig link" "sub sub"; margin-top: 14px; }
-.thero-kick { grid-area: kick; display: flex; align-items: flex-start; gap: 8px; padding: 0 var(--gut); font-size: calc(13.5px * var(--ts, 1)); font-weight: 560; color: var(--on-deep-2); line-height: 1.3; }
 /* L-19: the dot sits on the first line when the words wrap */
-.thero-kick .dot { flex: none; width: 8px; height: 8px; border-radius: 4px; margin-top: calc((1.3em - 8px) / 2); background: oklch(.84 .1 190); box-shadow: 0 0 0 3px oklch(.84 .1 190 / .18); }
-.thero-obj { grid-area: obj; display: block; width: 100%; position: relative; text-align: inherit; -webkit-tap-highlight-color: transparent; height: 136px; overflow: hidden; }
-.ax .thero-obj { height: 96px; }
-.thero-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: calc(14px * 1.35 * var(--ts, 1)); box-sizing: content-box; }
 /* X3-05: every hero (ring, night, run) has the same rows, so Now never moves when the hero changes kind */
-.thero .thero-fig { height: calc(54px * var(--tsd, 1)); box-sizing: border-box; align-items: flex-end; overflow: hidden; }
-.ax .thero .thero-fig { height: calc(46px * var(--tsd, 1)); }
-.thero-obj .m3-moment { margin: 0; }
-.thero-fig { grid-area: fig; display: flex; align-items: baseline; gap: 6px; padding: 0 0 0 var(--gut); margin-top: -6px; color: var(--on-deep); min-width: 0; flex-wrap: wrap; }
-.thero-fig .fig { font-size: calc(54px * var(--tsd, 1)); line-height: 1; }
-.thero-fig .unit { font-size: calc(18px * var(--ts, 1)); color: var(--on-deep-2); font-weight: 520; }
-.thero-sub { grid-area: sub; padding: 0 var(--gut); margin-top: 6px; font-size: calc(14px * var(--ts, 1)); color: var(--on-deep-2); line-height: 1.35; }
-.thero { grid-template-areas: "kick kick" "obj obj" "fig link" "sub sub" "fresh fresh"; }
-.thero-fresh { grid-area: fresh; display: flex; align-items: center; gap: 8px; margin: 10px var(--gut) 0; min-height: 44px; padding: 8px 12px; border-radius: 16px; background: rgba(237,241,246,.07); box-shadow: inset 0 0 0 1px rgba(205,220,245,.08); color: var(--on-deep-2); font-size: calc(14px * var(--ts, 1)); line-height: 1.3; text-align: left; }
-.thero-fresh b { color: var(--on-deep); font-weight: 620; }
-.thero-fresh .tf-t { flex: 1; min-width: 0; }
-.thero-fresh .dot { flex: none; width: 7px; height: 7px; border-radius: 4px; background: oklch(.84 .1 190); box-shadow: 0 0 0 3px oklch(.84 .1 190 / .18); }
-.thero-fresh svg { flex: none; }
-.thero-link { grid-area: link; align-self: end; margin: 0 calc(var(--gut) - 12px) -4px 0; min-height: 44px; padding: 0 10px 0 14px; display: inline-flex; align-items: center; gap: 2px; font-weight: 620; font-size: calc(15px * var(--ts, 1)); color: var(--on-deep); border-radius: 22px; }
-.thero[data-today-hero="week"] .thero-link { margin-top: 4px; }
-.thero.entering .thero-obj { animation: rise .7s var(--out) both; }
 /* 3h: the cards under the Today hero; same height, the next one peeks, page dots under them */
 .tcards { margin-top: 12px; }
 .tc-m { margin-top: 3px; font-size: calc(14px * var(--ts, 1)); color: var(--on-deep-2); }
@@ -1666,11 +1633,6 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 
 /* Today, tightened so the first open row is on the first screen at 100% (rule 20) */
 .today-head { padding-top: 50px; }
-.thero { margin-top: 6px; }
-.thero-fig { margin-top: -4px; }
-.thero-fig .fig { font-size: calc(48px * var(--tsd, 1)); }
-.thero-when { white-space: nowrap; }
-.thero-when .dot { display: inline-block; width: 7px; height: 7px; border-radius: 4px; margin: 0 7px 1px 0; vertical-align: middle; background: oklch(.84 .1 190); box-shadow: 0 0 0 3px oklch(.84 .1 190 / .18); }
 .newsline { margin-top: 12px; }
 .newsline .nl-main { min-height: 44px; }
 .stagebox { padding-bottom: 14px; }
@@ -1738,9 +1700,6 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 /* Today, pass 3 */
 .titlebtn { font: inherit; color: inherit; letter-spacing: inherit; text-align: left; padding: 0; min-height: 44px; }
 .heldbtn .hb.dot { min-width: 0; width: 9px; height: 9px; padding: 0; right: 9px; top: 9px; border-radius: 5px; background: var(--on-deep); box-shadow: 0 0 0 2px var(--stage); }
-.thero-fact { color: var(--on-deep); font-weight: 600; }
-.thero[data-today-hero="day"] .thero-fig { align-items: center; margin-top: 0; }
-.thero[data-today-hero="day"] .thero-fig .unit { color: var(--on-deep-2); }
 .newsline.plain { margin: 0 var(--gut); box-shadow: inset 0 0 0 1px var(--line-2); background: transparent; }
 .newsline.plain .nl-main { color: var(--ink); }
 .newsline.plain .nl-s { color: var(--ink-3); }
@@ -1786,7 +1745,6 @@ button.aside.iconaside { width: 44px; height: 44px; min-height: 44px; margin: -1
 .qrow.intention > .tok { background: transparent !important; box-shadow: inset 0 0 0 1.5px oklch(.7 .1 var(--h, 220)); }
 .chart-lead{margin:0 0 6px;font-size:calc(14px * var(--ts,1));line-height:1.35;color:var(--ink-2)}
 .sug-top[data-suggest-open]{min-height:44px;align-items:center}
-.ax .headchips .hchip{min-width:44px;justify-content:center}
 .dateline1{display:flex;align-items:center;gap:8px;width:calc(100% - 2 * var(--gut));margin:10px var(--gut) 0;min-height:44px;padding:0 4px;color:var(--ink-2);font-size:calc(14px * var(--ts,1));text-align:left}.dateline1 .dl1-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dateline1 b{color:var(--ink);font-weight:600}
 .ax .dateline1 .dl1-t { white-space: normal; padding: 6px 0; }
 .scroll[data-scroll="today"] { overflow-anchor: none; } /* OP4-04: the app anchors rows itself; the browser must not shift the page when a row leaves */ /* B1 at large text: the dateline wraps instead of running off the screen */
@@ -1815,7 +1773,7 @@ button.kv { min-height: 44px; }
 .sug-hold { margin: 22px var(--gut) 0; color: var(--ink-3); }
 .toast.top { bottom: auto; top: 54px; }
 /* X8-01: with a session running, a bottom toast stands above the live bar instead of covering it */
-body:has(.livebar) .toast:not(.top):not(.nobar) { bottom: 172px; }
+/* X8-01b: toast over the live bar is docked inline from the bar's measured top */
 /* EG-02 / AL2-02: milestones and memories are plain lines on one plate */
 .tline { margin: 0 var(--gut); border-radius: 22px; background: var(--surface); box-shadow: var(--mat); padding: 4px 16px; }
 .tln-row { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 12px 0; align-items: first baseline; font-size: calc(15px * var(--ts, 1)); }
@@ -1859,8 +1817,65 @@ body:has(.livebar) .toast:not(.top):not(.nobar) { bottom: 172px; }
 .today-head { padding-top: 56px; }
 .qrow .qpresets { position: relative; z-index: 1; pointer-events: none; }
 .qrow .qpresets .preset { pointer-events: auto; }
-.thero { margin-top: 0; }
 
+/* ===== 3j: Today as a timeline of light; type-led content around it (Mark: boxed cards read as "ai slop") ===== */
+:root { --f-mono: ui-monospace, "SF Mono", Menlo, monospace; --now-ink: #FFF1DC;
+  --pk-bg: linear-gradient(180deg, #FFFFFF 0%, #EEF1F5 100%); --pk-edge: #BCC3CD; --pk-hi: rgba(255,255,255,.9); --pk-ink: #0C1118; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --pk-bg: linear-gradient(180deg, #252C3A 0%, #1B2130 100%); --pk-edge: #05070B; --pk-hi: rgba(255,255,255,.09); --pk-ink: #EEF0F4; } }
+:root[data-theme="dark"] { --pk-bg: linear-gradient(180deg, #252C3A 0%, #1B2130 100%); --pk-edge: #05070B; --pk-hi: rgba(255,255,255,.09); --pk-ink: #EEF0F4; }
+.stagebox { --pk-bg: linear-gradient(180deg, #252C3A 0%, #1B2130 100%); --pk-edge: #05070B; --pk-hi: rgba(255,255,255,.09); --pk-ink: #EEF0F4; }
+.today-head { position: relative; z-index: 2; pointer-events: none; }
+.today-head button, .today-head a { pointer-events: auto; }
+.today-head .eyebrow { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tl-ctx { color: var(--now-ink); }
+.tl-icons { display: flex; gap: 0; margin-right: -10px; flex: none; }
+.tl-icons .iconbtn.on::after { content: ''; position: absolute; top: 9px; right: 8px; width: 6px; height: 6px; border-radius: 3px; background: var(--now-ink); }
+.tl { position: relative; z-index: 1; height: calc(212px - (var(--ts, 1) - 1) * 104px); /* larger text gives the hero's height to the rows, so two whole Now rows still fit */ margin-top: -64px; overflow: hidden; touch-action: manipulation; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+.tl-cv, .tl-flat { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tl-axis { position: absolute; left: 0; right: 0; bottom: 6px; height: 14px; pointer-events: none; }
+.tl-axis span { position: absolute; top: 0; transform: translateX(-50%); font: 400 calc(10.5px * var(--ts, 1))/1 var(--f-mono); color: var(--on-deep-3); white-space: nowrap; text-shadow: 0 0 3px var(--stage), 0 0 8px var(--stage), 0 0 8px var(--stage); }
+.tl-axis span.now { color: var(--now-ink); }
+.tl-read { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: end; column-gap: 14px; padding: 0 var(--gut); margin-top: 6px; }
+.tl-n { display: inline-flex; align-items: flex-end; gap: 12px; min-height: 44px; color: var(--on-deep); text-align: left; -webkit-tap-highlight-color: transparent; }
+.tl-n .n { font-family: var(--f-disp); font-weight: 200; font-size: calc(64px * var(--tsd, 1)); line-height: .8; letter-spacing: -.05em; }
+.tl-n .lab { font-size: calc(14px * var(--ts, 1)); line-height: 1.25; color: var(--on-deep-2); padding-bottom: 1px; }
+.tl-n:active .n { opacity: .7; }
+.tl-last { text-align: right; min-width: 0; padding-bottom: 1px; }
+.tl-last .t { font: 400 calc(20px * var(--ts, 1))/1 var(--f-mono); letter-spacing: -.02em; color: var(--on-deep); transition: color .25s; }
+.tl-last .w { font-size: calc(13px * var(--ts, 1)); line-height: 1.3; color: var(--on-deep-2); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-last.flash .t { color: var(--now-ink); }
+.stagebox .tcards { margin-top: 14px; }
+.stagebox .tc-track { gap: 22px; }
+.stagebox .tc-track:not(.one)::after { content: ''; flex: none; width: 8px; } /* room for the last card to rest at the start, so the one before it never shows its edge */
+.stagebox .tcard { background: none !important; box-shadow: none !important; border-radius: 0 !important; border-top: 1px solid var(--on-deep-line); padding: 11px 0 0 !important; height: calc(108px * var(--ts, 1)); }
+.stagebox .tc-open:active { background: none; }
+.stagebox .tc-open:active ~ .tc-t { opacity: .7; }
+.stagebox .tc-k { font-weight: 400; color: var(--on-deep-3); }
+.stagebox .tc-k .dot { width: 6px; height: 6px; box-shadow: none; }
+.stagebox .tc-t { font-weight: 400; font-size: calc(19px * var(--ts, 1)); letter-spacing: -.015em; margin-top: 4px; }
+.stagebox .tc-s { color: var(--on-deep-2); }
+.stagebox .tc-s b { font-weight: 500; }
+.stagebox .tc-x { right: -12px; top: -2px; }
+.tsec .sec-h { min-height: 26px; margin-bottom: 2px; }
+[data-now].tsec { margin-top: 10px !important; }
+.tsec .sec-h h2 { font-size: calc(12.5px * var(--ts, 1)) !important; font-weight: 450 !important; color: var(--ink-3) !important; letter-spacing: .02em; }
+.qlist.nowlist { margin-top: 4px; gap: 0; border-top: 1px solid var(--line-2); border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+.qlist.nowlist > * { background-image: none; }
+.qlist.nowlist > .qrow, .qlist.nowlist > * { background-color: transparent; box-shadow: none; border-radius: 0; border-bottom: 1px solid var(--line-2); padding-left: 0; padding-right: 0; }
+.nowlist .qrow .qn { font-size: calc(18px * var(--ts, 1)); font-weight: 450; letter-spacing: -.01em; }
+.nowlist .qrow .tok:not(.tumbler) { background: none; box-shadow: inset 0 0 0 1px var(--line-2); }
+.nowlist .qrow .act, .nowlist .qrow .act.pill, .nowlist .qrow .act.primary, .nowlist .qrow .qpresets .preset, .lr-key::before {
+  background: var(--pk-bg) !important; color: var(--pk-ink) !important; border-radius: 10px !important;
+  box-shadow: 0 3px 0 var(--pk-edge), 0 6px 12px -6px rgba(0,0,0,.35), inset 0 1px 0 var(--pk-hi) !important; transition: transform .07s ease-out, box-shadow .07s ease-out; }
+.nowlist .qrow .act, .nowlist .qrow .qpresets .preset { font-weight: 500; }
+.nowlist .qrow .act:active, .nowlist .qrow .act.pressed, .nowlist .qrow .qpresets .preset:active { transform: translateY(3px) !important; box-shadow: 0 0 0 var(--pk-edge), 0 2px 4px -2px rgba(0,0,0,.35), inset 0 1px 0 var(--pk-hi) !important; }
+.lr-key { color: var(--pk-ink); }
+.lr-key::before { inset: 5px 0 8px; }
+.lr-key:active { transform: translateY(3px); }
+.lr-key:active::before { box-shadow: 0 0 0 var(--pk-edge), inset 0 1px 0 var(--pk-hi) !important; }
+.lr-key.live { color: var(--bg); }
+.lr-key.live::before { background: var(--ink) !important; }
+@media (prefers-reduced-motion: reduce) { .nowlist .qrow .act, .nowlist .qrow .qpresets .preset, .lr-key { transition: none; } }
 </style>
 <div id="root"></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js"}}</script>
@@ -5990,7 +6005,7 @@ function monthFor(db, it, m, fh) {
     b0 = Math.min(monthEnd(m), db.today),
     open = monthEnd(m) > db.today;
   if (b0 < a || it.created > b0) return 'Not part of it yet';
-  const ret = it.retired != null && it.retired < b0 ? it.retired : null;
+  const ret = it.retired != null && it.retired <= b0 ? it.retired : null;
   if (ret != null && ret < a) return retiredWord(it);
   const b = ret != null ? ret : b0;
   const ent = countingEntries(db, it, Math.max(a, 0), b);
@@ -7313,7 +7328,7 @@ function Bars({
     anchor: "middle",
     size: 12,
     weight: cur === i ? 650 : 500
-  }, d.l) : null)), cur != null && data[cur] && (idx != null || !say || cur !== ref0 && !selProg) && React.createElement(Ctip, {
+  }, d.l) : null)), cur != null && data[cur] && (idx != null || !say || cur !== ref0 && !selProg && !selAside) && React.createElement(Ctip, {
     pct: clamp((pl + cur * bw + bw / 2) / W * 100, 22, 78)
   }, data[cur].state === 'none' ? `${data[cur].tip || data[cur].l}, didn’t do it, noted` : data[cur].state === 'unknown' ? `${data[cur].tip || data[cur].l}, ${unknownLabel}` : data[cur].state === 'paused' ? `${data[cur].tip || data[cur].l}, paused` : data[cur].state === 'before' ? `${data[cur].tip || data[cur].l}, before it started` : data[cur].state === 'set-aside' ? `${data[cur].tip || data[cur].l}, set aside (${data[cur].ctx || 'context'})${data[cur].v ? `, ${fmt(data[cur].v, data[cur])} logged` : ''}` : `${data[cur].tip || data[cur].l}, ${fmt(data[cur].v, data[cur])}${data[cur].inProgress ? ' so far' : ''}`)));
 }
@@ -18351,7 +18366,7 @@ function TimeRoot() {
   }, [db, heldBy]);
   const ctxs = db.contexts.filter(c => ['travel', 'sick', 'away', 'vacation'].includes(c.type) && !c.planned && c.from <= db.today);
   const fy = useMemo(() => {
-    if (!f || f.id === 'running' || (f.linkW || []).includes('run')) return null;
+    if (!f) return null;
     const end = f.retired != null ? Math.min(f.retired, db.today) : db.today;
     const ent = countingEntries(db, f, 0, end);
     const per = months.map(m => m <= monthOf(end) ? countingEntries(db, f, monthStart(m), Math.min(monthEnd(m), end)).length : 0);
@@ -18504,7 +18519,29 @@ function TimeRoot() {
     className: "v"
   }, fmtDay(f.retired, {
     noDow: true
-  })))) : React.createElement(React.Fragment, null, year.top && React.createElement("div", {
+  }))), (f.id === 'running' || (f.linkW || []).includes('run')) && React.createElement(React.Fragment, null, year.long && React.createElement("button", {
+    className: "kv",
+    style: {
+      width: '100%',
+      textAlign: 'left'
+    },
+    onClick: () => S.nav.push({
+      k: 'workout',
+      id: year.long.id
+    })
+  }, React.createElement("span", {
+    className: "k"
+  }, "Longest run"), React.createElement("span", {
+    className: "v"
+  }, year.long.dist.toFixed(1), " km, ", fmtDay(year.long.d, {
+    noDow: true
+  }))), year.km > 0 && React.createElement("div", {
+    className: "kv"
+  }, React.createElement("span", {
+    className: "k"
+  }, "Run so far"), React.createElement("span", {
+    className: "v"
+  }, Math.round(year.km), " km")))) : React.createElement(React.Fragment, null, year.top && React.createElement("div", {
     className: "kv"
   }, React.createElement("span", {
     className: "k"
@@ -24992,105 +25029,6 @@ function todayHeroPick(db) {
     w
   };
 }
-function todayRing(db) {
-  const hrs = Array.from({
-    length: 24
-  }, () => []);
-  db.items.forEach(it => (db.byItemDay[it.id]?.[db.today] || []).forEach(e => {
-    if (e.kind) return;
-    const h = clamp(Math.floor(minOf(e.t) / 60), 0, 23);
-    if (hrs[h].length < 5) hrs[h].push({
-      hue: it.kind === 'observation' || it.kind === 'module' ? null : it.hue,
-      thin: it.measure === 'quantity',
-      id: it.id
-    });
-  }));
-  (db.meds || []).filter(m => dayOf(m.t) === db.today).forEach(m => {
-    const h = clamp(Math.floor(minOf(m.t) / 60), 0, 23);
-    if (hrs[h].length < 5) hrs[h].push({
-      hue: null,
-      thin: false,
-      id: 'med'
-    });
-  });
-  const nowH = Math.floor(db.nowMin / 60);
-  return {
-    slots: hrs.map((L, h) => ({
-      id: h,
-      future: h > nowH,
-      unknown: !L.length && h <= nowH,
-      f: 0,
-      layers: L.length ? L.map(l => ({
-        hue: l.hue,
-        thin: l.thin
-      })) : null
-    })),
-    todayI: nowH,
-    nowF: db.nowMin % 60 / 60,
-    hue: null,
-    quietEmpty: true,
-    n: hrs.reduce((s, L) => s + L.length, 0),
-    hrs
-  };
-}
-function RingFlat({
-  data,
-  size = 132
-}) {
-  const R0 = 34,
-    R1 = 58,
-    c = size / 2;
-  const arc = (h, r0, r1) => {
-    const a0 = h / 24 * Math.PI * 2 - Math.PI / 2 + .02,
-      a1 = (h + 1) / 24 * Math.PI * 2 - Math.PI / 2 - .02;
-    const p = (r, a) => `${c + r * Math.cos(a)} ${c + r * Math.sin(a)}`;
-    return `M${p(r0, a0)} L${p(r1, a0)} A${r1} ${r1} 0 0 1 ${p(r1, a1)} L${p(r0, a1)} A${r0} ${r0} 0 0 0 ${p(r0, a0)}Z`;
-  };
-  return React.createElement("svg", {
-    width: size,
-    height: size,
-    viewBox: `0 0 ${size} ${size}`,
-    style: {
-      display: 'block',
-      margin: '0 auto'
-    },
-    "aria-hidden": "true"
-  }, data.slots.map(s => {
-    const L = s.layers || [];
-    const r1 = R0 + (R1 - R0) * Math.min(1, .2 + L.length * .2);
-    return React.createElement("path", {
-      key: s.id,
-      d: arc(s.id, R0, s.future ? R0 + 2 : L.length ? r1 : R0 + 4),
-      fill: L.length ? `oklch(.78 .1 ${L[0].hue == null ? 250 : L[0].hue})` : 'var(--on-deep-line)',
-      opacity: s.future ? .4 : 1
-    });
-  }));
-}
-function TodayRing({
-  db,
-  height = 150
-}) {
-  const data = useMemo(() => todayRing(db), [db]);
-  const said = data.hrs.map((L, h) => L.length ? `${String(h).padStart(2, '0')}:00 ${L.map(l => (db.byId[l.id] || {
-    name: 'Medication'
-  }).short || (db.byId[l.id] || {
-    name: 'Medication'
-  }).name).join(', ')}` : null).filter(Boolean).join('; ');
-  return React.createElement(Hero3D, {
-    kind: "dial",
-    data: data,
-    height: height,
-    className: "m3-moment",
-    opts: {
-      deep: true,
-      rebuild: 'today' + data.n + ':' + data.todayI
-    },
-    label: `Today as a ring of 24 hours, one layer for each thing logged at its hour. ${said || 'Nothing logged yet'}`,
-    fallback: React.createElement(RingFlat, {
-      data: data
-    })
-  });
-}
 const RANK_FROM = 120;
 function runRank(db, w) {
   if (w.type !== 'run' || !w.dist) return null;
@@ -25183,7 +25121,7 @@ function useTodayCards(db, w, nowHeldId) {
       w
     });
     const n = db.sleep[db.today];
-    if (n && db.nowMin < 12 * 60) out.push({
+    if (n) out.push({
       id: 'night' + db.today,
       kind: 'night',
       n
@@ -25464,54 +25402,6 @@ function TodayCards({
     key: m.id,
     className: i === at ? 'on' : ''
   }))));
-}
-function TodayHero({
-  pick
-}) {
-  const S = useStore();
-  const db = S.db;
-  const open = () => S.nav.push({
-    k: 'day',
-    d: db.today
-  });
-  const sN = todayModel(db).settled.length;
-  const wIt = db.byId.water;
-  const wv = wIt && statusNow(db, wIt) === 'active' ? currentEval(db, wIt).v : 0;
-  const lastT = db.entries.reduce((m, e) => e.t <= db.T && dayOf(e.t) === db.today && e.t > m ? e.t : m, 0);
-  return React.createElement("div", {
-    className: "thero",
-    "data-today-hero": "day"
-  }, React.createElement("button", {
-    className: "thero-obj",
-    onClick: open,
-    "aria-label": "Today, hour by hour. Open the day"
-  }, React.createElement(TodayRing, {
-    db: db,
-    height: 136
-  })), React.createElement("div", {
-    className: "thero-fig",
-    "data-ring-fig": true
-  }, sN ? React.createElement(React.Fragment, null, React.createElement("span", {
-    className: "fig"
-  }, sN), React.createElement("span", {
-    className: "unit"
-  }, "settled")) : React.createElement("span", {
-    className: "unit",
-    style: {
-      marginLeft: 0
-    }
-  }, "Today so far")), React.createElement("button", {
-    className: "thero-link",
-    onClick: open,
-    "data-hero-open": true
-  }, "Day", React.createElement(Icon, {
-    n: "right",
-    s: 15,
-    w: 2.2
-  })), React.createElement("div", {
-    className: "thero-sub tnum",
-    "data-ring-sub": true
-  }, [wv ? `${fmtAmount(wIt, wv)} water` : null, lastT ? `last logged ${fmtHM(minOf(lastT))}` : 'nothing logged yet'].filter(Boolean).join(', ').replace(/^./, c => c.toUpperCase())));
 }
 const NEWS_ORDER = ['back', 'sick', 'day1', 'half', 'pattern', 'week', 'intent', 'passed'];
 function newsText(db, m) {
@@ -26262,6 +26152,608 @@ function SuggestSlot({
     "data-suggest-another": true
   }, "Another idea"));
 }
+const TL_MAX = 32,
+  TL_T1 = 24.5,
+  TL_TOP = 64,
+  TL_FOOT = 30;
+const tlHexLin = c => [1, 3, 5].map(i => Math.pow(parseInt(c.slice(i, i + 2), 16) / 255, 2.2));
+const TL_WARM = tlHexLin('#fff0dc'),
+  TL_MED = tlHexLin('#c9ced8'),
+  TL_BG = tlHexLin('#0b1019');
+function tlOklch(L, C, h) {
+  const a = C * Math.cos(h * Math.PI / 180),
+    b = C * Math.sin(h * Math.PI / 180);
+  const l = (L + .3963377774 * a + .2158037573 * b) ** 3,
+    m = (L - .1055613458 * a - .0638541728 * b) ** 3,
+    s = (L - .0894841775 * a - 1.291485548 * b) ** 3;
+  return [4.0767416621 * l - 3.3077115913 * m + .2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - .3413193965 * s, -.0041960863 * l - .7034186147 * m + 1.707614701 * s].map(v => clamp(v, 0, 1));
+}
+const tlMix = (c, k) => TL_WARM.map((w, i) => w * (1 - k) + c[i] * k);
+const tlCss = (c, a = 1) => `rgba(${c.map(v => Math.round(255 * Math.pow(clamp(v, 0, 1), 1 / 2.2))).join(',')},${a})`;
+function dayLights(db) {
+  const out = [],
+    byW = {};
+  db.items.forEach(it => (db.byItemDay[it.id]?.[db.today] || []).forEach(e => {
+    if (e.kind === 'complete' || e.kind === 'none' || e.t > db.T) return;
+    const nm = it.short || it.name;
+    if (e.wid && byW[e.wid]) {
+      const L = byW[e.wid];
+      if (!L.names.includes(nm)) L.names.push(nm);
+      return;
+    }
+    const span = (['session', 'duration', 'passive'].includes(it.measure) || e.wid) && e.v > 1;
+    const end = minOf(e.t),
+      dur = span ? e.v : 0,
+      m = e.wid ? end : Math.max(0, end - dur);
+    const neutral = it.kind === 'observation' || it.kind === 'module' || it.hue == null;
+    const eq = span ? e.v : it.measure === 'quantity' ? it.unit && it.unit !== 'ml' ? e.v * 12 : e.v / 20 : 20;
+    const L = {
+      id: e.id || it.id + ':' + e.t,
+      m,
+      at: end,
+      dur: Math.min(dur, Math.max(0, db.nowMin - m)),
+      eq,
+      hue: neutral ? null : it.hue,
+      med: false,
+      names: [nm],
+      txt: entryLine(db, it, e)
+    };
+    if (e.wid) byW[e.wid] = L;
+    out.push(L);
+  }));
+  (db.meds || []).filter(d => dayOf(d.t) === db.today && d.status !== 'skipped' && d.t <= db.T).forEach(d => {
+    const it = db.byId[d.item];
+    out.push({
+      id: 'dose:' + d.t + ':' + d.item,
+      m: minOf(d.t),
+      at: minOf(d.t),
+      dur: 0,
+      eq: 8,
+      hue: null,
+      med: true,
+      names: [it && (it.short || it.name) || 'Medication'],
+      txt: d.status === 'late' ? 'taken late' : d.status === 'diff' ? 'taken, a different dose' : 'taken'
+    });
+  });
+  return out.sort((a, b) => a.m - b.m);
+}
+const tlName = L => L.names.join(' and ');
+const tlTxt = L => /^[A-Z][a-z]/.test(L.txt) ? L.txt.charAt(0).toLowerCase() + L.txt.slice(1) : L.txt;
+const tlSay = L => `${fmtHM(L.at)} ${tlName(L)}, ${tlTxt(L)}`;
+function tlDrawn(lights, T0) {
+  let d = lights.map(L => {
+    const r0 = Math.floor((L.m / 60 - T0) * 2),
+      r1 = Math.max(r0, Math.ceil(((L.m + L.dur) / 60 - T0) * 2) - 1);
+    return {
+      ...L,
+      r0,
+      r1,
+      col: L.med ? TL_MED : L.hue == null ? TL_WARM : tlMix(tlOklch(.8, .12, L.hue), .45),
+      iT: L.med ? .55 : L.hue == null ? .9 : 1,
+      ids: [L.id]
+    };
+  });
+  const merge = key => {
+    if (d.length <= TL_MAX) return;
+    const g = new Map();
+    d.forEach(L => {
+      const k = key(L);
+      const o = g.get(k);
+      if (!o) g.set(k, {
+        ...L
+      });else {
+        o.eq += L.eq;
+        o.r1 = Math.max(o.r1, L.r1);
+        o.iT = Math.max(o.iT, L.iT);
+        o.ids = [...o.ids, ...L.ids];
+        if (o.hue !== L.hue) o.col = o.col.map((v, i) => (v + L.col[i]) / 2);
+      }
+    });
+    d = [...g.values()];
+  };
+  merge(L => L.r0 + ':' + L.r1 + ':' + (L.med ? 'm' : L.hue));
+  merge(L => L.r0 + ':' + (L.med ? 'm' : L.hue));
+  merge(L => L.r0);
+  merge(L => Math.floor(L.r0 / 2));
+  d = d.slice(-TL_MAX);
+  const per = {};
+  d.forEach(L => {
+    for (let r = L.r0; r <= L.r1; r++) per[r] = (per[r] || 0) + 1;
+  });
+  return d.map(L => {
+    let k = 1;
+    for (let r = L.r0; r <= L.r1; r++) k = Math.max(k, per[r]);
+    return {
+      ...L,
+      iT: L.iT / Math.sqrt(k),
+      hT: .3 + .62 * Math.sqrt(Math.min(L.eq, 90) / 90)
+    };
+  });
+}
+const tlLiquid = k => k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-6.2 * k) * Math.cos(4.2 * k) * (1 - k * .15);
+const TL_FS = `precision highp float;
+uniform vec2 uRes; uniform float uDpr,uTime,uNowX,uBase,uTop,uReed,uShim;
+uniform vec4 uL[${TL_MAX}]; uniform vec3 uC[${TL_MAX}]; uniform int uN; uniform vec3 uBg;
+float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
+vec3 field(float x,float y,float bx){
+  vec3 acc=vec3(0.);
+  for(int i=0;i<${TL_MAX};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
+    float d=max(0.,abs(x-L.x)-L.y), s=sqrt(9.+bx*bx);
+    float g=exp(-.5*d*d/(s*s)), halo=exp(-.5*d*d/(9.*s*s));
+    float h=L.z, top=uBase-h, soft=8.+h*.3;
+    float col=smoothstep(top-soft,top+soft,y)*step(y,uBase);
+    float grad=.18+.82*pow(clamp((y-top)/max(h,1.),0.,1.),2.2);
+    float core=exp(-pow((y-uBase)/5.,2.));
+    float refl=step(uBase,y)*exp(-(y-uBase)/14.)*.32;
+    acc+=uC[i]*L.w*(col*grad*g+core*g*.9+refl*g+halo*.03*smoothstep(top-60.,uBase,y)*exp(-max(0.,y-uBase)/10.));
+  }
+  return acc;
+}
+vec3 scene(float x,float y){
+  float w=uReed, fi=floor(x/w), u=(x-(fi+.5)*w)/(.5*w), cx=(fi+.5)*w, M=.9, bx=w*.3;
+  float sh=sin(y*.045+uTime*.6+fi*1.9)*.6*uShim;
+  vec3 c;
+  c.r=field(cx-u*w*M*1.06+sh,y,bx).r; c.g=field(cx-u*w*M+sh,y,bx).g; c.b=field(cx-u*w*M*.94+sh,y,bx).b;
+  c+=field(x,y,34.)*.08*smoothstep(uTop-40.,uBase,y);
+  float au=abs(u); c*=mix(.4,1.,smoothstep(1.,.72,au));
+  vec3 local=field(cx,y,w*2.); float lum=dot(local,vec3(.3,.5,.2));
+  float calm=smoothstep(uTop-50.,uTop+70.,y);
+  float spec=exp(-pow((u+.42)/.10,2.));
+  c+=spec*(vec3(.75,.82,1.)*(.022*exp(-(y-uTop)/160.)+.008)*calm+local*.18);
+  c+=pow(au,6.)*(.006*calm+lum*.05)*vec3(.8,.85,1.);
+  c*=mix(1.,.78,smoothstep(uNowX-2.,uNowX+6.,x));
+  return c;
+}
+void main(){
+  vec2 px=vec2(gl_FragCoord.x,uRes.y*uDpr-gl_FragCoord.y)/uDpr; float x=px.x,y=px.y;
+  vec3 c=scene(x,y);
+  c=1.-exp(-c*1.5);
+  vec3 bg=uBg*(1.+.18*smoothstep(uBase+40.,uTop-40.,y));
+  vec3 col=bg+c*(1.-bg);
+  col+=vec3(.9,.95,1.)*.05*exp(-pow((y-uBase-1.)/.6,2.));
+  float dn=abs(x-uNowX);
+  float line=(1.-smoothstep(.35,1.1,dn))*pow(smoothstep(uTop+20.,uBase,y),1.3)*step(y,uBase);
+  float bead=1.-smoothstep(2.2,3.4,length(vec2(dn,y-uBase-.5)));
+  col=mix(col,vec3(1.,.94,.84),line*.7);
+  col+=vec3(1.,.85,.62)*exp(-(dn*dn+(y-uBase)*(y-uBase))/40.)*.35;
+  col=mix(col,vec3(1.,.95,.88),bead);
+  col=mix(uBg,col,smoothstep(uRes.y,uRes.y-22.,y));
+  col=pow(clamp(col,0.,1.),vec3(1./2.2));
+  col+=(hash(gl_FragCoord.xy+fract(uTime))-.5)/255.;
+  gl_FragColor=vec4(col,1.);
+}`;
+function tlGL(cv) {
+  let gl = null;
+  try {
+    gl = cv.getContext('webgl', {
+      antialias: false,
+      alpha: false,
+      premultipliedAlpha: false,
+      powerPreference: 'low-power'
+    });
+  } catch (e) {
+    gl = null;
+  }
+  if (!gl) return null;
+  const sh = (t, s) => {
+    const o = gl.createShader(t);
+    gl.shaderSource(o, s);
+    gl.compileShader(o);
+    if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o));
+    return o;
+  };
+  try {
+    const pr = gl.createProgram();
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));
+    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, TL_FS));
+    gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return null;
+    gl.useProgram(pr);
+    const bf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const ap = gl.getAttribLocation(pr, 'p');
+    gl.enableVertexAttribArray(ap);
+    gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+    const U = {};
+    ['uRes', 'uDpr', 'uTime', 'uNowX', 'uBase', 'uTop', 'uReed', 'uShim', 'uL', 'uC', 'uN', 'uBg'].forEach(k => U[k] = gl.getUniformLocation(pr, k));
+    return {
+      gl,
+      U
+    };
+  } catch (e) {
+    return null;
+  }
+}
+function TodayLightFlat({
+  d,
+  w,
+  h,
+  T0,
+  nowX,
+  base,
+  rw
+}) {
+  const avail = base - TL_TOP;
+  const n = Math.ceil(w / rw);
+  return React.createElement("svg", {
+    className: "tl-flat",
+    width: w,
+    height: h,
+    viewBox: `0 0 ${w} ${h}`,
+    "aria-hidden": "true",
+    "data-tl-flat": true
+  }, React.createElement("defs", null, React.createElement("filter", {
+    id: "tlb",
+    x: "-50%",
+    y: "-20%",
+    width: "200%",
+    height: "140%"
+  }, React.createElement("feGaussianBlur", {
+    stdDeviation: "2.6"
+  })), React.createElement("filter", {
+    id: "tlg",
+    x: "-50%",
+    y: "-200%",
+    width: "200%",
+    height: "500%"
+  }, React.createElement("feGaussianBlur", {
+    stdDeviation: "5"
+  })), d.map((L, k) => React.createElement("linearGradient", {
+    key: k,
+    id: 'tlc' + k,
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, React.createElement("stop", {
+    offset: "0",
+    stopColor: tlCss(L.col),
+    stopOpacity: "0"
+  }), React.createElement("stop", {
+    offset: ".4",
+    stopColor: tlCss(L.col),
+    stopOpacity: .3 * L.iT
+  }), React.createElement("stop", {
+    offset: "1",
+    stopColor: tlCss(L.col),
+    stopOpacity: L.iT
+  })))), Array.from({
+    length: n
+  }, (_, i) => React.createElement("line", {
+    key: i,
+    x1: i * rw,
+    x2: i * rw,
+    y1: TL_TOP - 30,
+    y2: base + 6,
+    stroke: "rgba(205,220,245,.05)",
+    strokeWidth: "1"
+  })), React.createElement("line", {
+    x1: "0",
+    x2: w,
+    y1: base + .5,
+    y2: base + .5,
+    stroke: "rgba(230,240,255,.1)"
+  }), d.map((L, k) => {
+    const x0 = L.r0 * rw + rw * .14,
+      x1 = (L.r1 + 1) * rw - rw * .14,
+      hh = avail * L.hT;
+    return React.createElement("g", {
+      key: k
+    }, React.createElement("rect", {
+      x: x0 - 5,
+      y: base - hh * .8,
+      width: x1 - x0 + 10,
+      height: hh * .8,
+      fill: `url(#tlc${k})`,
+      opacity: ".3",
+      filter: "url(#tlg)"
+    }), React.createElement("rect", {
+      x: x0,
+      y: base - hh,
+      width: x1 - x0,
+      height: hh,
+      fill: `url(#tlc${k})`,
+      filter: "url(#tlb)"
+    }), React.createElement("rect", {
+      x: x0 - 2,
+      y: base - 3,
+      width: x1 - x0 + 4,
+      height: 6,
+      fill: tlCss(L.col, .55 * L.iT),
+      filter: "url(#tlg)"
+    }));
+  }), React.createElement("rect", {
+    x: nowX + 2,
+    y: "0",
+    width: Math.max(0, w - nowX - 2),
+    height: h,
+    style: {
+      fill: 'var(--stage)'
+    },
+    opacity: ".22"
+  }), React.createElement("line", {
+    x1: nowX,
+    x2: nowX,
+    y1: TL_TOP + 20,
+    y2: base,
+    stroke: "#FFF0DC",
+    strokeOpacity: ".75",
+    strokeWidth: "1.2"
+  }), React.createElement("circle", {
+    cx: nowX,
+    cy: base,
+    r: "6",
+    fill: "rgba(255,217,158,.22)",
+    filter: "url(#tlg)"
+  }), React.createElement("circle", {
+    cx: nowX,
+    cy: base,
+    r: "3",
+    fill: "#FFF2E0"
+  }));
+}
+function TodayLight({
+  db,
+  onOpen
+}) {
+  const S = useStore();
+  const lights = useMemo(() => dayLights(db), [db]);
+  const T0 = Math.min(5, Math.floor(lights.length ? lights[0].m / 60 : 5));
+  const drawn = useMemo(() => tlDrawn(lights, T0), [lights, T0]);
+  const wrap = useRef(null),
+    cv = useRef(null),
+    g = useRef({
+      born: null,
+      raf: 0,
+      until: 0,
+      vis: true
+    });
+  const [dim, setDim] = useState({
+    w: 0,
+    h: 0
+  });
+  const [noGL, setNoGL] = useState(false);
+  const flat = S.rm || noGL;
+  const [flash, setFlash] = useState(null);
+  const ft = useRef(null);
+  useEffect(() => () => clearTimeout(ft.current), []);
+  const now0 = performance.now();
+  const G = g.current;
+  const nNew = G.born ? lights.filter(L => G.born[L.id] == null).length : 0;
+  if (!G.born || G.day !== db.today || nNew > 3) {
+    G.born = G.born || {};
+    lights.forEach(L => {
+      if (G.born[L.id] == null) G.born[L.id] = -1e9;
+    });
+  } else lights.forEach(L => {
+    if (G.born[L.id] == null) G.born[L.id] = now0 + 80;
+  });
+  G.day = db.today;
+  const nRibs = (TL_T1 - T0) * 2,
+    rw = dim.w / nRibs,
+    xs = t => (t - T0) / (TL_T1 - T0) * dim.w;
+  const nowX = xs(db.nowMin / 60),
+    base = dim.h - TL_FOOT;
+  G.data = {
+    drawn,
+    rw,
+    nowX,
+    base,
+    w: dim.w,
+    h: dim.h
+  };
+  const draw = () => {
+    const c = G.ctx,
+      D = G.data;
+    if (!c || !D.w) return false;
+    const {
+      gl,
+      U
+    } = c;
+    const t = performance.now();
+    let moving = false;
+    const aL = new Float32Array(TL_MAX * 4),
+      aC = new Float32Array(TL_MAX * 3);
+    D.drawn.forEach((L, k) => {
+      const b = Math.max(...L.ids.map(id => G.born[id] ?? -1e9));
+      const a = clamp((t - b) / 1300, 0, 1);
+      if (a < 1) moving = true;
+      aL.set([(L.r0 + L.r1 + 1) / 2 * D.rw, (L.r1 - L.r0) / 2 * D.rw, (D.base - TL_TOP) * L.hT * tlLiquid(a), L.iT * Math.min(1, a * 2.2)], k * 4);
+      aC.set(L.col, k * 3);
+    });
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const cw = Math.round(D.w * dpr),
+      ch = Math.round(D.h * dpr);
+    if (cv.current.width !== cw || cv.current.height !== ch) {
+      cv.current.width = cw;
+      cv.current.height = ch;
+    }
+    gl.viewport(0, 0, cw, ch);
+    gl.uniform2f(U.uRes, D.w, D.h);
+    gl.uniform1f(U.uDpr, dpr);
+    gl.uniform1f(U.uTime, G.until > t ? t / 1000 : 0);
+    gl.uniform1f(U.uShim, G.until > t ? 1 : 0);
+    gl.uniform1f(U.uNowX, D.nowX);
+    gl.uniform1f(U.uBase, D.base);
+    gl.uniform1f(U.uTop, TL_TOP);
+    gl.uniform1f(U.uReed, D.rw);
+    gl.uniform4fv(U.uL, aL);
+    gl.uniform3fv(U.uC, aC);
+    gl.uniform1i(U.uN, D.drawn.length);
+    gl.uniform3fv(U.uBg, G.bg || TL_BG);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    return moving;
+  };
+  const frame = () => {
+    G.raf = 0;
+    if (!G.vis || document.hidden) return;
+    const moving = draw();
+    if (moving || performance.now() < G.until) G.raf = requestAnimationFrame(frame);
+  };
+  G.kick = ms => {
+    if (ms) G.until = Math.max(G.until, performance.now() + ms);
+    if (!G.raf) G.raf = requestAnimationFrame(frame);
+  };
+  useLayoutEffect(() => {
+    const el = wrap.current;
+    if (!el) return;
+    const m = () => setDim(o => o.w === el.clientWidth && o.h === el.clientHeight ? o : {
+      w: el.clientWidth,
+      h: el.clientHeight
+    });
+    m();
+    const ro = window.ResizeObserver ? new ResizeObserver(m) : null;
+    ro && ro.observe(el);
+    return () => ro && ro.disconnect();
+  }, []);
+  useEffect(() => {
+    if (flat) return;
+    const c = tlGL(cv.current);
+    if (!c) {
+      setNoGL(true);
+      return;
+    }
+    G.ctx = c;
+    const sc = getComputedStyle(wrap.current).getPropertyValue('--stage').trim();
+    G.bg = /^#[0-9a-f]{6}$/i.test(sc) ? tlHexLin(sc) : TL_BG;
+    const io = window.IntersectionObserver ? new IntersectionObserver(es => {
+      G.vis = es[0].isIntersecting;
+      if (G.vis) G.kick(0);else if (G.raf) {
+        cancelAnimationFrame(G.raf);
+        G.raf = 0;
+      }
+    }) : null;
+    io && io.observe(cv.current);
+    const vc = () => {
+      if (document.hidden) {
+        if (G.raf) cancelAnimationFrame(G.raf);
+        G.raf = 0;
+      } else G.kick(0);
+    };
+    document.addEventListener('visibilitychange', vc);
+    G.kick(0);
+    return () => {
+      io && io.disconnect();
+      document.removeEventListener('visibilitychange', vc);
+      if (G.raf) cancelAnimationFrame(G.raf);
+      G.raf = 0;
+      const lx = c.gl.getExtension('WEBGL_lose_context');
+      lx && lx.loseContext();
+      G.ctx = null;
+    };
+  }, [flat]);
+  const fresh = lights.some(L => G.born[L.id] > now0 - 50);
+  useEffect(() => {
+    if (G.ctx) G.kick(fresh ? 3000 : 0);
+  });
+  const last = lights.reduce((a, L) => !a || L.at >= a.at ? L : a, null);
+  useEffect(() => {
+    if (fresh && last) {
+      setFlash({
+        t: fmtHM(last.at),
+        w: `${tlName(last)}, ${tlTxt(last)}`
+      });
+      clearTimeout(ft.current);
+      ft.current = setTimeout(() => setFlash(null), 3500);
+    }
+  }, [lights.length]);
+  const tap = e => {
+    const r = wrap.current.getBoundingClientRect();
+    const t = T0 + (e.clientX - r.left) / r.width * (TL_T1 - T0);
+    let best = null,
+      bd = .75;
+    lights.forEach(L => {
+      const s = L.m / 60,
+        f = (L.m + L.dur) / 60;
+      const dd = t < s ? s - t : t > f ? t - f : 0;
+      if (dd < bd || dd === bd && best) {
+        bd = dd;
+        best = L;
+      }
+    });
+    if (!best) return;
+    setFlash({
+      t: fmtHM(best.at),
+      w: `${tlName(best)}, ${tlTxt(best)}`,
+      tap: true
+    });
+    clearTimeout(ft.current);
+    ft.current = setTimeout(() => setFlash(null), 3500);
+    G.kick && G.ctx && G.kick(2500);
+  };
+  const n = lights.length;
+  const label = `Today as light along the hours, ${plural(n, 'thing')} logged${n ? ': ' + lights.map(tlSay).join('; ') : ''}. Now ${fmtHM(db.nowMin)}.`;
+  const ax = S.ax;
+  const step = ax ? 6 : 3;
+  const hrs = [];
+  for (let hh = Math.ceil(T0 / step) * step; hh <= 24; hh += step) {
+    const f = (hh - T0) / (TL_T1 - T0);
+    if (f > .03 && f < .96 && Math.abs(hh - db.nowMin / 60) >= (ax ? 2.4 : 1.2)) hrs.push(hh);
+  }
+  return React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "tl",
+    ref: wrap,
+    onClick: tap,
+    role: "img",
+    "aria-label": label,
+    "data-today-hero": "timeline",
+    "data-tl-n": n,
+    "data-tl-mode": flat ? 'flat' : 'gl'
+  }, flat ? dim.w > 0 && React.createElement(TodayLightFlat, {
+    d: drawn,
+    w: dim.w,
+    h: dim.h,
+    T0: T0,
+    nowX: nowX,
+    base: base,
+    rw: rw
+  }) : React.createElement("canvas", {
+    ref: cv,
+    className: "tl-cv"
+  }), React.createElement("div", {
+    className: "tl-axis",
+    "aria-hidden": "true"
+  }, hrs.map(hh => React.createElement("span", {
+    key: hh,
+    style: {
+      left: `${(hh - T0) / (TL_T1 - T0) * 100}%`
+    }
+  }, String(hh).padStart(2, '0'))), React.createElement("span", {
+    className: "now",
+    style: {
+      left: `${clamp((db.nowMin / 60 - T0) / (TL_T1 - T0), .07, .93) * 100}%`
+    }
+  }, fmtHM(db.nowMin)))), React.createElement("div", {
+    className: "tl-read"
+  }, React.createElement("button", {
+    className: "tl-n",
+    onClick: onOpen,
+    "aria-label": `${plural(n, 'thing')} logged today. Open the day`,
+    "data-hero-open": true
+  }, React.createElement("span", {
+    className: "n tnum",
+    "data-tl-count": true
+  }, n), React.createElement("span", {
+    className: "lab"
+  }, "logged", React.createElement("br", null), "today")), React.createElement("div", {
+    className: cx('tl-last', flash && 'flash'),
+    "aria-live": "polite",
+    "data-tl-last": true
+  }, flash ? React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "t tnum"
+  }, flash.t), React.createElement("div", {
+    className: "w"
+  }, flash.w)) : last ? React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "t tnum"
+  }, fmtHM(last.at)), React.createElement("div", {
+    className: "w"
+  }, tlName(last), ", last logged")) : React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "t"
+  }, "\u2014"), React.createElement("div", {
+    className: "w"
+  }, "Nothing yet")))));
+}
 function TodayScreen() {
   const S = useStore();
   const db = S.db;
@@ -26491,14 +26983,33 @@ function TodayScreen() {
   }, React.createElement("div", {
     className: "dateline"
   }, React.createElement("span", {
-    className: "eyebrow"
-  }, DOWS[dow(db.today)], db.today === 0 ? ', day one' : ''), React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: 2,
-      marginRight: -10
-    }
+    className: "eyebrow",
+    "data-today-eyebrow": true
+  }, DOWS[dow(db.today)], db.today === 0 ? ', day one' : '', ctxToday.length > 0 && React.createElement("span", {
+    className: "tl-ctx"
+  }, " \xB7 ", ctxToday.map(c => c.label === 'Sick' || !c.label ? CTX_STYLE[c.type].name : c.label).join(', '), ctxToday[0].to > db.today ? `, to ${DOW3[dow(ctxToday[0].to)]}` : ', today')), React.createElement("div", {
+    className: "tl-icons"
   }, React.createElement("button", {
+    className: cx('iconbtn', ctxToday.length && 'on'),
+    onClick: () => S.sheet.open({
+      k: 'context'
+    }),
+    "data-ctxchip": true,
+    "aria-label": ctxToday.length ? `Context: ${ctxToday.map(c => c.label || CTX_STYLE[c.type].name).join(', ')}. Change` : 'Context: add one'
+  }, React.createElement(Icon, {
+    n: "context",
+    s: 20
+  })), db.modules.feel && React.createElement("button", {
+    className: "iconbtn",
+    onClick: () => S.sheet.open({
+      k: 'feel'
+    }),
+    "data-feelchip": true,
+    "aria-label": "Feel"
+  }, React.createElement(Icon, {
+    n: "feel",
+    s: 20
+  })), React.createElement("button", {
     className: "iconbtn heldbtn",
     onClick: () => S.nav.push({
       k: 'held'
@@ -26531,58 +27042,18 @@ function TodayScreen() {
     }),
     "aria-label": `${dom(db.today)} ${MONTHS[monthOf(db.today)]}. Open the day`,
     "data-today-title": true
-  }, dom(db.today), " ", MONTHS[monthOf(db.today)])), React.createElement("div", {
-    className: "headchips"
-  }, n && React.createElement("button", {
-    className: "hchip",
-    onClick: () => S.nav.push({
-      k: 'sleep',
+  }, dom(db.today), " ", MONTHS[monthOf(db.today)]))), React.createElement(TodayLight, {
+    db: db,
+    onOpen: () => S.nav.push({
+      k: 'day',
       d: db.today
-    }),
-    "data-sleepchip": true
-  }, React.createElement(Icon, {
-    n: "moon",
-    s: 16
-  }), React.createElement("span", {
-    className: "k"
-  }, "Slept"), " ", React.createElement("span", {
-    className: "tnum"
-  }, fmtDur(n.asleep))), React.createElement("button", {
-    className: cx('hchip', ctxToday.length && 'ctx-on'),
-    onClick: () => S.sheet.open({
-      k: 'context'
-    }),
-    "data-ctxchip": true,
-    "aria-label": ctxToday.length ? undefined : 'Context: add one'
-  }, React.createElement(Icon, {
-    n: "context",
-    s: 16
-  }), ctxToday.length ? React.createElement(React.Fragment, null, ctxToday.map(c => c.label === 'Sick' || !c.label ? CTX_STYLE[c.type].name : c.label).join(', '), React.createElement("span", {
-    className: "k"
-  }, ctxToday[0].to > db.today ? `to ${fmtDay(ctxToday[0].to, {
-    noDow: true
-  })}` : 'today')) : React.createElement(React.Fragment, null, React.createElement("span", null, "Context"), React.createElement(Icon, {
-    n: "plus",
-    s: 14,
-    w: 2.4
-  }))), db.modules.feel && React.createElement("button", {
-    className: "hchip",
-    onClick: () => S.sheet.open({
-      k: 'feel'
-    }),
-    "data-feelchip": true,
-    "aria-label": "Feel"
-  }, React.createElement(Icon, {
-    n: "feel",
-    s: 16
-  }), React.createElement("span", null, "Feel")))), React.createElement(TodayHero, {
-    pick: pick
+    })
   }), React.createElement(TodayCards, {
     list: cards
   })), React.createElement("div", {
-    className: "sec",
+    className: "sec tsec",
     style: {
-      marginTop: 22
+      marginTop: 12
     },
     "data-now": true
   }, React.createElement("div", {
@@ -26664,7 +27135,7 @@ function TodayScreen() {
       "data-evening-none": it.id
     }, "No ", it.short ? it.short.toLowerCase() : it.name.toLowerCase()))) : null;
   })(), later.length > 0 && React.createElement("div", {
-    className: "sec",
+    className: "sec tsec",
     style: {
       marginTop: 22
     }
@@ -34204,6 +34675,8 @@ function App() {
     };
   }, []);
   const screenRef = useRef(null);
+  const [liveDock, setLiveDock] = useState(160);
+  const liveRO = useRef(null);
   const toastT = useRef(null);
   const hapT = useRef(null);
   const burstRef = useRef(null);
@@ -35299,7 +35772,26 @@ function App() {
   })))), liveIt && React.createElement("div", {
     className: cx('livebar', hueCls(liveIt)),
     style: hueStyle(liveIt),
-    "data-livebar": true
+    "data-livebar": true,
+    ref: el => {
+      if (liveRO.current) {
+        liveRO.current.disconnect();
+        liveRO.current = null;
+      }
+      if (!el) return;
+      const m = () => {
+        const p = el.offsetParent;
+        if (p) {
+          const v = Math.round(p.clientHeight - el.offsetTop + 8);
+          setLiveDock(o => o === v ? o : v);
+        }
+      };
+      m();
+      if (window.ResizeObserver) {
+        liveRO.current = new ResizeObserver(m);
+        liveRO.current.observe(el);
+      }
+    }
   }, React.createElement("span", {
     className: "pulse"
   }), React.createElement("div", {
@@ -35369,7 +35861,7 @@ function App() {
     style: hueStyle({
       hue: t.hue || 0
     }, t.top ? null : liveIt ? {
-      bottom: 160 + (t.lift || 0)
+      bottom: liveDock + (t.lift || 0)
     } : t.lift ? {
       bottom: 96 + t.lift
     } : null),
