@@ -5225,7 +5225,7 @@ function evalPeriod(db, it, a, b) {
   })();
   const set = ctxDays(db, a, Math.min(b, db.today), REST_CTX, it);
   if (b < it.created) state = 'before';else if (it.retired != null && a > it.retired) state = 'retired';else if (pausedDays >= len / 2) state = 'paused';else if (tg.cmp === 'none') state = v > 0 ? 'recorded' : open ? 'open' : 'unknown';else if (tg.cmp === 'at_most') {
-    const confirmed = (db.byItem[it.id] || []).some(e => e.kind === 'complete' && e.week === a);
+    const confirmed = etConfirms(db, it, a, open);
     if (v > tg.v) state = 'above';else if (confirmed) state = 'within';else state = open ? 'open' : 'unknown';
   } else {
     const need = tg.cmp === 'about' ? Math.max(1, Math.round(tg.v * .8)) : tg.v;
@@ -5244,8 +5244,11 @@ function evalPeriod(db, it, a, b) {
     len,
     firstPartial,
     minutes: minutesOf(it, ent),
-    confirmed: tg.cmp === 'at_most' ? (db.byItem[it.id] || []).some(e => e.kind === 'complete' && e.week === a) : undefined
+    confirmed: tg.cmp === 'at_most' ? etConfirms(db, it, a, open) : undefined
   };
+}
+function etConfirms(db, it, a, open) {
+  return (db.byItem[it.id] || []).some(e => e.kind === 'complete' && e.week === a) || !!it.everyTime && !open && (it.everyTimeFrom == null || a >= it.everyTimeFrom);
 }
 function currentEval(db, it) {
   const [a, b] = periodOf(it, db.today);
@@ -5301,7 +5304,7 @@ const rngU = (A, B) => {
 const amtOf = (A, B) => {
   const ma = /^([\d.,]+)[\s\u00a0]+(.+)$/.exec(A),
     mb = /^([\d.,]+)[\s\u00a0]+(.+)$/.exec(B);
-  return ma && mb && ma[2].replace(/s$/, '') === mb[2].replace(/s$/, '') ? `${ma[1]} of ${B}` : `${A} of ${B}`;
+  return ma && mb && ma[2].replace(/s$/, '') === mb[2].replace(/s$/, '') && !/^L$/.test(ma[2]) ? `${ma[1]} of ${B}` : `${A} of ${B}`;
 };
 const rngTxt = (tg, f = String) => isRange(tg) ? `${f(tg.v)}–${f(tg.hi)}` : f(tg.v);
 const aimDone = (tg, v) => isRange(tg) ? v >= tg.hi ? `top of ${rngTxt(tg)} reached` : `${v}, inside ${rngTxt(tg)}` : `aim of ${tg.v} reached`;
@@ -7402,6 +7405,23 @@ function Bars({
         "data-aside-entry": true
       }));
     }
+    if (d.state === 'unknown' && (d.v || 0) > 0) {
+      const hh = Math.max(6, H - pb - y(Math.min(d.v, max)));
+      return React.createElement("g", {
+        key: i,
+        opacity: on ? 1 : .9,
+        "data-unknown-logged": true
+      }, React.createElement("rect", {
+        x: x + .5,
+        y: H - pb - hh + .5,
+        width: w - 1,
+        height: hh - 1,
+        rx: Math.min(5, w / 2.4),
+        fill: "none",
+        stroke: deep ? 'var(--on-deep-3)' : 'var(--ink-3)',
+        strokeDasharray: "2 2.5"
+      }));
+    }
     if (d.state === 'unknown' || d.state === 'before' || d.state === 'paused') {
       const lab = d.state === 'paused' ? 'P' : d.state === 'set-aside' ? '·' : '';
       return React.createElement("g", {
@@ -7425,7 +7445,7 @@ function Bars({
       }));
     }
     const v = d.v || 0;
-    const hh = Math.max(v > 0 ? 3 : 0, H - pb - y(v));
+    const hh = Math.max(v > 0 || d.state === 'met' ? 3 : 0, H - pb - y(v));
     const over = target && d.t && v > d.t && !(d.p && d.p.tg && d.p.tg.cmp === 'at_most');
     const ht = over ? H - pb - y(d.t) : hh;
     return React.createElement("g", {
@@ -8289,16 +8309,23 @@ function lgDraw(c, cv, ribs, w, height, ox, rw, base, top, bg) {
   }
   gl.viewport(0, 0, cw, ch);
   const aL = new Float32Array(LG_MAX * 4),
-    aC = new Float32Array(LG_MAX * 3);
+    aC = new Float32Array(LG_MAX * 3),
+    aC2 = new Float32Array(LG_MAX * 3);
   let k = 0;
+  const den = Math.max(.75, clamp((ribs.length - 20) / 20, 0, 1));
   ribs.forEach((r, i) => {
     if (!(r.h > 0) || k >= LG_MAX) return;
     const hs = r.hues && r.hues.length > 1 ? r.hues : null;
-    const col = hs ? [0, 1, 2].map(j => hs.reduce((s, h) => s + lgCol({
+    const col = hs && den < .5 ? [0, 1, 2].map(j => hs.reduce((s, h) => s + lgCol({
       hue: h
-    })[j], 0) / hs.length) : lgCol(r);
-    aL.set([(i + .5) * rw, r.wide ? rw * .2 : 0, (base - top) * Math.min(.98, r.h), (r.k == null ? 1 : r.k) * (r.dim ? .55 : 1)], k * 4);
+    })[j], 0) / hs.length) : lgCol(hs ? {
+      hue: hs[0]
+    } : r);
+    aL.set([(i + .5) * rw, r.wide ? rw * .2 : rw * .18 * den, (base - top) * Math.min(.98, r.h), (r.k == null ? 1 : r.k) * (r.dim ? .55 : 1) * (r.frost ? 1 - .45 * den : 1) * (1 - .3 * den)], k * 4);
     aC.set(col, k * 3);
+    aC2.set(hs && den >= .5 ? lgCol({
+      hue: hs[hs.length - 1]
+    }) : col, k * 3);
     k++;
   });
   gl.uniform2f(U.uRes, w, height);
@@ -8312,9 +8339,11 @@ function lgDraw(c, cv, ribs, w, height, ox, rw, base, top, bg) {
   gl.uniform1f(U.uReed, Math.max(2, rw));
   gl.uniform4fv(U.uL, aL);
   gl.uniform3fv(U.uC, aC);
+  U.uC2 && gl.uniform3fv(U.uC2, aC2);
   gl.uniform1i(U.uN, k);
   gl.uniform3fv(U.uBg, bg);
   gl.uniform1f(U.uWide, 1 / Math.max(1, k / 6));
+  gl.uniform1f(U.uDen, den);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 function LightGlass({
@@ -8347,7 +8376,7 @@ function LightGlass({
     if (!useGL || !w || !cv.current) return;
     let c = null;
     try {
-      if (!_lgFS) _lgFS = tlFS(LG_MAX);
+      if (!_lgFS) _lgFS = tlFS(LG_MAX, true);
       c = tlGL(cv.current, _lgFS);
     } catch (e) {
       c = null;
@@ -8409,8 +8438,17 @@ function LightGlass({
     }
   };
   const blur = Math.max(.8, Math.min(2.6, rw * .22));
+  const glKey = ribs.map(r => `${r.h}:${r.k}:${r.hue}:${(r.hues || []).join('.')}:${r.frost ? 1 : 0}:${r.dim ? 1 : 0}`).join('|') + `/${w}/${height}`;
+  const drawn = useRef('');
   useEffect(() => {
-    if (glOk && ctx.current && cv.current && w) lgDraw(ctx.current, cv.current, ribs, w, height, ox, rw, base, top, ctx.current.bg);
+    if (!glOk) {
+      drawn.current = '';
+      return;
+    }
+    if (ctx.current && cv.current && w && drawn.current !== glKey) {
+      lgDraw(ctx.current, cv.current, ribs, w, height, ox, rw, base, top, ctx.current.bg);
+      drawn.current = glKey;
+    }
   });
   return React.createElement("div", {
     ref: wrap,
@@ -8457,6 +8495,23 @@ function LightGlass({
     height: "140%"
   }, React.createElement("feGaussianBlur", {
     stdDeviation: blur
+  })), ribs.some(r => r.pre) && React.createElement("pattern", {
+    id: uid + 'h',
+    width: "5",
+    height: "5",
+    patternUnits: "userSpaceOnUse",
+    patternTransform: "rotate(45)"
+  }, React.createElement("rect", {
+    width: "5",
+    height: "5",
+    fill: "rgba(205,220,245,.02)"
+  }), React.createElement("line", {
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "5",
+    stroke: "rgba(205,220,245,.09)",
+    strokeWidth: "1"
   })), React.createElement("filter", {
     id: uid + 'g',
     x: "-60%",
@@ -8508,6 +8563,14 @@ function LightGlass({
     width: Math.max(.5, rw - 1),
     height: base - top,
     fill: "rgba(226,233,246,.15)"
+  }) : r.pre ? React.createElement("rect", {
+    key: 'f' + i,
+    x: i * rw + .5,
+    y: top,
+    width: Math.max(.5, rw - 1),
+    height: base - top,
+    fill: `url(#${uid}h)`,
+    "data-lg-pre": true
   }) : r.future ? React.createElement("rect", {
     key: 'f' + i,
     x: i * rw + .5,
@@ -8616,6 +8679,13 @@ function LightGlass({
   }, s.l))));
 }
 const _wkCache = new WeakMap();
+function spanAside(db, it, a, b) {
+  const e = Math.min(b, db.today);
+  if (e < a) return false;
+  let n = 0;
+  for (let d = a; d <= e; d++) if (isPausedOn(it, d) || restsOn(db, it, d)) n++;
+  return n >= Math.max(1, Math.ceil((e - a + 1) / 2));
+}
 function weekAims(db, ws) {
   let C = _wkCache.get(db);
   if (!C) {
@@ -8757,13 +8827,18 @@ function ItemObject({
         const a = w0 - 7 * k;
         cs.push(a + 6 < it.created ? null : countingEntries(db, it, Math.max(0, a), Math.min(db.today, a + 6)).length);
       }
+      const asd = cs.map((v, k) => {
+        const a = w0 - 7 * (12 - k);
+        return v != null && !v && spanAside(db, it, Math.max(a, it.created), a + 6);
+      });
       if (!cs.some(v => v)) return null;
       const mx = Math.max(...cs.filter(v => v != null));
       const r = cs.map((v, k) => ({
         on: !!v,
         h: v ? .25 + .75 * v / mx : 0,
-        cur: k === 12 && !v,
-        fut: v == null
+        cur: k === 12 && !v && !asd[k],
+        pre: v == null,
+        frost: asd[k]
       }));
       r.lab = `The last 13 weeks, a rib a week, taller with more: ${cs.filter(v => v).length} weeks with one or more`;
       return r;
@@ -8804,9 +8879,12 @@ function ItemObject({
         const [a, b] = periodOf(it, d);
         if (b < it.created) break;
         const on = countingEntries(db, it, a, b).length > 0;
+        const fr = !on && spanAside(db, it, Math.max(a, it.created), b);
         r.unshift({
           on,
-          cur: k === 0 && !on
+          cur: k === 0 && !on && !fr,
+          frost: fr,
+          pre: a < it.created && !on
         });
         d = a - 1;
       }
@@ -8932,7 +9010,9 @@ function ItemObject({
     hue: it.hue,
     quiet,
     cur: s.cur,
-    future: s.fut && !s.on
+    future: s.fut && !s.on,
+    frost: !!s.frost,
+    pre: !!s.pre && !s.on
   }));
   const label = slots.lab || (quiet ? `${plural(ev.v, 'entry', 'entries')} this period, as quiet grey light. Noticed, not rewarded` : `This period as ${plural(slots.length, 'rib')} of glass, ${slots.filter(x => x.on).length} lit`);
   return React.createElement("div", {
@@ -11888,7 +11968,7 @@ function itemStateLine(db, it) {
   }
   if (it.kind === 'observation') {
     const ev = currentEval(db, it);
-    if (it.measure === 'event') return ev.v ? `${plural(ev.v, 'time')} this week, noted, not rewarded` : 'Noted when it happens, never rewarded';
+    if (it.measure === 'event') return ev.v ? `${plural(ev.v, 'time')} ${perShort(db, it)}, noted, not rewarded` : 'Noted when it happens, never rewarded';
     if (it.cadence.type === 'week') return ev.v ? `${ev.v} this week${ev.tg.cmp === 'at_most' && ev.confirmed ? `, intention at most ${ev.tg.v}` : ''}` : ev.confirmed ? `0 this week, confirmed` : 'None logged this week';
     const nd = (db.byItemDay[it.id]?.[db.today] || []).length;
     return nd ? `${nd} today` : 'None logged today';
@@ -12868,8 +12948,10 @@ function Logger({
   const S = useStore();
   const db = S.db;
   const m = it.measure;
+  const durBase = usualKnown(db, it) || it.est || (['duration', 'session'].includes(m) && targetOn(it, db.today).cmp !== 'none' ? targetOn(it, db.today).v : 0) || 30;
+  const DURS = durBase > 60 ? [30, 45, 60, 90, 120, 150] : durBase <= 12 ? [5, 10, 15, 20, 30, 45] : [10, 15, 20, 30, 45, 60];
   const [ago, setAgo] = useState(0);
-  const [dur, setDur] = useState(30);
+  const [dur, setDur] = useState(() => DURS.reduce((p, q) => Math.abs(q - durBase) < Math.abs(p - durBase) ? q : p, DURS[0]));
   const [amt, setAmt] = useState(S.lastAmount(it) || it.def || 250);
   const [wtype, setWtype] = useState('walk');
   const [note, setNote] = useState('');
@@ -13073,7 +13155,7 @@ function Logger({
       style: {
         margin: '8px 2px 0'
       }
-    }, "A live session runs here and on your Watch. End it whenever you like.")), React.createElement("div", {
+    }, healthOn(S.db) ? 'A live session runs here and on your Watch. End it whenever you like.' : 'A live session runs here. End it whenever you like.')), React.createElement("div", {
       className: "eyebrow",
       style: {
         margin: '22px 0 10px'
@@ -13089,7 +13171,7 @@ function Logger({
       onClick: () => setWtype(t)
     }, WORKOUT_TYPES[t].name))), React.createElement("div", {
       className: "optgrid"
-    }, [10, 15, 20, 30, 45, 60].map(dd => React.createElement("button", {
+    }, DURS.map(dd => React.createElement("button", {
       key: dd,
       className: cx('opt', dur === dd && 'on'),
       onClick: () => setDur(dd)
@@ -14520,7 +14602,7 @@ function resultSeries(db, it) {
       tip,
       v,
       t: p.tg.cmp === 'none' ? 0 : q ? p.tg.v / 1000 : p.tg.v,
-      state: p.v === 0 && state !== 'open' && !['paused', 'before', 'set-aside', 'none'].includes(state) ? 'unknown' : state,
+      state: p.v === 0 && state !== 'open' && !(p.state === 'within' && p.confirmed) && !['paused', 'before', 'set-aside', 'none'].includes(state) ? 'unknown' : state,
       p,
       ctx
     };
@@ -14694,7 +14776,7 @@ function ItemPage({
     style: {
       marginTop: 10
     }
-  }, isNone ? it.measure === 'report' ? reportLine(db, it) : it.measure === 'serving' ? it.servings.some(x => x.mg) ? cafLine(db, it) : servingLine(db, it) : 'This week, no target' : obs ? `Your intention: ${cadenceText(it, ev.tg).toLowerCase()}, ${ev.confirmed ? 'confirmed as everything' : 'not confirmed yet'}` : quiet1 ? lastE0 ? `Last ${relDay(dayOf(lastE0.t), db.today)}` : '' : (() => {
+  }, isNone ? it.measure === 'report' ? reportLine(db, it) : it.measure === 'serving' ? it.servings.some(x => x.mg) ? cafLine(db, it) : servingLine(db, it) : 'This week, no target' : obs ? `Your intention: ${cadenceText(it, ev.tg).toLowerCase()}, ${ev.confirmed ? 'confirmed as everything' : it.everyTime ? 'you note every one, so it settles when the day ends' : 'not confirmed yet'}` : quiet1 ? lastE0 ? `Last ${relDay(dayOf(lastE0.t), db.today)}` : '' : (() => {
     const hl = heroLine(db, it, ev, obs);
     const hd = single ? String(naturalState(db, it, ev).head || '') : '';
     return hd && hl && hd.toLowerCase().includes(hl.toLowerCase()) ? null : hl;
@@ -16829,7 +16911,7 @@ function ReminderSheet({
       margin: '14px 0 0'
     },
     "data-rem-moments": true
-  }, [['workend', 'When your workday ends', `${fmtHM(workSpan(db)[1])} on workdays, from Your usual week. Works when you work from home too.`, true], ['lastevent', 'After your last calendar event', cal ? 'Read only, from your calendar' : 'Needs Calendar in Connections', cal], ['home', 'When you get home', loc ? 'Location, only for this, never stored' : 'Uses location. Off until you allow it', true]].map(([k, l, sub, ok]) => React.createElement("button", {
+  }, [['workend', 'When your workday ends', db.prefs.workEnd != null ? `${fmtHM(workSpan(db)[1])} on workdays, from Your usual week. Works when you work from home too.` : 'You haven’t said when work ends yet; choose this and set it', true], ['lastevent', 'After your last calendar event', cal ? 'Read only, from your calendar' : 'Needs Calendar in Connections', cal], ['home', 'When you get home', loc ? 'Location, only for this, never stored' : 'Uses location. Off until you allow it', true]].map(([k, l, sub, ok]) => React.createElement("button", {
     key: k,
     className: "row",
     disabled: !ok,
@@ -25974,7 +26056,7 @@ function useTodayCards(db, w, nowHeldId) {
         at: dayT(db.today, Math.floor(wk / 60), wk % 60)
       });
     }
-    res.sort((a, b) => b.at - a.at);
+    res.sort((a, b) => (b.kind === 'fresh' && S.arrivedW === b.w.id) - (a.kind === 'fresh' && S.arrivedW === a.w.id) || b.at - a.at);
     const out = [...k(['back']), ...res];
     out.push(...k(['sick', 'day1', 'half', 'week']));
     pats.forEach(p => out.push({
@@ -25983,7 +26065,7 @@ function useTodayCards(db, w, nowHeldId) {
       p
     }));
     return out.filter(m => !S.dismissed.has(m.id));
-  }, [moments, pats, w, nowHeldId, db, S.dismissed]);
+  }, [moments, pats, w, nowHeldId, db, S.dismissed, S.arrivedW]);
 }
 const pVal = (p, v) => p.unit === 'min' ? fmtDur(Math.round(v)) : p.unit === 'clock' ? fmtHM(Math.round(v)) : p.unit === 'bpm' ? `${Math.round(v)} bpm` : String(Math.round(v));
 function PatternMini({
@@ -26921,9 +27003,12 @@ function SuggestSlot({
     className: "sec-h"
   }, React.createElement("h2", null, "If you have a moment"), React.createElement("button", {
     className: "aside iconaside",
-    onClick: () => S.nav.push({
-      k: 'suggestions'
-    }, 'you'),
+    onClick: () => {
+      S.nav.setTab('you');
+      S.nav.push({
+        k: 'suggestions'
+      }, 'you');
+    },
     "aria-label": "How suggestions are chosen",
     "data-suggest-why": true
   }, React.createElement(Icon, {
@@ -27157,31 +27242,36 @@ function tlDrawn(lights, T0) {
   });
 }
 const tlLiquid = k => k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-6.2 * k) * Math.cos(4.2 * k) * (1 - k * .15);
-const tlFS = N => `precision highp float;
-uniform vec2 uRes; uniform float uOx,uDpr,uTime,uNowX,uBase,uTop,uReed,uShim,uWide;
+const tlFS = (N, two) => `precision highp float;${two ? '\n#define TWO 1\nuniform vec3 uC2[' + N + '];' : ''}
+uniform vec2 uRes; uniform float uOx,uDpr,uTime,uNowX,uBase,uTop,uReed,uShim,uWide,uDen;
 uniform vec4 uL[${N}]; uniform vec3 uC[${N}]; uniform int uN; uniform vec3 uBg;
 float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
 vec3 field(float x,float y,float bx){
   vec3 acc=vec3(0.);
   for(int i=0;i<${N};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
-    float d=max(0.,abs(x-L.x)-L.y), s=sqrt(9.+bx*bx);
+    float d=max(0.,abs(x-L.x)-L.y), s=mix(sqrt(9.+bx*bx),.18*uReed,uDen); /* R12-01: in a dense glass (the year, 52 ribs side by side) each light keeps to its own rib, so neighbours never sum to full height */
     float g=exp(-.5*d*d/(s*s)), halo=exp(-.5*d*d/(9.*s*s));
-    float h=L.z, top=uBase-h, soft=8.+h*.3;
+    float h=L.z, top=uBase-h, soft=mix(8.+h*.3,2.5,uDen);
     float col=smoothstep(top-soft,top+soft,y)*step(y,uBase);
-    float grad=.18+.82*pow(clamp((y-top)/max(h,1.),0.,1.),2.2);
+    float gf=mix(.18,0.,uDen); float grad=gf+(1.-gf)*pow(clamp((y-top)/max(h,1.),0.,1.),mix(2.2,1.3,uDen)); /* R12-01: a dense rib fades to its top as the flat gradient does */
     float core=exp(-pow((y-uBase)/5.,2.));
-    float refl=step(uBase,y)*exp(-(y-uBase)/14.)*.32;
-    acc+=uC[i]*L.w*(col*grad*g+core*g*.9+refl*g+halo*uWide*.03*smoothstep(top-60.,uBase,y)*exp(-max(0.,y-uBase)/10.));
+    float refl=step(uBase,y)*exp(-(y-uBase)/14.)*.32*(1.-.85*uDen);
+#ifdef TWO
+    vec3 hc=mix(uC[i],uC2[i],uDen*smoothstep(uBase,top,y)); /* R12-01: a dense rib runs from its first routine's hue at the base to its last at the top, as the flat gradient does */
+#else
+    vec3 hc=uC[i];
+#endif
+    acc+=hc*L.w*(col*grad*g+core*g*.9*(1.-.75*uDen)+refl*g+halo*uWide*(1.-uDen)*.03*smoothstep(top-60.,uBase,y)*exp(-max(0.,y-uBase)/10.));
   }
   return acc;
 }
 vec3 scene(float x,float y){
-  float w=uReed, fi=floor(x/w), u=(x-(fi+.5)*w)/(.5*w), cx=(fi+.5)*w, M=.9, bx=w*.3;
+  float w=uReed, fi=floor(x/w), u=(x-(fi+.5)*w)/(.5*w), cx=(fi+.5)*w, M=mix(.9,.2,uDen), bx=w*.3; /* R12-01: a narrow dense rib keeps a little refraction, not a comb of fringes */
   float sh=sin(y*.045+uTime*.6+fi*1.9)*.6*uShim;
   vec3 c;
   c.r=field(cx-u*w*M*1.06+sh,y,bx).r; c.g=field(cx-u*w*M+sh,y,bx).g; c.b=field(cx-u*w*M*.94+sh,y,bx).b;
-  c+=field(x,y,34.)*.08*uWide*smoothstep(uTop-40.,uBase,y); /* T9-04: the wide bloom shares out over the day's lights, so empty ribs stay dark on a busy day */
-  float au=abs(u); c*=mix(.4,1.,smoothstep(1.,.72,au));
+  c+=field(x,y,34.)*.08*uWide*(1.-uDen)*smoothstep(uTop-40.,uBase,y); /* T9-04: the wide bloom shares out over the day's lights, so empty ribs stay dark on a busy day */
+  float au=abs(u); c*=mix(mix(.4,.08,uDen),1.,smoothstep(1.,mix(.72,.62,uDen),au)); /* R12-01: dense ribs keep a dark seam, as the flat picture does */
   vec3 local=field(cx,y,w*2.)*uWide; float lum=dot(local,vec3(.3,.5,.2));
   float calm=smoothstep(uTop-50.,uTop+70.,y);
   float spec=exp(-pow((u+.42)/.10,2.));
@@ -27189,7 +27279,7 @@ vec3 scene(float x,float y){
   /* T9-04: light reaches about one rib either side of a log and no further. After the gamma, even a faint tail of the soft terms read as lit glass,
      so an empty hour on a busy day glowed like a log on a quiet one. The glass sheen is added after, so empty ribs match the flat picture. */
   float pres=0.;
-  for(int i=0;i<${N};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue; float d=max(0.,abs(x-L.x)-L.y); pres=max(pres,exp(-.5*d*d/(.49*w*w))); }
+  for(int i=0;i<${N};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue; float d=max(0.,abs(x-L.x)-L.y); pres=max(pres,exp(-.5*d*d/(mix(.49,.09,uDen)*w*w))*mix(1.,step(uBase-L.z-3.,y),uDen)); /* R12-02: in a dense glass presence stays inside its own rib and below its own top */ }
   c*=pres;
   c+=spec*vec3(.75,.82,1.)*(.022*exp(-(y-uTop)/160.)+.008)*calm+pow(au,6.)*.006*calm*vec3(.8,.85,1.);
   c*=mix(1.,.78,smoothstep(uNowX-2.,uNowX+6.,x));
@@ -27253,7 +27343,7 @@ function tlGL(cv, fsrc = TL_FS) {
     gl.enableVertexAttribArray(ap);
     gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
     const U = {};
-    ['uRes', 'uOx', 'uDpr', 'uTime', 'uNowX', 'uBase', 'uTop', 'uReed', 'uShim', 'uWide', 'uL', 'uC', 'uN', 'uBg'].forEach(k => U[k] = gl.getUniformLocation(pr, k));
+    ['uRes', 'uOx', 'uDpr', 'uTime', 'uNowX', 'uBase', 'uTop', 'uReed', 'uShim', 'uWide', 'uDen', 'uL', 'uC', 'uC2', 'uN', 'uBg'].forEach(k => U[k] = gl.getUniformLocation(pr, k));
     return {
       gl,
       U
@@ -28588,8 +28678,14 @@ function rowVal(db, it, ev) {
 function rowSub(db, it, ev) {
   const c0 = cadenceText(it, ev.tg);
   const c = /^Observation, no target$/.test(c0) ? '' : c0;
+  const pN = it.cadence.type === 'none' ? (() => {
+    let n = 0;
+    for (let d = weekStart(db.today); d <= db.today; d++) n += (db.byItemDay[it.id]?.[d] || []).filter(e => !e.kind).length;
+    return n;
+  })() : ev.v;
+  const pW = perShort(db, it);
   if (ev.tg.cmp === 'none') {
-    if (it.measure === 'event') return c ? `${c}, ${ev.v ? plural(ev.v, 'time') + ' this week' : 'none logged this week'}` : ev.v ? plural(ev.v, 'time') + ' this week' : 'None logged this week';
+    if (it.measure === 'event') return c ? `${c}, ${pN ? plural(pN, 'time') + ' ' + pW : 'none logged ' + pW}` : pN ? plural(pN, 'time') + ' ' + pW : 'None logged ' + pW;
     if (it.measure === 'serving') {
       const n = (db.byItemDay[it.id]?.[db.today] || []).length;
       return c ? `${c}, ${n ? n + ' today' : 'none logged today'}` : n ? n + ' today' : 'None logged today';
@@ -28597,7 +28693,7 @@ function rowSub(db, it, ev) {
     if (it.measure === 'report') return `Your words, ${itemStateLine(db, it).replace(/, in your words$/, '')}`;
     return `${c}, ${fmtDur(currentWeekMinutes(db, it))} this week`;
   }
-  if (it.kind === 'observation') return `${c}, ${ev.v ? `${ev.v} this week` : ev.confirmed ? '0 this week, confirmed' : 'none logged this week'}`;
+  if (it.kind === 'observation') return `${c}, ${pN ? `${pN} ${pW}` : ev.confirmed ? `0 ${pW}, confirmed` : `none logged ${pW}`}`;
   if (RHYTHM(it) && ev.state !== 'met') return naturalState(db, it, ev).head;
   const t = ev.state === 'met' ? 'settled' : progressText(db, it, ev);
   return t.charAt(0).toUpperCase() + t.slice(1);
@@ -33667,9 +33763,9 @@ function DevicesPage() {
     },
     "data-lock-act": "later"
   }, "Later"), React.createElement("button", {
-    onClick: e => S.startIntent(hold, 15, e),
+    onClick: e => S.startIntent(hold, hold.est || 15, e),
     "data-lock-act": "start"
-  }, "Start 15 min"), React.createElement("button", {
+  }, hold.est ? `Start ${hold.est} min` : 'On it'), React.createElement("button", {
     onClick: e => intentDone(S, hold, e),
     "data-lock-act": "done"
   }, "Already done"))) : nextUp ? React.createElement("div", {
