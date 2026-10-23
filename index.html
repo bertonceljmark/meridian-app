@@ -5248,7 +5248,7 @@ function evalPeriod(db, it, a, b) {
   };
 }
 function etConfirms(db, it, a, open) {
-  return (db.byItem[it.id] || []).some(e => e.kind === 'complete' && e.week === a) || !!it.everyTime && !open && (it.everyTimeFrom == null || a >= it.everyTimeFrom);
+  return (db.byItem[it.id] || []).some(e => e.kind === 'complete' && e.week === a) || !!it.everyTime && !open && (it.everyTimeFrom == null || a >= it.everyTimeFrom) && etAllRec(db, it, a);
 }
 function currentEval(db, it) {
   const [a, b] = periodOf(it, db.today);
@@ -8884,7 +8884,7 @@ function ItemObject({
           on,
           cur: k === 0 && !on && !fr,
           frost: fr,
-          pre: a < it.created && !on
+          pre: b < it.created && !on
         });
         d = a - 1;
       }
@@ -12948,7 +12948,7 @@ function Logger({
   const S = useStore();
   const db = S.db;
   const m = it.measure;
-  const durBase = usualKnown(db, it) || it.est || (['duration', 'session'].includes(m) && targetOn(it, db.today).cmp !== 'none' ? targetOn(it, db.today).v : 0) || 30;
+  const durBase = usualKnown(db, it) || it.est || (m === 'duration' && targetOn(it, db.today).cmp !== 'none' ? targetOn(it, db.today).v : 0) || 30;
   const DURS = durBase > 60 ? [30, 45, 60, 90, 120, 150] : durBase <= 12 ? [5, 10, 15, 20, 30, 45] : [10, 15, 20, 30, 45, 60];
   const [ago, setAgo] = useState(0);
   const [dur, setDur] = useState(() => DURS.reduce((p, q) => Math.abs(q - durBase) < Math.abs(p - durBase) ? q : p, DURS[0]));
@@ -15033,7 +15033,7 @@ function ResultsSection({
     className: "sec-h"
   }, React.createElement("h2", null, obs0 && it.cadence.type === 'week' ? 'Weeks' : 'Results'), React.createElement("span", {
     className: "aside"
-  }, it.cadence.type === 'day' ? 'last 3 weeks' : it.cadence.type === 'month' ? 'by month' : it.cadence.type === 'everyN' ? `by ${nWin(it.cadence.n)} window` : 'by week')), React.createElement("div", {
+  }, it.cadence.type === 'day' ? data.length >= 21 ? 'last 3 weeks' : `last ${plural(data.length, 'day')}` : it.cadence.type === 'month' ? 'by month' : it.cadence.type === 'everyN' ? `by ${nWin(it.cadence.n)} window` : 'by week')), React.createElement("div", {
     className: "card"
   }, React.createElement(Bars, {
     data: data,
@@ -20648,6 +20648,7 @@ function WeekClose({
   const weekMet = settled.filter(s => s.kind === 'week' && s.ev.state === 'met');
   const dayRows = settled.filter(s => s.kind === 'day' && s.n > 0).sort((a, b) => b.n - a.n);
   const others = settled.filter(s => s.kind === 'other');
+  const weekPart = settled.filter(s => s.kind === 'week' && s.ev.state !== 'met' && s.ev.v > 0);
   const hl = curateHighlights(highlightsFor(db, ws, we), 3);
   const n = days.map(x => db.sleep[x.d]).filter(Boolean);
   const mxR = Math.max(1, ...days.map(x => x.routines.length));
@@ -20746,7 +20747,7 @@ function WeekClose({
     it: s.it
   }))) || 'Some of it' : 'A quieter week'), React.createElement("div", {
     className: "wc-plate"
-  }, weekMet.map(s => glyphRow(s.it, 'done')), dayRows.filter(s => s.n >= 6).slice(0, 4).map(s => glyphRow(s.it, freq(s.n)))), (dayRows.some(s => s.n < 6) || others.length > 0) && React.createElement(React.Fragment, null, React.createElement("div", {
+  }, weekMet.map(s => glyphRow(s.it, 'done')), dayRows.filter(s => s.n >= 6).slice(0, 4).map(s => glyphRow(s.it, freq(s.n)))), (dayRows.some(s => s.n < 6) || others.length > 0 || weekPart.length > 0) && React.createElement(React.Fragment, null, React.createElement("div", {
     className: "eyebrow",
     style: {
       color: 'var(--on-deep-2)',
@@ -20755,7 +20756,7 @@ function WeekClose({
   }, "Also done"), React.createElement("div", {
     className: "wc-plate",
     "data-wc-also": true
-  }, dayRows.filter(s => s.n < 6).slice(0, 4).map(s => glyphRow(s.it, freq(s.n))), others.slice(0, 3).map(s => glyphRow(s.it, s.n === 1 ? 'once' : `${s.n} times`))))), (n.length > 0 || hl.ctx.length + hl.items.filter(h => h.kind !== 'milestone').length > 0) && React.createElement("div", {
+  }, weekPart.slice(0, 3).map(s => glyphRow(s.it, `${s.ev.v} of ${tgTop(s.ev.tg) || s.ev.tg.v}`)), dayRows.filter(s => s.n < 6).slice(0, 4).map(s => glyphRow(s.it, freq(s.n))), others.slice(0, 3).map(s => glyphRow(s.it, s.n === 1 ? 'once' : `${s.n} times`))))), (n.length > 0 || hl.ctx.length + hl.items.filter(h => h.kind !== 'milestone').length > 0) && React.createElement("div", {
     key: "c"
   }, hl.ctx.length + hl.items.filter(h => h.kind !== 'milestone').length > 0 && React.createElement("div", {
     className: "eyebrow",
@@ -21312,6 +21313,13 @@ function recordingDays(db) {
   for (const c of db.contexts) if (c.type === 'away') for (let d = c.from; d <= c.to; d++) s.delete(d);
   _recMemo.set(db, s);
   return s;
+}
+function etAllRec(db, it, a) {
+  const [pa, pb] = periodOf(it, a);
+  const rd = recordingDays(db);
+  const e = Math.min(pb, db.today);
+  for (let d = Math.max(pa, it.created, it.everyTimeFrom == null ? 0 : it.everyTimeFrom); d <= e; d++) if (!rd.has(d)) return false;
+  return true;
 }
 const watchWorn = (db, d) => !!(db.sleep[d + 1] || db.sleep[d]);
 function isWorkday(db, d) {
