@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07090D">
+<title>Today</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/archivo@5.0.19/wdth.css">
+<style>
+:root{
+  --bg:#07090D;
+  --ink:#F3EEE6; --ink2:rgba(243,238,230,.58); --ink3:rgba(243,238,230,.34);
+  --amber:#FFC27A; --dark:#1C1105;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);overflow:hidden;overscroll-behavior:none}
+body{font-family:'Archivo Variable',system-ui,sans-serif;color:var(--ink);font-stretch:100%;
+  -webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1;user-select:none;-webkit-user-select:none}
+canvas#glass{position:fixed;inset:0;width:100%;height:100%;display:block}
+.screen{position:fixed;inset:0;pointer-events:none}
+.screen button{pointer-events:auto}
+
+/* ---------- head: one display face, set with conviction ---------- */
+header{position:absolute;left:0;right:0;top:0;padding:calc(max(var(--st),20px) + 22px) 22px 0}
+.day{font-size:84px;line-height:.84;font-weight:620;font-stretch:70%;letter-spacing:-.012em}
+.day small{display:block;font-size:15px;line-height:1;font-weight:450;font-stretch:100%;letter-spacing:.01em;color:var(--ink2);margin:0 0 12px 2px}
+.lede{margin-top:18px;font-size:22px;line-height:1.22;font-weight:340;font-stretch:96%;letter-spacing:-.006em;color:var(--ink2)}
+.lede b{font-weight:520;color:var(--ink)}
+.lede .gap{color:var(--ink3)}
+
+/* ---------- keys: engraving over the shader-drawn caps ---------- */
+.key{position:absolute;border:0;background:none;color:var(--ink);text-align:left;font:inherit;outline:none;border-radius:14px;cursor:pointer}
+.key .n{position:absolute;left:13px;top:11px;font-size:14px;line-height:1;font-weight:540;font-stretch:92%;white-space:nowrap}
+.key.once .n{top:50%;transform:translateY(-62%);font-size:15px}
+.key.once.lit .n{color:var(--dark)}
+.key .c{position:absolute;right:13px;bottom:13px;font-size:12px;line-height:1;font-weight:500;font-stretch:84%;color:var(--ink2)}
+.key .c i{font-style:normal;color:var(--ink3)}
+.key .big{position:absolute;left:13px;bottom:13px;font-size:24px;line-height:1;font-weight:560;font-stretch:76%;white-space:nowrap;transition:color .2s}
+.key .big i{font-style:normal;font-size:13px;font-weight:450;font-stretch:88%;color:var(--ink2);margin-left:3px}
+.key .big.pour{color:var(--amber)}
+.key:focus-visible{box-shadow:0 0 0 2px rgba(255,194,122,.6)}
+.cap{position:absolute;left:22px;right:22px;font-size:12px;line-height:1.2;font-weight:430;font-stretch:90%;color:var(--ink2)}
+.cap b{font-weight:560;color:var(--ink)}
+
+/* ---------- sill: scale, now, footer ---------- */
+.hours{position:absolute;left:0;right:0;height:14px}
+.hours span{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:450;font-stretch:84%;color:var(--ink3);letter-spacing:.02em}
+.nowlbl{position:absolute;font-size:12px;font-weight:560;font-stretch:88%;color:var(--ink);white-space:nowrap}
+.nowlbl i{font-style:normal;font-weight:420;color:var(--ink2);margin-left:7px}
+footer{position:absolute;left:0;right:0;bottom:0;padding:0 22px calc(max(var(--sb),12px) + 4px);display:flex;justify-content:space-between;align-items:baseline}
+.toast{font-size:13px;font-weight:420;color:var(--ink2);opacity:0;transition:opacity .3s}
+.toast.on{opacity:1}
+.toast button{margin-left:12px}
+footer button{border:0;background:none;color:var(--ink);font:inherit;font-size:13px;font-weight:560;letter-spacing:.01em;padding:10px 0;cursor:pointer}
+#diff{color:var(--ink2);font-weight:450}
+#diff b{font-weight:560;color:var(--ink)}
+</style>
+</head>
+<body>
+<canvas id="glass"></canvas>
+<div class="screen">
+  <header>
+    <div class="day"><small id="dm"></small><span id="dname"></span></div>
+    <p class="lede" id="lede"></p>
+  </header>
+  <div id="keys"></div>
+  <div class="nowlbl" id="nowlbl"></div>
+  <div class="hours" id="hours"></div>
+  <footer>
+    <div class="toast" id="toast"><span id="toastt"></span><button id="undo">Undo</button></div>
+    <button id="diff" aria-label="Different data">Different data <b id="diffn"></b></button>
+  </footer>
+</div>
+<script>
+/* ================================================================
+   DATA. Everything on the screen is derived from this.
+   logs: [routine, hour, amount]. routines: what is still open today.
+   ================================================================ */
+const h=(H,M)=>H+M/60;
+const DAYS=[
+ {name:'Tuesday',age:212,dm:'27 October',now:h(8,40),
+  sleep:{from:h(23,41),to:h(7,12),asleep:h(7,4)}, yday:{run:6.2},
+  logs:[['Meds',h(7,20)],['Journal',h(7,34)],['Water',h(7,40),250],['Water',h(8,5),330],['Walk',h(8,10)],
+        ['Push-ups',h(8,15),20],['Meals',h(8,20),1],['Push-ups',h(8,31),20],['Friends',h(8,40)]],
+  routines:[
+   {id:'Stretch',usual:h(7,30),kind:'once',days:60},
+   {id:'Water',usual:h(10,51),kind:'amount',goal:2000,quick:250,steps:[150,250,330,500,750],days:60},
+   {id:'Meals',usual:h(13,2),kind:'count',goal:3,step:1,days:60},
+   {id:'Push-ups',usual:h(17,45),kind:'count',goal:100,step:20,days:60},
+   {id:'Sketching',usual:h(19,20),kind:'once',days:60},
+   {id:'Reading',usual:h(22,10),kind:'once',days:60}]},
+ {name:'Saturday',age:216,dm:'31 October',now:h(14,20),
+  sleep:{from:h(0,32),to:h(8,54),asleep:h(8,1)}, yday:null,
+  logs:[['Meds',h(9,6)],['Water',h(9,12),250],['Stretch',h(9,25)],['Meals',h(9,40),1],['Journal',h(9,55)],['Walk',h(10,30)],
+        ['Water',h(11,0),500],['Push-ups',h(11,12),30],['Sketching',h(12,5)],['Meals',h(13,10),1],['Water',h(13,20),500],
+        ['Push-ups',h(13,52),30],['Friends',h(14,12)]],
+  routines:[
+   {id:'Water',usual:h(15,30),kind:'amount',goal:2000,quick:500,steps:[150,250,330,500,750],days:60},
+   {id:'Push-ups',usual:h(17,30),kind:'count',goal:100,step:30,days:60},
+   {id:'Meals',usual:h(19,10),kind:'count',goal:3,step:1,days:60},
+   {id:'Reading',usual:h(22,20),kind:'once',days:60}]},
+ {name:'Thursday',age:214,dm:'29 October',now:h(21,15),
+  sleep:{from:h(0,10),to:h(6,22),asleep:h(5,48)}, yday:{run:5.1},
+  logs:[['Meds',h(6,40)],['Stretch',h(6,55)],['Water',h(7,5),250],['Meals',h(7,30),1],['Journal',h(7,50)],['Walk',h(8,20)],
+        ['Water',h(10,0),330],['Push-ups',h(10,40),20],['Water',h(12,10),500],['Meals',h(12,40),1],['Push-ups',h(15,10),40],
+        ['Water',h(16,0),330],['Sketching',h(18,10)],['Meals',h(19,20),1],['Friends',h(20,5)],['Push-ups',h(20,50),20],['Water',h(21,0),330]],
+  routines:[
+   {id:'Push-ups',usual:h(21,40),kind:'count',goal:100,step:20,days:60},
+   {id:'Water',usual:h(21,50),kind:'amount',goal:2000,quick:250,steps:[150,250,330,500,750],days:60},
+   {id:'Reading',usual:h(22,15),kind:'once',days:60}]},
+ {name:'Monday',age:218,dm:'2 November',now:h(6,50),
+  sleep:null, yday:{run:8.4},
+  logs:[],
+  routines:[
+   {id:'Meds',usual:h(7,15),kind:'once',days:60},
+   {id:'Stretch',usual:h(7,30),kind:'once',days:60},
+   {id:'Water',usual:h(10,51),kind:'amount',goal:2000,quick:250,steps:[150,250,330,500,750],days:60},
+   {id:'Meals',usual:h(13,0),kind:'count',goal:3,step:1,days:60},
+   {id:'Push-ups',usual:h(17,45),kind:'count',goal:100,step:20,days:60},
+   {id:'Sketching',usual:h(19,20),kind:'once',days:60},
+   {id:'Reading',usual:h(22,10),kind:'once',days:60}]},
+ {name:'Wednesday',dm:'4 November',age:3,now:h(9,15),
+  sleep:{from:h(23,58),to:h(7,40),asleep:h(7,9)}, yday:null,
+  logs:[['Water',h(7,55),250],['Meals',h(8,30),1]],
+  routines:[
+   {id:'Water',usual:null,kind:'amount',goal:2000,quick:250,steps:[150,250,330,500,750],days:2},
+   {id:'Meals',usual:null,kind:'count',goal:3,step:1,days:3},
+   {id:'Walk',usual:null,kind:'once',days:1},
+   {id:'Reading',usual:null,kind:'once',days:2}]}
+];
+
+const Q=new URLSearchParams(location.search), SHOT=Q.has('shot'), STILL=SHOT||Q.has('still');   // still: settled, no motion
+let dayIx=Math.max(0,Math.min(DAYS.length-1,+(Q.get('sample')||0)));
+const T0=6,T1=24,NR=18;            // the glass: one reed per hour, 06 to 24
+const MAXL=40,MAXK=8;
+let day,logs,lights,keys,history=[];
+
+const pad=n=>String(n).padStart(2,'0');
+const fmt=t=>{t=((t%24)+24)%24;const H=Math.floor(t),M=Math.round((t-H)*60);return M===60?pad(H+1)+':00':pad(H)+':'+pad(M)};
+const dur=d=>{const H=Math.floor(d),M=Math.round((d-H)*60);return H+' h '+pad(M)};
+const words=['nothing','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
+const ml=v=>v>=1000?(v/1000).toFixed(2).replace(/0$/,'').replace(/\.0$/,'')+'<i>L</i>':v+'<i>ml</i>';
+
+// A usual hour is only claimed after 5 distinct days and 14 days of use, from logs the person made
+// (passive or Watch-synced stamps never count). It only orders the keys; it is never lit or counted.
+function usualOf(r){ return (r.usual!=null && (r.days??0)>=5 && day.age>=14) ? r.usual : null; }
+function progress(r){
+  const ls=logs.filter(l=>l[0]===r.id);
+  if(r.kind==='once') return {v:ls.length?1:0,f:ls.length?1:0};
+  const s=ls.reduce((a,l)=>a+(l[2]||0),0);
+  return {v:s,f:Math.min(1,s/r.goal)};
+}
+const parts=r=>r.kind==='count'?Math.max(1,Math.min(8,Math.ceil(r.goal/r.step))):0;
+const litParts=r=>r.kind==='count'?Math.min(parts(r),Math.floor(progress(r).v/r.step+1e-6)):0;
+
+/* ================================================================
+   SHADER. Above the sill: light behind ribbed glass, one reed per hour.
+   Each log is a light standing in the reed of its hour, stacked.
+   Below the sill: the key bed, with keycaps drawn in the same light.
+   ================================================================ */
+const FS=`precision highp float;
+uniform vec2 uRes; uniform float uDpr,uTime,uNowX,uBase,uTop,uLineTop,uReed,uShim;
+uniform vec4 uL[${MAXL}]; uniform int uN;
+uniform vec4 uS;
+uniform vec4 uK[${MAXK}]; uniform vec4 uKb[${MAXK}]; uniform vec4 uKc[${MAXK}]; uniform int uNK;
+const vec3 WARM=vec3(1.,.50,.17);
+float sq(float x){return x*x;}
+float spow(float x,float e){return pow(max(x,1e-6),e);}
+float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
+float sdRB(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
+
+// what stands behind the glass, seen with a horizontal blur bx
+vec3 field(float x,float y,float bx){
+  vec3 acc=vec3(0.);
+  float s=sqrt(4.+bx*bx);
+  for(int i=0;i<${MAXL};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue;
+    float d=max(0.,abs(x-L.x)-2.5);
+    float g=exp(-.5*d*d/(s*s));
+    // a soft source: plateau with feathered ends, hottest in its middle third
+    float h=max(L.z-L.y,1.), m=(L.y+L.z)*.5;
+    float v=smoothstep(L.y-5.,L.y+5.,y)*smoothstep(L.z+5.,L.z-5.,y);
+    float core=exp(-sq((y-m)/(h*.32)));
+    float wide=exp(-.5*d*d/(s*s*9.))*exp(-max(abs(y-m)-h*.5,0.)/16.);
+    acc+=WARM*L.w*(g*(v*(.30+.55*core)) + wide*.035);
+  }
+  // last night: cool light before waking, low in the glass
+  if(uS.w>0.){
+    float e=smoothstep(uS.x-2.,uS.x+2.,x)*smoothstep(uS.y+bx+3.,uS.y-bx-3.,x);
+    float k=clamp((uBase-y)/uS.z,0.,1.);
+    acc+=vec3(.42,.52,1.)*uS.w*e*step(y,uBase)*spow(1.-k,2.)*.5;
+  }
+  return acc;
+}
+vec3 glass(float x,float y){
+  float w=uReed, fi=floor(x/w), u=(x-(fi+.5)*w)/(.5*w), cx=(fi+.5)*w, M=.78, bx=w*.22;
+  float sh=sin(y*.045+uTime*.6+fi*1.9)*.6*uShim;
+  vec3 c;                                                     // each reed is a lens: it shows a flipped, squeezed strip
+  c.r=field(cx-u*w*M*1.05+sh,y,bx).r; c.g=field(cx-u*w*M+sh,y,bx).g; c.b=field(cx-u*w*M*.95+sh,y,bx).b;
+  float au=abs(u); c*=mix(.35,1.,smoothstep(1.,.70,au));
+  vec3 local=field(cx,y,w*1.5); float lum=dot(local,vec3(.3,.5,.2));
+  float calm=smoothstep(uTop-30.,uTop+120.,y);
+  float spec=exp(-sq((u+.42)/.10));
+  c+=spec*(vec3(.72,.8,1.)*(.010+.006*calm)+local*.22);      // the reed's highlight catches the light behind it
+  c+=spow(au,6.)*(.003+lum*.06)*vec3(.8,.85,1.);
+  c*=mix(1.,.84,smoothstep(uNowX-2.,uNowX+6.,x));             // what has not happened yet sits a little darker
+  return c;
+}
+vec3 keyAt(vec2 p,vec4 K,vec4 B,vec4 C,inout float cover){
+  float press=B.y, kind=B.z, n=B.w, fill=B.x;
+  vec2 c=K.xy+vec2(0.,press*2.);
+  vec2 q=p-c, b=K.zw; float r=13.;
+  float d=sdRB(q,b,r);
+  float ds=sdRB(q-vec2(0.,7.-press*4.),b-vec2(1.,0.),r);
+  cover=max(cover,(1.-smoothstep(-6.,18.,ds))*.8);
+  if(d>1.)return vec3(0.);
+  float S=6.*(1.-.7*press);
+  vec2 cf=vec2(0.,-S*.5-.5), bf=vec2(b.x-2.,b.y-S*.5-1.5); float rf=11.;
+  vec2 qf=q-cf; float df=sdRB(qf,bf,rf);
+  float sy=clamp((q.y-(cf.y+bf.y-4.))/(b.y-(cf.y+bf.y-4.)),0.,1.);
+  vec3 col=vec3(.0035,.004,.0052)*mix(1.2,.5,sy)+vec3(.04,.045,.055)*exp(min(d,0.))*step(d,0.)*.5;
+  vec2 nn=normalize(vec2(sdRB(qf+vec2(.7,0.),bf,rf)-sdRB(qf-vec2(.7,0.),bf,rf),sdRB(qf+vec2(0.,.7),bf,rf)-sdRB(qf-vec2(0.,.7),bf,rf))+1e-5);
+  float bev=1.-clamp(-df/6.,0.,1.); bev*=bev;
+  float top=clamp(dot(nn,vec2(-.25,-1.)),0.,1.), bot=clamp(dot(nn,vec2(0.,1.)),0.,1.);
+  // smoked acrylic face, lit from above
+  vec3 face=vec3(.0075,.0082,.0105)+vec3(.010,.011,.014)*smoothstep(bf.y,-bf.y,qf.y);
+  face+=vec3(.5,.55,.62)*bev*spow(top,3.)*.08;
+  face*=1.-.45*bev*bot;
+  float rim=exp(min(df,0.))*step(df,0.);
+  face+=vec3(.85,.9,1.)*rim*(.02+.26*spow(top,2.5));
+  if(kind<.5){
+    // a plain key: when done it latches lit, the whole cap glowing from inside
+    vec3 lit=WARM*(.62+.30*smoothstep(bf.y,-bf.y,qf.y))+vec3(.12,.08,.04)*bev*spow(top,2.);
+    face=mix(face,lit,fill*(1.-smoothstep(-.6,.6,df)));
+    col+=WARM*fill*.20*(1.-sy);
+  } else if(kind<1.5){
+    // a count: its parts as cells set into the cap, the done ones lit
+    float pad=13., gap=5., cw=(2.*bf.x-2.*pad-C.z-(n-1.)*gap)/n, cy=bf.y-11.;
+    float xi=(qf.x+bf.x-pad)/(cw+gap), i=floor(xi), lx=(qf.x+bf.x-pad)-i*(cw+gap)-cw*.5;
+    if(i>=0.&&i<n){
+      float dc=sdRB(vec2(lx,qf.y-cy),vec2(cw*.5,3.5),3.);
+      float on=clamp(C.x-i,0.,1.);
+      vec3 well=face*.45+vec3(.0,.0,.0);
+      well+=vec3(.02,.022,.028)*smoothstep(-3.5,3.5,qf.y-cy)*.6;  // recessed: lighter at its lower lip
+      vec3 glow=WARM*(1.25+.5*exp(-sq((qf.y-cy)/2.)));
+      face=mix(face,mix(well,glow,on),1.-smoothstep(-.5,.5,dc));
+      face+=WARM*on*.10*exp(-max(dc,0.)/3.);
+    }
+  } else {
+    // an amount: a sight glass at the right end, its liquid at today's level
+    float gw=10., gh=bf.y-9.; vec2 g0=vec2(bf.x-13.-gw,0.);
+    vec2 gq=qf-g0; float dg=sdRB(gq,vec2(gw,gh),7.);
+    float yl=gh-fill*2.*gh+(sin(gq.x*.3+uTime*2.6)*1.1+sin(gq.x*.13-uTime*1.7)*.6)*C.y;
+    float inG=1.-smoothstep(-.5,.5,dg);
+    vec3 tube=vec3(.002,.0024,.0032)+vec3(.02,.022,.028)*exp(-sq((gq.x+gw*.45)/2.));
+    float liqm=smoothstep(yl-.6,yl+.6,gq.y)*step(.003,fill);
+    vec3 liq=WARM*(1.5*exp(-max(gq.y-yl,0.)/4.)+.55-.25*clamp((gq.y-yl)/(2.*gh),0.,1.));
+    tube=mix(tube,liq,liqm);
+    tube+=vec3(1.,.9,.76)*exp(-sq((gq.y-yl)/.9))*step(.003,fill)*step(fill,.995)*.9;
+    tube+=vec3(.8,.85,.95)*exp(-sq((gq.x+gw*.5)/1.2))*.05;             // the tube's own highlight
+    // graduations at quarters
+    for(int t=1;t<4;t++){ float ty=gh-float(t)*.5*gh; face+=vec3(.5,.52,.56)*.05*(1.-smoothstep(.3,.9,abs(qf.y-ty)))*step(abs(gq.x+gw+7.),3.); }
+    face=mix(face,tube,inG);
+    face+=vec3(.8,.85,.95)*exp(min(dg,0.))*step(dg,0.)*.10;
+    face+=WARM*fill*.06*exp(-max(dg,0.)/5.);
+  }
+  col=mix(col,face,1.-smoothstep(-.6,.6,df));
+  cover=max(cover,1.-smoothstep(-.7,.7,d));
+  return col;
+}
+void main(){
+  vec2 p=vec2(gl_FragCoord.x,uRes.y*uDpr-gl_FragCoord.y)/uDpr; float x=p.x,y=p.y;
+  vec3 c;
+  if(y<uBase){
+    c=glass(x,y);
+  } else {
+    // the key bed: matte, with a short reflection of the light just under the sill
+    float dy=y-uBase;
+    c=vec3(.0016,.0019,.0026)*(1.+.25*exp(-dy/120.));
+    c+=field(x,uBase-dy*2.2,10.)*.10*exp(-dy/12.);
+    float shade=0.; vec3 kc=vec3(0.); float kcov=0.;
+    for(int i=0;i<${MAXK};i++){ if(i>=uNK)break;
+      float cv=0.; vec3 col=keyAt(p,uK[i],uKb[i],uKc[i],cv);
+      float body=1.-smoothstep(-.7,.7,sdRB(p-uK[i].xy-vec2(0.,uKb[i].y*2.),uK[i].zw,13.));
+      shade=max(shade,cv*(1.-body)); kc=mix(kc,col,body); kcov=max(kcov,body);
+    }
+    c*=1.-shade; c=mix(c,kc,kcov);
+  }
+  c=1.-exp(-c*1.6);
+  vec3 bg=vec3(.0030,.0038,.0060);
+  vec3 col=bg+c*(1.-bg);
+  // the sill: a thin lit edge of the glass, the now line and its bead
+  col+=vec3(.85,.9,1.)*.05*exp(-sq((y-uBase-.5)/.6));
+  float dn=abs(x-uNowX);
+  float line=(1.-smoothstep(.3,1.05,dn))*spow(smoothstep(uLineTop,uBase,y),1.2)*step(y,uBase);
+  col=mix(col,vec3(1.,.95,.86),line*.62);
+  col+=vec3(1.,.82,.58)*exp(-(dn*dn+sq(y-uBase))/36.)*.30;
+  col=mix(col,vec3(1.,.96,.9),1.-smoothstep(2.3,3.4,length(vec2(dn,y-uBase-.5))));
+  col=pow(clamp(col,0.,1.),vec3(1./2.2));
+  col+=(hash(gl_FragCoord.xy+fract(uTime))-.5)/255.;
+  gl_FragColor=vec4(col,1.);
+}`;
+
+const cv=document.getElementById('glass');
+const gl=cv.getContext('webgl',{antialias:false,alpha:false,powerPreference:'low-power'});
+function shd(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o}
+const pr=gl.createProgram();
+gl.attachShader(pr,shd(gl.VERTEX_SHADER,'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));
+gl.attachShader(pr,shd(gl.FRAGMENT_SHADER,FS)); gl.linkProgram(pr); gl.useProgram(pr);
+const bf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+const ap=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+const U={};['uRes','uDpr','uTime','uNowX','uBase','uTop','uLineTop','uReed','uShim','uL','uN','uS','uK','uKb','uKc','uNK'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
+
+/* ================================================================
+   GEOMETRY: sentences, then the glass straight under them, the sill,
+   and the key bed sitting on the sill. Nothing floats over the light.
+   ================================================================ */
+let W=0,H=0,dpr=1,G={};
+const KH=62, RG=8, GX=8, MINW={once:72,count:108,amount:150};
+function reedX(t){const i=Math.max(0,Math.min(NR-1,Math.floor((t-T0)/((T1-T0)/NR))));return (i+.5)*G.reed}
+
+// a key is as wide as what it holds: its name, its parts, its sight glass
+const meas=document.createElement('span'); meas.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;font-size:15px;font-weight:540;font-stretch:92%';
+document.body.appendChild(meas);
+function textW(t,px){meas.style.fontSize=px+'px';meas.textContent=t;return meas.getBoundingClientRect().width}
+const reserve=r=>(String(progress(r).v).length+String(r.goal).length)*6.4+14;
+function minWidth(r){
+  if(r.kind==='once')return Math.max(72,textW(r.id,15)+30);
+  if(r.kind==='count'){const n=parts(r);return Math.max(108,textW(r.id,14)+30,26+reserve(r)+n*16+(n-1)*5);}
+  return Math.max(150,textW(r.id,14)+70);
+}
+function layout(){
+  const foot=document.querySelector('footer').getBoundingClientRect().top;
+  const lede=document.getElementById('lede').getBoundingClientRect().bottom;
+  G.reed=W/NR; G.xs=t=>(t-T0)/(T1-T0)*W; G.top=lede+16;
+  // keys: in order of usual hour (where one is known), then the rest; packed into at most two rows
+  const timed=keys.filter(k=>usualOf(k.r)!=null).sort((a,b)=>usualOf(a.r)-usualOf(b.r));
+  const loose=keys.filter(k=>usualOf(k.r)==null);
+  keys=timed.concat(loose);
+  const avail=W-32;
+  keys.forEach(k=>{k.minw=minWidth(k.r)});
+  let rows=[[]],w=0;
+  keys.forEach(k=>{const m=k.minw; if(rows.at(-1).length&&w+GX+m>avail){rows.push([]);w=0;} rows.at(-1).push(k); w+=(rows.at(-1).length>1?GX:0)+m;});
+  if(rows.length>2){const h=Math.ceil(keys.length/2); rows=[keys.slice(0,h),keys.slice(h)];}
+  const bedBottom=foot-2, nR=rows.length, bedTop=bedBottom-nR*KH-(nR-1)*RG;
+  rows.forEach((row,ri)=>{
+    const sum=row.reduce((a,k)=>a+k.minw,0), gaps=GX*(row.length-1);
+    let f=(avail-gaps)/sum; if(nR>1&&ri===nR-1)f=Math.min(f,1.45);   // a short last row stays left, not stretched
+    let x=16; const y=bedTop+ri*(KH+RG)+KH/2;
+    row.forEach(k=>{const kw=k.minw*f; k.x=x+kw/2; k.y=y; k.hw=kw/2; x+=kw+GX;});
+  });
+  G.cap=null;
+  if(loose.length){
+    G.cap=bedTop-24;
+    G.capText=timed.length?`<b>${loose.map(k=>k.r.id).join(', ')}</b> ${loose.length>1?'have':'has'} no usual time yet.`
+      :`<b>Any order.</b> Usual times show up after two weeks of use.`;
+  }
+  G.base=(G.cap??bedTop)-38;
+  // panes are as tall as the room allows: the busiest hour fills the glass, never the type above it
+  const per={}; lights.forEach(L=>{const x=reedX(L.t); per[x]=(per[x]||0)+1;});
+  const most=Math.max(1,...Object.values(per)), room=G.base-G.top-4;
+  G.ph=Math.max(16,Math.min(96,room/most));
+  stack();
+}
+function stack(){
+  const count={};
+  lights.forEach(L=>{const x=reedX(L.t); const k=count[x]||0; count[x]=k+1; L.x=x; L.k=k; L.y1=G.base-k*G.ph; L.y0=L.y1-G.ph+2;});
+  const tops=lights.filter(L=>!L.dying).map(L=>L.y0);
+  G.lineTop=Math.max(G.top,Math.min(G.base-120,...tops)-30);
+}
+
+/* ================================================================
+   STATE + DOM
+   ================================================================ */
+function load(i){
+  dayIx=i; day=DAYS[i];
+  logs=day.logs.map(l=>l.slice());
+  lights=logs.map(l=>({t:l[1],r:l[0],born:-1e9}));
+  keys=day.routines.map(r=>({r,shown:progress(r).f,pv:0,lit:litParts(r),press:0,pz:0,wave:0,preview:0}));
+  history=[];
+  document.getElementById('dname').textContent=day.name;
+  document.getElementById('dm').textContent=day.dm;
+  document.getElementById('diffn').textContent=(i+1)+'/'+DAYS.length;
+  const s=day.sleep, y=day.yday;
+  let t=s?`You slept <b>${dur(s.asleep)}</b>,<br>${fmt(s.from)} to ${fmt(s.to)}.`:`<span class="gap">No sleep came through for last night.</span>`;
+  if(y&&y.run) t+=`<br>Yesterday you ran <b>${y.run.toFixed(1)} km</b>.`;
+  document.getElementById('lede').innerHTML=t;
+  relayout();
+}
+function relayout(){ if(!W)return; layout(); renderKeys(); renderSill(); kick(); }
+function keyInner(k){
+  const r=k.r, p=progress(r);
+  if(r.kind==='once') return `<span class="n">${r.id}</span>`;
+  if(r.kind==='count') return `<span class="n">${r.id}</span><span class="c">${p.v}<i>/${r.goal}</i></span>`;
+  const v=k.preview?p.v+k.preview:p.v;
+  return `<span class="n">${r.id}</span><span class="big${k.preview?' pour':''}">${ml(v)}<i>of ${r.goal/1000} L</i></span>`;
+}
+function renderKeys(){
+  const el=document.getElementById('keys');
+  el.innerHTML=keys.map((k,i)=>`<button class="key ${k.r.kind}${k.r.kind==='once'&&progress(k.r).v?' lit':''}" data-i="${i}" aria-label="Log ${k.r.id}" style="left:${k.x-k.hw}px;top:${k.y-KH/2}px;width:${2*k.hw}px;height:${KH}px">${keyInner(k)}</button>`).join('')
+    +(G.cap!=null?`<div class="cap" style="top:${G.cap}px">${G.capText}</div>`:'');
+  el.querySelectorAll('.key').forEach(b=>bindKey(b,keys[+b.dataset.i]));
+}
+function refreshKey(k){const b=document.querySelector(`.key[data-i="${keys.indexOf(k)}"]`); if(b){b.innerHTML=keyInner(k); b.classList.toggle('lit',k.r.kind==='once'&&!!progress(k.r).v);}}
+function renderSill(){
+  const hrs=document.getElementById('hours'); hrs.style.top=(G.base+9)+'px';
+  const nx=G.xs(day.now), nl=document.getElementById('nowlbl'), n=logs.length;
+  nl.innerHTML=`${fmt(day.now)}<i>${n?n+' logged':'nothing logged yet'}</i>`;
+  nl.style.top=(G.base+8)+'px';
+  const wpx=nl.getBoundingClientRect().width||110;
+  const left=Math.max(14,Math.min(W-wpx-14,nx-7)); nl.style.left=left+'px';
+  hrs.innerHTML=[6,9,12,15,18,21].filter(t=>{const x=G.xs(t);return x>10&&x<W-10&&(x<left-16||x>left+wpx+16)}).map(t=>`<span style="left:${G.xs(t)}px">${pad(t)}</span>`).join('');
+}
+
+/* ================================================================
+   LOGGING: one tap logs. An amount also pours while held.
+   ================================================================ */
+function vib(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+function log(k,amount){
+  const r=k.r, t=day.now, entry=[r.id,t,amount]; logs.push(entry);
+  const L={t,r:r.id,born:performance.now()}; lights.push(L); history.push({entry,L,k});
+  k.wave=1; k.lit=litParts(r);
+  layout(); refreshKey(k); renderSill();
+  const amt=r.kind==='amount'?`, ${amount} ml`:r.kind==='count'&&r.step>1?`, ${amount}`:'';
+  toast(`${r.id}${amt} at ${fmt(t)}`); vib(12); kick();
+}
+function undo(){
+  const hst=history.pop(); if(!hst)return;
+  logs.splice(logs.indexOf(hst.entry),1); hst.L.dying=performance.now();
+  hst.k.lit=litParts(hst.k.r); layout(); renderKeys(); renderSill();
+  document.getElementById('toast').classList.remove('on'); kick();
+}
+let toastT=0;
+function toast(s){const t=document.getElementById('toast');document.getElementById('toastt').textContent=s;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),5000)}
+document.getElementById('undo').onclick=undo;
+
+function bindKey(b,k){
+  let downAt=0,timer=0,step=-1; const r=k.r;
+  const end=commit=>{
+    clearInterval(timer); k.press=0; kick();
+    if(!downAt)return; downAt=0;
+    const pv=k.preview; k.preview=0;
+    if(!commit){refreshKey(k);return}
+    if(r.kind==='once'){ if(!progress(r).v) log(k); }
+    else if(r.kind==='count'){ log(k,r.step); }
+    else { log(k,step>=0?r.steps[step]:r.quick); }
+    refreshKey(k);
+  };
+  b.addEventListener('pointerdown',e=>{
+    e.preventDefault(); downAt=performance.now(); step=-1; k.press=1; kick();
+    if(r.kind==='amount'){
+      timer=setInterval(()=>{        // held: pour through the usual glass sizes, one detent and one tick each
+        if(!downAt)return; const held=performance.now()-downAt; if(held<320)return;
+        const s=Math.min(r.steps.length-1,Math.floor((held-320)/520));
+        if(s!==step){step=s; vib(6); k.preview=r.steps[s]; refreshKey(k); kick();}
+      },40);
+    }
+  });
+  b.addEventListener('pointerup',()=>end(true));
+  b.addEventListener('pointerleave',()=>end(false));
+  b.addEventListener('pointercancel',()=>end(false));
+  b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();downAt=performance.now();end(true)}});
+}
+document.getElementById('diff').onclick=()=>load((dayIx+1)%DAYS.length);
+
+/* ================================================================
+   RENDER on demand, with a liquid spring; idles after a few seconds.
+   ================================================================ */
+const liquid=k=>k<=0?0:k>=1?1:1-Math.exp(-6.2*k)*Math.cos(4.2*k)*(1-k*.15);
+const KIND={once:0,count:1,amount:2};
+let raf=0,lastActive=0,lastT=0;
+function kick(){lastActive=performance.now(); if(!raf)raf=requestAnimationFrame(frame);}
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,3);
+  W=innerWidth;H=innerHeight; cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  gl.viewport(0,0,cv.width,cv.height); relayout();
+}
+function frame(){
+  raf=0; if(!day||!W)return;
+  const now=performance.now(), dt=Math.min(.05,(now-(lastT||now))/1000); lastT=now;
+  let moving=false;
+  const before=lights.length; lights=lights.filter(L=>!(L.dying&&now-L.dying>650)); if(lights.length!==before)stack();
+  const aL=new Float32Array(MAXL*4), act=lights.slice(-MAXL);
+  act.forEach((L,i)=>{
+    let a=STILL?1:Math.min(1,Math.max(0,(now-L.born)/1400)), e=liquid(a), inten=Math.min(1,a*2.5);
+    if(L.dying){const d=Math.min(1,(now-L.dying)/600); e*=1-d; inten*=1-d; moving=true;}
+    if(a<1)moving=true;
+    aL.set([L.x,L.y1-(L.y1-L.y0)*e,L.y1,inten],i*4);
+  });
+  const aK=new Float32Array(MAXK*4), aKb=new Float32Array(MAXK*4), aKc=new Float32Array(MAXK*4);
+  keys.forEach((k,i)=>{
+    const r=k.r, target=Math.min(1,progress(r).f+(k.preview||0)/(r.goal||1));
+    const d=target-k.shown; k.pv+=(d*90-k.pv*11)*dt; k.shown+=k.pv*dt;
+    k.litShown=k.litShown??k.lit; k.litShown+=(k.lit-k.litShown)*Math.min(1,dt*7);
+    const pz=k.press?1:0; k.pz=STILL?pz:k.pz+(pz-k.pz)*Math.min(1,dt*28);
+    k.wave=Math.max(0,k.wave-dt*.45);
+    if(STILL){k.shown=target;k.pv=0;k.wave=0;k.litShown=k.lit;}
+    if(Math.abs(d)>.001||Math.abs(k.pv)>.001||Math.abs(pz-k.pz)>.01||k.wave>0||Math.abs(k.lit-k.litShown)>.01)moving=true;
+    aK.set([k.x,k.y,k.hw,KH/2],i*4);
+    aKb.set([Math.max(0,Math.min(1,k.shown)),k.pz,KIND[r.kind],parts(r)],i*4);
+    aKc.set([k.litShown,Math.min(1,k.wave*1.6+(STILL?0:.1)),r.kind==='count'?reserve(r):0,0],i*4);
+  });
+  gl.uniform2f(U.uRes,W,H); gl.uniform1f(U.uDpr,dpr); gl.uniform1f(U.uTime,STILL?0:now/1000);
+  gl.uniform1f(U.uNowX,G.xs(day.now)); gl.uniform1f(U.uBase,G.base); gl.uniform1f(U.uTop,G.top); gl.uniform1f(U.uLineTop,G.lineTop);
+  gl.uniform1f(U.uReed,G.reed); gl.uniform1f(U.uShim,STILL?0:1);
+  gl.uniform4fv(U.uL,aL); gl.uniform1i(U.uN,act.length);
+  const s=day.sleep;
+  gl.uniform4f(U.uS,0,s?G.xs(Math.max(T0,s.to)):0,Math.min(150,(G.base-G.top)*.45),s?.5:0);
+  gl.uniform4fv(U.uK,aK); gl.uniform4fv(U.uKb,aKb); gl.uniform4fv(U.uKc,aKc); gl.uniform1i(U.uNK,keys.length);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  if(STILL){window.__ready=true;return}
+  if(moving)lastActive=now;
+  if(now-lastActive<8000)raf=requestAnimationFrame(frame);
+}
+addEventListener('resize',resize);
+document.fonts.ready.then(()=>{load(dayIx);resize();});
+</script>
+</body>
+</html>
