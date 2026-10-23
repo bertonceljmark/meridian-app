@@ -1833,7 +1833,7 @@ button.kv { min-height: 44px; }
 .tl { position: relative; z-index: 1; height: calc(212px - (var(--ts, 1) - 1) * 104px); /* larger text gives the hero's height to the rows, so two whole Now rows still fit */ margin-top: -64px; overflow: hidden; touch-action: manipulation; -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .tl-cv, .tl-flat { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .tl-axis { position: absolute; left: 0; right: 0; bottom: 6px; height: 14px; pointer-events: none; }
-.tl-axis span { position: absolute; top: 0; transform: translateX(-50%); font: 400 calc(10.5px * var(--ts, 1))/1 var(--f-mono); color: var(--on-deep-3); white-space: nowrap; text-shadow: 0 0 3px var(--stage), 0 0 8px var(--stage), 0 0 8px var(--stage); }
+.tl-axis span { position: absolute; top: 0; transform: translateX(-50%); font: 400 calc(11px * var(--ts, 1))/1 var(--f-mono); color: var(--on-deep-3); white-space: nowrap; text-shadow: 0 0 3px var(--stage), 0 0 8px var(--stage), 0 0 8px var(--stage); }
 .tl-axis span.now { color: var(--now-ink); }
 .tl-read { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: end; column-gap: 14px; padding: 0 var(--gut); margin-top: 6px; }
 .tl-n { display: inline-flex; align-items: flex-end; gap: 12px; min-height: 44px; color: var(--on-deep); text-align: left; -webkit-tap-highlight-color: transparent; }
@@ -1856,6 +1856,9 @@ button.kv { min-height: 44px; }
 .stagebox .tc-s { color: var(--on-deep-2); }
 .stagebox .tc-s b { font-weight: 500; }
 .stagebox .tc-x { right: -12px; top: -2px; }
+/* T9-01: at large text the cards give 12 % of their height back to the Now rows; captions keep one line */
+.ax .stagebox .tcard { height: calc(96px * var(--ts, 1)); }
+.ax .stagebox .tc-s { -webkit-line-clamp: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .tsec .sec-h { min-height: 26px; margin-bottom: 2px; }
 [data-now].tsec { margin-top: 10px !important; }
 .tsec .sec-h h2 { font-size: calc(12.5px * var(--ts, 1)) !important; font-weight: 450 !important; color: var(--ink-3) !important; letter-spacing: .02em; }
@@ -1869,12 +1872,24 @@ button.kv { min-height: 44px; }
   box-shadow: 0 3px 0 var(--pk-edge), 0 6px 12px -6px rgba(0,0,0,.35), inset 0 1px 0 var(--pk-hi) !important; transition: transform .07s ease-out, box-shadow .07s ease-out; }
 .nowlist .qrow .act, .nowlist .qrow .qpresets .preset { font-weight: 500; }
 .nowlist .qrow .act:active, .nowlist .qrow .act.pressed, .nowlist .qrow .qpresets .preset:active { transform: translateY(3px) !important; box-shadow: 0 0 0 var(--pk-edge), 0 2px 4px -2px rgba(0,0,0,.35), inset 0 1px 0 var(--pk-hi) !important; }
+.qlist.nowlist.inert .qrow .act, .qlist.nowlist.inert .qrow .qpresets .preset { opacity: .55; }
+.qlist.nowlist .qrow .act, .qlist.nowlist .qrow .qpresets .preset { transition: opacity .15s, transform .07s ease-out, box-shadow .07s ease-out; }
 .lr-key { color: var(--pk-ink); }
 .lr-key::before { inset: 5px 0 8px; }
 .lr-key:active { transform: translateY(3px); }
 .lr-key:active::before { box-shadow: 0 0 0 var(--pk-edge), inset 0 1px 0 var(--pk-hi) !important; }
 .lr-key.live { color: var(--bg); }
 .lr-key.live::before { background: var(--ink) !important; }
+/* 3k: the flat picture's new light */
+.tl-flat .tl-rise { transform-box: fill-box; transform-origin: 50% 100%; animation: tlRise .9s cubic-bezier(.2,.9,.25,1.12) both; }
+.tl-flat .tl-fade { animation: tlFade .45s ease-out both; animation-duration: .45s !important; } /* a fade is allowed under reduced motion; it outranks the global zero-duration rule */
+@keyframes tlRise { from { transform: scaleY(0); opacity: .2; } 40% { opacity: 1; } to { transform: scaleY(1); opacity: 1; } }
+@keyframes tlFade { from { opacity: 0; } to { opacity: 1; } }
+/* 3k: "If you have a moment" is a ruled row with physical keys, like Now and Later */
+.tsec .sug-lead { background: none !important; box-shadow: none !important; border-radius: 0 !important; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); padding: 14px 0 !important; }
+.tsec .sug-acts .btn, .tsec .sug-acts .iconbtn.filled { background: var(--pk-bg) !important; color: var(--pk-ink) !important; border-radius: 10px !important; box-shadow: 0 3px 0 var(--pk-edge), 0 6px 12px -6px rgba(0,0,0,.35), inset 0 1px 0 var(--pk-hi) !important; font-weight: 500; transition: transform .07s ease-out, box-shadow .07s ease-out; }
+.tsec .sug-acts .btn:active, .tsec .sug-acts .iconbtn.filled:active { transform: translateY(3px) !important; box-shadow: 0 0 0 var(--pk-edge), inset 0 1px 0 var(--pk-hi) !important; }
+@media (prefers-reduced-motion: reduce) { .tsec .sug-acts .btn, .tsec .sug-acts .iconbtn.filled { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .nowlist .qrow .act, .nowlist .qrow .qpresets .preset, .lr-key { transition: none; } }
 </style>
 <div id="root"></div>
@@ -8501,7 +8516,13 @@ function ModuleStones({
   const inWin = t => dayOf(t) >= a && dayOf(t) <= db.today;
   const use = {
     feel: (db.byItem.feel || []).filter(e => inWin(e.t)).length,
-    med: db.meds.filter(m => inWin(m.t)).length,
+    med: (() => {
+      let n = 0;
+      for (let d = a; d <= db.today; d++) medItems(db).forEach(it => {
+        n += medDay(db, d, it.id).length;
+      });
+      return n;
+    })(),
     obs: db.entries.filter(e => db.byId[e.item] && db.byId[e.item].kind === 'observation' && inWin(e.t)).length,
     checks: [...(db.prefs.who5 || []), ...(db.prefs.focus || [])].filter(x => x && x.d != null && x.d >= a).length
   };
@@ -12028,7 +12049,10 @@ function LogRow({
     w: 2.3
   })));
 }
-const medLast = (db, id) => (db.meds || []).filter(m => (m.item || 'med') === id && m.status === 'taken' && m.t <= db.T).sort((a, b) => a.t - b.t).slice(-1)[0] || null;
+const medLast = (db, id) => {
+  const r = (db.meds || []).filter(m => (m.item || 'med') === id && m.status === 'taken' && m.t <= db.T).sort((a, b) => a.t - b.t).slice(-1)[0];
+  return r ? medDay(db, dayOf(r.t), id).find(x => x.ids.includes(r.id)) || r : null;
+};
 const medLastText = (db, m) => {
   const d = dayOf(m.t);
   return `Last ${fmtTime(m.t)} ${d === db.today ? 'today' : d === db.today - 1 ? 'yesterday' : fmtDay(d, {
@@ -18956,10 +18980,12 @@ function DayDial({
   const hrs = Array.from({
     length: 24
   }, () => []);
+  const nH = Array(24).fill(0);
   (ents || []).forEach(e => {
     const it = db.byId[e.item];
     if (!it || e.kind) return;
     const h = clamp(Math.floor(minOf(e.t) / 60), 0, 23);
+    nH[h]++;
     if (hrs[h].length < 5) hrs[h].push({
       hue: it.kind === 'observation' ? null : it.hue,
       thin: it.measure === 'quantity'
@@ -18968,12 +18994,18 @@ function DayDial({
   rows.forEach(r => {
     if (r.k === 'w' || r.k === 'm' || r.k === 'int') {
       const h = clamp(Math.floor(r.t % 1440 / 60), 0, 23);
+      nH[h]++;
       if (hrs[h].length < 5) hrs[h].push({
         hue: r.k === 'w' ? 160 : null,
         thin: false
       });
     }
   });
+  const over = nH.map((n, h) => n > 5 ? {
+    h,
+    n
+  } : null).filter(Boolean);
+  const overSay = over.map(o => `${String(o.h).padStart(2, '0')}:00 has ${o.n}, 5 drawn`).join('; ');
   const nowH = d === db.today ? Math.floor(minOf(db.T) / 60) : 24;
   const data = useMemo(() => ({
     slots: hrs.map((L, h) => ({
@@ -18995,8 +19027,16 @@ function DayDial({
   }, React.createElement(DialObject, {
     kind: "day",
     data: data,
-    label: `${fmtDay(d)} as a dial of 24 hours, taller where more was recorded`
-  }));
+    label: `${fmtDay(d)} as a dial of 24 hours, taller where more was recorded${over.length ? `. ${overSay}` : ''}`
+  }), over.length > 0 && React.createElement("p", {
+    className: "t-xs",
+    style: {
+      textAlign: 'center',
+      margin: '4px var(--gut) 0',
+      color: 'var(--ink-3)'
+    },
+    "data-dial-cap": true
+  }, over.map(o => `${String(o.h).padStart(2, '0')}:00: ${o.n} logged, 5 drawn`).join('; ')));
 }
 function DayView({
   d: d0
@@ -25071,39 +25111,6 @@ function nightVsUsual(db, n) {
   const dl = Math.round((rel(n.onset) - median(prev.map(s => rel(s.onset)))) / 5) * 5;
   return Math.abs(dl) < 15 ? 'your usual time' : `${fmtDur(Math.abs(dl))} ${dl > 0 ? 'later' : 'earlier'} than usual`;
 }
-function WeekStones({
-  db,
-  ws,
-  height = 190
-}) {
-  const days = weekModel(db, ws);
-  const mx = Math.max(1, ...days.map(d => d.routines.length));
-  const slots = days.map(d => ({
-    on: !d.future && d.d >= 0 && d.routines.length > 0,
-    h: d.routines.length ? .45 + .55 * d.routines.length / mx : .7,
-    cur: d.d === db.today
-  }));
-  const data = useMemo(() => ({
-    slots,
-    hue: 215
-  }), [JSON.stringify(slots)]);
-  const said = days.map(d => `${DOWS[dow(d.d)]}: ${d.d > db.today ? 'not yet' : d.d < 0 ? 'before you started' : d.routines.length ? plural(d.routines.length, 'routine') + ' kept' : 'nothing recorded'}`).join('; ');
-  return React.createElement("div", {
-    style: {
-      margin: '4px calc(var(--gut) * -1) -10px'
-    }
-  }, React.createElement(Hero3D, {
-    kind: "slots",
-    data: data,
-    height: height,
-    opts: {
-      deep: true,
-      drag: true,
-      rebuild: 'wk' + ws
-    },
-    label: `This week as seven stones, one a day, lit where something was kept and taller where more was. ${said}`
-  }));
-}
 function useTodayCards(db, w, nowHeldId) {
   const S = useStore();
   const moments = useMoments(db);
@@ -25207,7 +25214,7 @@ function TodayCard({
     mini = React.createElement(PatternMini, {
       p: p
     });
-    sub = React.createElement(React.Fragment, null, React.createElement("b", null, patFig(p)), " \xB7 ", nn, " ", unitW, " on record \xB7 a hint, not proof");
+    sub = React.createElement(React.Fragment, null, React.createElement("b", null, patFig(p)), ", from ", nn, " ", unitW, " on record. A hint, not proof.");
     open = () => {
       S.nav.setTab('time');
       S.nav.push({
@@ -25316,7 +25323,7 @@ function TodayCard({
       k: 'news',
       ids: [m.id]
     });
-    label = `${kick}: ${title}. Open`;
+    label = `${kick}: ${title.replace(/\.$/, '')}. Open`;
   }
   return React.createElement("div", {
     className: "tcard",
@@ -25371,12 +25378,27 @@ function TodayCards({
   useLayoutEffect(() => {
     MI.dotsFlip(dt.current);
   }, [at, key]);
+  const first = list.length ? list[0].id : null;
+  const first0 = useRef(first);
+  useLayoutEffect(() => {
+    if (first0.current === first) return;
+    first0.current = first;
+    const t = tr.current;
+    if (t && t.scrollLeft > 0) {
+      t.scrollTo({
+        left: 0,
+        behavior: MI.rm() ? 'auto' : 'smooth'
+      });
+    }
+    setAt(0);
+  }, [first]);
   if (!list.length) return null;
   const onScroll = e => {
     const t = e.currentTarget;
     const c = t.firstElementChild;
     if (!c) return;
-    const i = Math.round(t.scrollLeft / (c.offsetWidth + 10));
+    const gap = parseFloat(getComputedStyle(t).columnGap) || 10;
+    const i = Math.round(t.scrollLeft / (c.offsetWidth + gap));
     if (i !== at) setAt(Math.max(0, Math.min(list.length - 1, i)));
   };
   return React.createElement("div", {
@@ -26034,7 +26056,7 @@ function SuggestSlot({
     });
   };
   return React.createElement("div", {
-    className: "sec",
+    className: "sec tsec",
     style: {
       marginTop: 26
     },
@@ -26185,7 +26207,8 @@ function dayLights(db) {
     const end = minOf(e.t),
       dur = span ? e.v : 0,
       m = e.wid ? end : Math.max(0, end - dur);
-    const neutral = it.kind === 'observation' || it.kind === 'module' || it.hue == null;
+    const quiet = it.kind === 'observation' || it.kind === 'module' || it.measure === 'dose';
+    const neutral = quiet || it.hue == null;
     const eq = span ? e.v : it.measure === 'quantity' ? it.unit && it.unit !== 'ml' ? e.v * 12 : e.v / 20 : 20;
     const L = {
       id: e.id || it.id + ':' + e.t,
@@ -26195,31 +26218,37 @@ function dayLights(db) {
       eq,
       hue: neutral ? null : it.hue,
       med: false,
+      quiet,
       names: [nm],
       txt: entryLine(db, it, e)
     };
     if (e.wid) byW[e.wid] = L;
     out.push(L);
   }));
-  (db.meds || []).filter(d => dayOf(d.t) === db.today && d.status !== 'skipped' && d.t <= db.T).forEach(d => {
-    const it = db.byId[d.item];
+  medItems(db).forEach(it => medDay(db, db.today, it.id).filter(d => d.status !== 'skipped' && d.t <= db.T).forEach(d => {
     out.push({
-      id: 'dose:' + d.t + ':' + d.item,
+      id: 'dose:' + d.ids.join('+'),
       m: minOf(d.t),
       at: minOf(d.t),
       dur: 0,
       eq: 8,
       hue: null,
       med: true,
-      names: [it && (it.short || it.name) || 'Medication'],
-      txt: d.status === 'late' ? 'taken late' : d.status === 'diff' ? 'taken, a different dose' : 'taken'
+      quiet: true,
+      names: [it.short || it.name || 'Medication'],
+      txt: d.late ? 'taken, later than usual' : d.diff ? 'taken, a different amount' : 'taken'
     });
-  });
+  }));
   return out.sort((a, b) => a.m - b.m);
 }
 const tlName = L => L.names.join(' and ');
 const tlTxt = L => /^[A-Z][a-z]/.test(L.txt) ? L.txt.charAt(0).toLowerCase() + L.txt.slice(1) : L.txt;
-const tlSay = L => `${fmtHM(L.at)} ${tlName(L)}, ${tlTxt(L)}`;
+const tlWhat = L => {
+  const nm = tlName(L),
+    tx = tlTxt(L);
+  return tx.toLowerCase() === nm.toLowerCase() ? nm : `${nm}, ${tx}`;
+};
+const tlSay = L => `${fmtHM(L.at)} ${tlWhat(L)}`;
 function tlDrawn(lights, T0) {
   let d = lights.map(L => {
     const r0 = Math.floor((L.m / 60 - T0) * 2),
@@ -26228,8 +26257,8 @@ function tlDrawn(lights, T0) {
       ...L,
       r0,
       r1,
-      col: L.med ? TL_MED : L.hue == null ? TL_WARM : tlMix(tlOklch(.8, .12, L.hue), .45),
-      iT: L.med ? .55 : L.hue == null ? .9 : 1,
+      col: L.quiet ? TL_MED : L.hue == null ? TL_WARM : tlMix(tlOklch(.8, .12, L.hue), .45),
+      iT: L.quiet ? .55 : L.hue == null ? .9 : 1,
       ids: [L.id]
     };
   });
@@ -26251,8 +26280,8 @@ function tlDrawn(lights, T0) {
     });
     d = [...g.values()];
   };
-  merge(L => L.r0 + ':' + L.r1 + ':' + (L.med ? 'm' : L.hue));
-  merge(L => L.r0 + ':' + (L.med ? 'm' : L.hue));
+  merge(L => L.r0 + ':' + L.r1 + ':' + (L.quiet ? 'q' : L.hue));
+  merge(L => L.r0 + ':' + (L.quiet ? 'q' : L.hue));
   merge(L => L.r0);
   merge(L => Math.floor(L.r0 / 2));
   d = d.slice(-TL_MAX);
@@ -26265,6 +26294,7 @@ function tlDrawn(lights, T0) {
     for (let r = L.r0; r <= L.r1; r++) k = Math.max(k, per[r]);
     return {
       ...L,
+      k,
       iT: L.iT / Math.sqrt(k),
       hT: .3 + .62 * Math.sqrt(Math.min(L.eq, 90) / 90)
     };
@@ -26272,7 +26302,7 @@ function tlDrawn(lights, T0) {
 }
 const tlLiquid = k => k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-6.2 * k) * Math.cos(4.2 * k) * (1 - k * .15);
 const TL_FS = `precision highp float;
-uniform vec2 uRes; uniform float uDpr,uTime,uNowX,uBase,uTop,uReed,uShim;
+uniform vec2 uRes; uniform float uDpr,uTime,uNowX,uBase,uTop,uReed,uShim,uWide;
 uniform vec4 uL[${TL_MAX}]; uniform vec3 uC[${TL_MAX}]; uniform int uN; uniform vec3 uBg;
 float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
 vec3 field(float x,float y,float bx){
@@ -26285,7 +26315,7 @@ vec3 field(float x,float y,float bx){
     float grad=.18+.82*pow(clamp((y-top)/max(h,1.),0.,1.),2.2);
     float core=exp(-pow((y-uBase)/5.,2.));
     float refl=step(uBase,y)*exp(-(y-uBase)/14.)*.32;
-    acc+=uC[i]*L.w*(col*grad*g+core*g*.9+refl*g+halo*.03*smoothstep(top-60.,uBase,y)*exp(-max(0.,y-uBase)/10.));
+    acc+=uC[i]*L.w*(col*grad*g+core*g*.9+refl*g+halo*uWide*.03*smoothstep(top-60.,uBase,y)*exp(-max(0.,y-uBase)/10.));
   }
   return acc;
 }
@@ -26294,19 +26324,25 @@ vec3 scene(float x,float y){
   float sh=sin(y*.045+uTime*.6+fi*1.9)*.6*uShim;
   vec3 c;
   c.r=field(cx-u*w*M*1.06+sh,y,bx).r; c.g=field(cx-u*w*M+sh,y,bx).g; c.b=field(cx-u*w*M*.94+sh,y,bx).b;
-  c+=field(x,y,34.)*.08*smoothstep(uTop-40.,uBase,y);
+  c+=field(x,y,34.)*.08*uWide*smoothstep(uTop-40.,uBase,y); /* T9-04: the wide bloom shares out over the day's lights, so empty ribs stay dark on a busy day */
   float au=abs(u); c*=mix(.4,1.,smoothstep(1.,.72,au));
-  vec3 local=field(cx,y,w*2.); float lum=dot(local,vec3(.3,.5,.2));
+  vec3 local=field(cx,y,w*2.)*uWide; float lum=dot(local,vec3(.3,.5,.2));
   float calm=smoothstep(uTop-50.,uTop+70.,y);
   float spec=exp(-pow((u+.42)/.10,2.));
-  c+=spec*(vec3(.75,.82,1.)*(.022*exp(-(y-uTop)/160.)+.008)*calm+local*.18);
-  c+=pow(au,6.)*(.006*calm+lum*.05)*vec3(.8,.85,1.);
+  c+=spec*local*.18+pow(au,6.)*lum*.05*vec3(.8,.85,1.);
+  /* T9-04: light reaches about one rib either side of a log and no further. After the gamma, even a faint tail of the soft terms read as lit glass,
+     so an empty hour on a busy day glowed like a log on a quiet one. The glass sheen is added after, so empty ribs match the flat picture. */
+  float pres=0.;
+  for(int i=0;i<${TL_MAX};i++){ if(i>=uN)break; vec4 L=uL[i]; if(L.w<.002)continue; float d=max(0.,abs(x-L.x)-L.y); pres=max(pres,exp(-.5*d*d/(.49*w*w))); }
+  c*=pres;
+  c+=spec*vec3(.75,.82,1.)*(.022*exp(-(y-uTop)/160.)+.008)*calm+pow(au,6.)*.006*calm*vec3(.8,.85,1.);
   c*=mix(1.,.78,smoothstep(uNowX-2.,uNowX+6.,x));
   return c;
 }
 void main(){
   vec2 px=vec2(gl_FragCoord.x,uRes.y*uDpr-gl_FragCoord.y)/uDpr; float x=px.x,y=px.y;
   vec3 c=scene(x,y);
+  c=min(c,vec3(2.2)); /* T9-04: clamp before the tone map so a stacked base cannot wash to white */
   c=1.-exp(-c*1.5);
   vec3 bg=uBg*(1.+.18*smoothstep(uBase+40.,uTop-40.,y));
   vec3 col=bg+c*(1.-bg);
@@ -26314,10 +26350,14 @@ void main(){
   float dn=abs(x-uNowX);
   float line=(1.-smoothstep(.35,1.1,dn))*pow(smoothstep(uTop+20.,uBase,y),1.3)*step(y,uBase);
   float bead=1.-smoothstep(2.2,3.4,length(vec2(dn,y-uBase-.5)));
-  col=mix(col,vec3(1.,.94,.84),line*.7);
-  col+=vec3(1.,.85,.62)*exp(-(dn*dn+(y-uBase)*(y-uBase))/40.)*.35;
+  float keyl=(smoothstep(.9,1.4,dn)-smoothstep(2.,2.8,dn))*pow(smoothstep(uTop+20.,uBase,y),1.3)*step(y,uBase);
+  col=mix(col,uBg,keyl*.8); /* P2: a dark keyline either side keeps the now line readable on a bright rib */
+  col=mix(col,vec3(1.,.94,.84),line*.85);
+  float ring=1.-smoothstep(3.6,5.,length(vec2(dn,y-uBase-.5)));
+  col=mix(col,uBg,ring*.85);
   col=mix(col,vec3(1.,.95,.88),bead);
   col=mix(uBg,col,smoothstep(uRes.y,uRes.y-22.,y));
+  col=mix(uBg,col,smoothstep(uTop-44.,uTop+4.,y)); /* P8: the field fades out under the date title */
   col=pow(clamp(col,0.,1.),vec3(1./2.2));
   col+=(hash(gl_FragCoord.xy+fract(uTime))-.5)/255.;
   gl_FragColor=vec4(col,1.);
@@ -26356,7 +26396,7 @@ function tlGL(cv) {
     gl.enableVertexAttribArray(ap);
     gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
     const U = {};
-    ['uRes', 'uDpr', 'uTime', 'uNowX', 'uBase', 'uTop', 'uReed', 'uShim', 'uL', 'uC', 'uN', 'uBg'].forEach(k => U[k] = gl.getUniformLocation(pr, k));
+    ['uRes', 'uDpr', 'uTime', 'uNowX', 'uBase', 'uTop', 'uReed', 'uShim', 'uWide', 'uL', 'uC', 'uN', 'uBg'].forEach(k => U[k] = gl.getUniformLocation(pr, k));
     return {
       gl,
       U
@@ -26372,7 +26412,9 @@ function TodayLightFlat({
   T0,
   nowX,
   base,
-  rw
+  rw,
+  fresh,
+  rm
 }) {
   const avail = base - TL_TOP;
   const n = Math.ceil(w / rw);
@@ -26411,10 +26453,10 @@ function TodayLightFlat({
     stopColor: tlCss(L.col),
     stopOpacity: "0"
   }), React.createElement("stop", {
-    offset: ".4",
+    offset: ".15",
     stopColor: tlCss(L.col),
-    stopOpacity: .3 * L.iT
-  }), React.createElement("stop", {
+    stopOpacity: .6 * L.iT
+  }), " ", React.createElement("stop", {
     offset: "1",
     stopColor: tlCss(L.col),
     stopOpacity: L.iT
@@ -26424,7 +26466,7 @@ function TodayLightFlat({
     key: i,
     x1: i * rw,
     x2: i * rw,
-    y1: TL_TOP - 30,
+    y1: TL_TOP,
     y2: base + 6,
     stroke: "rgba(205,220,245,.05)",
     strokeWidth: "1"
@@ -26439,7 +26481,9 @@ function TodayLightFlat({
       x1 = (L.r1 + 1) * rw - rw * .14,
       hh = avail * L.hT;
     return React.createElement("g", {
-      key: k
+      key: L.ids.join('+'),
+      className: L.ids.some(id => fresh(id)) ? rm ? 'tl-fade' : 'tl-rise' : undefined,
+      "data-tl-light": L.ids.join('+')
     }, React.createElement("rect", {
       x: x0 - 5,
       y: base - hh * .8,
@@ -26477,8 +26521,18 @@ function TodayLightFlat({
     x2: nowX,
     y1: TL_TOP + 20,
     y2: base,
+    style: {
+      stroke: 'var(--stage)'
+    },
+    strokeOpacity: ".8",
+    strokeWidth: "4"
+  }), React.createElement("line", {
+    x1: nowX,
+    x2: nowX,
+    y1: TL_TOP + 20,
+    y2: base,
     stroke: "#FFF0DC",
-    strokeOpacity: ".75",
+    strokeOpacity: ".85",
     strokeWidth: "1.2"
   }), React.createElement("circle", {
     cx: nowX,
@@ -26486,6 +26540,14 @@ function TodayLightFlat({
     r: "6",
     fill: "rgba(255,217,158,.22)",
     filter: "url(#tlg)"
+  }), React.createElement("circle", {
+    cx: nowX,
+    cy: base,
+    r: "4.6",
+    style: {
+      fill: 'var(--stage)'
+    },
+    fillOpacity: ".85"
   }), React.createElement("circle", {
     cx: nowX,
     cy: base,
@@ -26500,6 +26562,7 @@ function TodayLight({
   const S = useStore();
   const lights = useMemo(() => dayLights(db), [db]);
   const T0 = Math.min(5, Math.floor(lights.length ? lights[0].m / 60 : 5));
+  const byAt = useMemo(() => [...lights].sort((a, b) => a.at - b.at || a.m - b.m), [lights]);
   const drawn = useMemo(() => tlDrawn(lights, T0), [lights, T0]);
   const wrap = useRef(null),
     cv = useRef(null),
@@ -26527,7 +26590,7 @@ function TodayLight({
       if (G.born[L.id] == null) G.born[L.id] = -1e9;
     });
   } else lights.forEach(L => {
-    if (G.born[L.id] == null) G.born[L.id] = now0 + 80;
+    if (G.born[L.id] == null) G.born[L.id] = L.quiet ? -1e9 : now0 + 80;
   });
   G.day = db.today;
   const nRibs = (TL_T1 - T0) * 2,
@@ -26559,7 +26622,10 @@ function TodayLight({
       const b = Math.max(...L.ids.map(id => G.born[id] ?? -1e9));
       const a = clamp((t - b) / 1300, 0, 1);
       if (a < 1) moving = true;
-      aL.set([(L.r0 + L.r1 + 1) / 2 * D.rw, (L.r1 - L.r0) / 2 * D.rw, (D.base - TL_TOP) * L.hT * tlLiquid(a), L.iT * Math.min(1, a * 2.2)], k * 4);
+      const a2 = b < -1e8 ? 1 : clamp((t - b - 1800) / 900, 0, 1);
+      if (a2 < 1) moving = true;
+      const iT = L.iT * (1 + (Math.sqrt(L.k || 1) - 1) * (1 - a2)) * (1 + .7 * (1 - a2));
+      aL.set([(L.r0 + L.r1 + 1) / 2 * D.rw, (L.r1 - L.r0) / 2 * D.rw, (D.base - TL_TOP) * Math.min(.98, L.hT * (1 + .4 * (1 - a2))) * tlLiquid(a), iT * Math.min(1, a * 2.2)], k * 4);
       aC.set(L.col, k * 3);
     });
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
@@ -26582,6 +26648,7 @@ function TodayLight({
     gl.uniform3fv(U.uC, aC);
     gl.uniform1i(U.uN, D.drawn.length);
     gl.uniform3fv(U.uBg, G.bg || TL_BG);
+    gl.uniform1f(U.uWide, 1 / Math.max(1, D.drawn.length / 6));
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     return moving;
   };
@@ -26598,10 +26665,14 @@ function TodayLight({
   useLayoutEffect(() => {
     const el = wrap.current;
     if (!el) return;
-    const m = () => setDim(o => o.w === el.clientWidth && o.h === el.clientHeight ? o : {
-      w: el.clientWidth,
-      h: el.clientHeight
-    });
+    const m = () => {
+      const ts = parseFloat(getComputedStyle(el).getPropertyValue('--ts')) || 1;
+      setDim(o => o.w === el.clientWidth && o.h === el.clientHeight && o.ts === ts ? o : {
+        w: el.clientWidth,
+        h: el.clientHeight,
+        ts
+      });
+    };
     m();
     const ro = window.ResizeObserver ? new ResizeObserver(m) : null;
     ro && ro.observe(el);
@@ -26643,21 +26714,27 @@ function TodayLight({
       G.ctx = null;
     };
   }, [flat]);
-  const fresh = lights.some(L => G.born[L.id] > now0 - 50);
+  const born = lights.filter(L => !L.quiet && G.born[L.id] > now0 - 50).sort((a, b) => G.born[a.id] - G.born[b.id] || a.at - b.at);
+  const fresh = born.length > 0;
   useEffect(() => {
     if (G.ctx) G.kick(fresh ? 3000 : 0);
   });
-  const last = lights.reduce((a, L) => !a || L.at >= a.at ? L : a, null);
+  const last = byAt[byAt.length - 1] || null;
   useEffect(() => {
-    if (fresh && last) {
+    if (fresh) {
+      const L = born[born.length - 1];
       setFlash({
-        t: fmtHM(last.at),
-        w: `${tlName(last)}, ${tlTxt(last)}`
+        id: L.id,
+        t: fmtHM(L.at),
+        w: tlWhat(L)
       });
       clearTimeout(ft.current);
       ft.current = setTimeout(() => setFlash(null), 3500);
+    } else if (flash && flash.id && !lights.some(L => L.id === flash.id)) {
+      clearTimeout(ft.current);
+      setFlash(null);
     }
-  }, [lights.length]);
+  }, [lights]);
   const tap = e => {
     const r = wrap.current.getBoundingClientRect();
     const t = T0 + (e.clientX - r.left) / r.width * (TL_T1 - T0);
@@ -26674,8 +26751,9 @@ function TodayLight({
     });
     if (!best) return;
     setFlash({
+      id: best.id,
       t: fmtHM(best.at),
-      w: `${tlName(best)}, ${tlTxt(best)}`,
+      w: tlWhat(best),
       tap: true
     });
     clearTimeout(ft.current);
@@ -26683,13 +26761,17 @@ function TodayLight({
     G.kick && G.ctx && G.kick(2500);
   };
   const n = lights.length;
-  const label = `Today as light along the hours, ${plural(n, 'thing')} logged${n ? ': ' + lights.map(tlSay).join('; ') : ''}. Now ${fmtHM(db.nowMin)}.`;
-  const ax = S.ax;
-  const step = ax ? 6 : 3;
+  const label = `Today as light along the hours, ${plural(n, 'thing')} logged${n ? ': ' + byAt.map(tlSay).join('; ') : ''}. Now ${fmtHM(db.nowMin)}.`;
+  const tsv = dim.ts || 1;
+  const step = S.ax || tsv >= 1.2 ? 6 : 3;
+  const W = dim.w || 390;
+  const nowHalf = 17 * tsv,
+    hrHalf = 7.5 * tsv;
+  const nowPx = clamp(nowX || 0, 16 + nowHalf, W - 16 - nowHalf);
   const hrs = [];
   for (let hh = Math.ceil(T0 / step) * step; hh <= 24; hh += step) {
-    const f = (hh - T0) / (TL_T1 - T0);
-    if (f > .03 && f < .96 && Math.abs(hh - db.nowMin / 60) >= (ax ? 2.4 : 1.2)) hrs.push(hh);
+    const px = (hh - T0) / (TL_T1 - T0) * W;
+    if (px - hrHalf >= 16 && px + hrHalf <= W - 16 && Math.abs(px - nowPx) >= nowHalf + hrHalf + 12) hrs.push(hh);
   }
   return React.createElement(React.Fragment, null, React.createElement("div", {
     className: "tl",
@@ -26707,7 +26789,9 @@ function TodayLight({
     T0: T0,
     nowX: nowX,
     base: base,
-    rw: rw
+    rw: rw,
+    rm: S.rm,
+    fresh: id => (G.born[id] ?? -1e9) > now0 - 1500
   }) : React.createElement("canvas", {
     ref: cv,
     className: "tl-cv"
@@ -26722,7 +26806,7 @@ function TodayLight({
   }, String(hh).padStart(2, '0'))), React.createElement("span", {
     className: "now",
     style: {
-      left: `${clamp((db.nowMin / 60 - T0) / (TL_T1 - T0), .07, .93) * 100}%`
+      left: nowPx
     }
   }, fmtHM(db.nowMin)))), React.createElement("div", {
     className: "tl-read"
@@ -26786,6 +26870,14 @@ function TodayScreen() {
     pend: {}
   });
   const timers = useRef([]);
+  const lockUntil = useRef(0);
+  const lockNow = (ms = 750) => {
+    lockUntil.current = Math.max(lockUntil.current, performance.now() + ms);
+    setInert(true);
+    timers.current.push(setTimeout(() => {
+      if (performance.now() >= lockUntil.current - 5) setInert(false);
+    }, ms));
+  };
   const [anchorPad, setAnchorPad] = useState(0);
   const prevShown = useRef([]);
   const anchorLeave = ids => {
@@ -26846,8 +26938,7 @@ function TodayScreen() {
         return n;
       });
       setPopped(id);
-      setInert(true);
-      timers.current.push(setTimeout(() => setInert(false), 600));
+      lockNow();
     }, S.rm ? ev.q ? 600 : 100 : ev.q ? 1800 : 980));
   }, [S.lastEvent]);
   const inplayKey = model.inplay.map(x => x.it.id).join();
@@ -26886,16 +26977,9 @@ function TodayScreen() {
         });
         return n;
       });
+      lockNow();
     }, 1200));
   }, [inplayKey]);
-  const heroKind = useRef(pick.kind);
-  useEffect(() => {
-    if (heroKind.current === pick.kind) return;
-    heroKind.current = pick.kind;
-    setInert(true);
-    const t = setTimeout(() => setInert(false), 600);
-    timers.current.push(t);
-  }, [pick.kind]);
   const inplay = [...model.inplay];
   const leC = (() => {
     const le = S.lastEvent;
@@ -26967,7 +27051,13 @@ function TodayScreen() {
   const nowRows = dh.length && wi > 0 ? [dh[0], rr[wi], ...dh.slice(1), ...rr.filter((_, i) => i !== wi)] : [...dh, ...rr];
   const holdingAt = nowRows.findIndex(r => r.k === 'r' && r.x.holding);
   const nowShown = allNow || nowRows.length <= NOW_MAX + 1 ? nowRows : nowRows.slice(0, Math.max(NOW_MAX, holdingAt + 1));
-  const firstI = nowShown.findIndex(r => r.k === 'r' && r.x.it.first && !r.x.holding && !(S.live && S.live.id === r.x.it.id) && notStarted(db, r.x.it, r.x.ev));
+  const orderKey = nowShown.map(r => r.key).join();
+  const prevOrderKey = useRef(orderKey);
+  useEffect(() => {
+    if (prevOrderKey.current !== orderKey) lockNow(S.rm ? 600 : 950);
+    prevOrderKey.current = orderKey;
+  }, [orderKey]);
+  const firstI = S.axL ? -1 : nowShown.findIndex(r => r.k === 'r' && r.x.it.first && !r.x.holding && !(S.live && S.live.id === r.x.it.id) && notStarted(db, r.x.it, r.x.ev));
   const laterSorted = useMemo(() => [...later].filter(x => !hold[x.it.id]).sort((a, b) => (a.ev.b ?? 9999) - (b.ev.b ?? 9999) || b.score - a.score), [later, hold]);
   const ctxToday = model.ctxToday.filter(c => c.type !== 'away');
   const n = db.sleep[db.today];
@@ -27146,7 +27236,7 @@ function TodayScreen() {
   })), React.createElement(SuggestSlot, {
     sm: sm
   }), settled.length > 0 && React.createElement("div", {
-    className: "sec",
+    className: "sec tsec",
     style: {
       marginTop: 30
     }
