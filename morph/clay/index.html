@@ -482,10 +482,10 @@ input:focus-visible{outline:none}
 
 /* ===== surfaces: one variable set, so the clay follows whichever surface Mark picks ===== */
 .app{--dkc:12,9,6;--ltc:255,238,220;--la:1;--da:1}
-.app[data-surf="slate"]{--surf:#2B3036;--dkc:6,9,14;--ltc:220,232,248;--la:1.05;--da:1.05;--cream:#EEF1F4;--t2:rgba(238,241,244,.68);--t3:rgba(238,241,244,.56);--t4:rgba(238,241,244,.3)}
-.app[data-surf="ink"]{--surf:#262D3A;--dkc:5,8,16;--ltc:210,222,255;--la:1.1;--da:1.1;--cream:#EDF0F7;--t2:rgba(237,240,247,.68);--t3:rgba(237,240,247,.56);--t4:rgba(237,240,247,.3)}
-.app[data-surf="mineral"]{--surf:#2D3331;--dkc:6,10,9;--ltc:222,240,232;--la:1.05;--da:1.05;--cream:#EEF2EF;--t2:rgba(238,242,239,.68);--t3:rgba(238,242,239,.56);--t4:rgba(238,242,239,.3)}
-.app[data-surf="bone"]{--surf:#E4DFD8;--dkc:118,104,90;--ltc:255,255,255;--la:15;--da:.95;--cream:#26221E;--t2:rgba(38,34,30,.72);--t3:rgba(38,34,30,.58);--t4:rgba(38,34,30,.32);
+.app[data-surf="slate"]{--surf:#2A2E33;--dkc:4,6,10;--ltc:225,235,255;--la:1.05;--da:1;--cream:rgb(236,239,243);--t2:rgba(236,239,243,0.7);--t3:rgba(236,239,243,0.58);--t4:rgba(236,239,243,0.3)}
+.app[data-surf="ink"]{--surf:#1D2633;--dkc:1,4,10;--ltc:190,215,255;--la:1.2;--da:1.15;--cream:rgb(232,239,248);--t2:rgba(232,239,248,0.7);--t3:rgba(232,239,248,0.58);--t4:rgba(232,239,248,0.3)}
+.app[data-surf="mineral"]{--surf:#22302F;--dkc:1,8,8;--ltc:200,255,245;--la:1;--da:1.1;--cream:rgb(230,242,239);--t2:rgba(230,242,239,0.7);--t3:rgba(230,242,239,0.58);--t4:rgba(230,242,239,0.3)}
+.app[data-surf="bone"]{--surf:#E2DFDA;--dkc:92,88,98;--ltc:255,255,255;--la:9;--da:.82;--cream:rgb(30,32,38);--t2:rgba(30,32,38,0.78);--t3:rgba(30,32,38,0.7);--t4:rgba(30,32,38,0.34);
   --deb:calc(var(--lx)*1px) calc(var(--ly)*1px) 0 rgba(255,255,255,.7);--emb:calc(var(--lx)*2px) calc(var(--ly)*2px) 4px rgba(118,104,90,.35),calc(var(--lx)*-1px) calc(var(--ly)*-1px) 1px rgba(255,255,255,.8);
   --groove:linear-gradient(rgba(118,104,90,.35) 0 1px,rgba(255,255,255,.8) 1px 2px)}
 .app[data-surf="bone"] .grain{opacity:.05;mix-blend-mode:multiply}
@@ -517,6 +517,9 @@ body{background:#141414}
 .exp.hf .fk{box-shadow:none!important;background:transparent!important}
 .exp.hf .blk .row,.exp.hf .blk .panel,.exp.hf .blk .sug{background:transparent}
 .app{color:var(--cream)}
+
+.dialframe{position:relative;width:100%;height:330px;overflow:hidden;border-radius:16px}
+.dialframe iframe{position:absolute;left:50%;top:-118px;width:390px;height:844px;border:0;transform:translateX(-50%) scale(.8);transform-origin:50% 118px;pointer-events:auto}
 </style>
 </head>
 <body>
@@ -765,12 +768,13 @@ function hfFrame(){HF.raf=0;if(!HF.on)return;const {gl,c,U}=HF;const host=$('#x-
 function hfSet(on){HF.on=on;$('#x-fold').classList.toggle('hf',on);if(on){if(!HF.gl&&!hfInit()){HF.on=false;$('#x-fold').classList.remove('hf');return}hfColors();if(!HF.raf)HF.raf=requestAnimationFrame(hfFrame)}}
 
 /* ===================== surfaces ===================== */
-const SURFS=[['slate','#2B3036','Slate'],['ink','#262D3A','Ink'],['mineral','#2D3331','Mineral'],['bone','#E4DFD8','Bone (light clay)'],['graphite','#2B2723','Graphite (old)']];
+/* matches the studio's today-neu surfaces (?surface=0..3) */
+const SURFS=[['bone','#E2DFDA','Clay',2],['slate','#2A2E33','Slate',0],['ink','#1D2633','Ink',1],['mineral','#22302F','Mineral',3],['graphite','#2B2723','Graphite (old)',2]];
 let surfI=0;
 function setSurf(i){surfI=(i+SURFS.length)%SURFS.length;const [k]=SURFS[surfI];if(k==='graphite')delete app.dataset.surf;else app.dataset.surf=k;
   const nx=SURFS[(surfI+1)%SURFS.length];$('#surfk i').style.background=nx[1];$('#surfk').setAttribute('aria-label','Surface: '+SURFS[surfI][2]+'. Tap for '+nx[2]);
   document.querySelector('meta[name=theme-color]')&&document.querySelector('meta[name=theme-color]').setAttribute('content',SURFS[surfI][1]);
-  setTimeout(()=>{if(HF.on)hfColors()},520);try{localStorage.setItem('clay-surf',k)}catch(e){}}
+  setTimeout(()=>{if(HF.on)hfColors()},520);const fr=$('#dialfr');if(fr)fr.src=dialSrc();try{localStorage.setItem('clay-surf',k)}catch(e){}}
 
 /* ===================== STORYBOARD ===================== */
 const BOARD=[
@@ -806,8 +810,9 @@ const BOARD=[
   states:{Embossed:()=>{$('#b13').className='emb-demo e'},Engraved:()=>{$('#b13').className='emb-demo d'},Flat:()=>{$('#b13').className='emb-demo f0'}},rule:'Names stand out of the clay; labels are cut into it; done things go flat.'},
  {n:'Loading',st:'Lab',demo:`<div style="width:100%"><div class="skel f"></div><div class="skel f"></div><div class="skel f"></div></div>`,states:{Breathing:()=>{}},rule:'No shimmer. Faint ridges rise and settle in a slow wave, then flatten into the real lines.'},
  {n:'Fold (E1) in miniature',st:'Experiment',demo:`<div id="b15" style="position:relative;width:100%;height:150px"></div>`,states:{Play:()=>foldMini()},rule:'Content past the edge compresses into strata instead of leaving the screen.'},
- {n:'Hero dial',st:'Studio',demo:`<div style="font:500 13.5px var(--ui);color:var(--t3);text-align:center;padding:0 10px">Owned by the studio (Mark picked the dial). This board will take its live version when it lands.</div>`,states:{},rule:'Clay idea to try with it: the dial is pressed into the clay; logs rise as small bumps along its rim.'},
+ {n:'Hero dial (live, from the studio)',st:'Studio',demo:`<div class="dialframe"><iframe id="dialfr" title="Dial" loading="lazy" src="${dialSrc()}"></iframe></div>`,states:{},rule:'The studio\'s live dial: drag the ring to scrub hours, tap a bead. <b>Clay idea:</b> the disc is the clay pushed up; the ring is a groove pressed in; each log is a bead squeezed up from the groove at its time. On scroll it should flatten back into the page (Fold) rather than slide away.',q:'Experiment: in the Clay tab, render the dial into the same height map so its groove and the rows are one material.'},
 ];
+function dialSrc(){const v=(typeof SURFS!=='undefined'&&SURFS[surfI])?SURFS[surfI][3]:2;return `../../today/neu/?hero=1&surface=${v}&still`}
 function sH(sel,h,o){const e=$(sel);e.style.transition='--h .5s var(--spr)';e.style.setProperty('--h',h);$$(':scope > *',e).forEach(c=>{c.style.transition='opacity .35s';c.style.opacity=o})}
 function swS(on){const k=$('#b6');k.classList.add('mv');k.classList.toggle('on',on);setTimeout(()=>k.classList.remove('mv'),170)}
 function segS(i){const s=$('#b7'),b=$$('button',s)[i],w=$('.sw2',s);$$('button',s).forEach(x=>x.classList.toggle('on',x===b));const sr=s.getBoundingClientRect(),br=b.getBoundingClientRect();
@@ -847,7 +852,7 @@ function boot(){e1Build();e1Init();e2Build();e2Init();e3Build();e3Init();boardBu
   $$('#modeseg button').forEach(b=>b.addEventListener('click',()=>{tick();setMode(b.dataset.m)}));
   $('#mn').addEventListener('click',()=>{tick();$('.ctlbar').classList.add('min');$('#pillmode').classList.add('on')});
   $('#pillmode').addEventListener('click',()=>{tick();$('.ctlbar').classList.remove('min');$('#pillmode').classList.remove('on')});
-  const h=location.hash.slice(1);let sv='slate';try{sv=localStorage.getItem('clay-surf')||'slate'}catch(e){}setSurf(Math.max(0,SURFS.findIndex(x=>x[0]===sv)));
+  const h=location.hash.slice(1);let sv='bone';try{sv=localStorage.getItem('clay-surf')||'bone'}catch(e){}setSurf(Math.max(0,SURFS.findIndex(x=>x[0]===sv)));
   $('#surfk').addEventListener('click',()=>{tick();setSurf(surfI+1);const cap=$('#cap');cap.innerHTML='Surface: <b>'+SURFS[surfI][2]+'</b>';cap.classList.remove('off');clearTimeout(capT);capT=setTimeout(()=>cap.classList.add('off'),1800)});
   setMode(['board','fold','focus','reshape','clay'].includes(h)?h:'clay',true);
   window.addEventListener('resize',()=>{e1Layout();e2Layout()});
