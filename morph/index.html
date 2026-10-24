@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#2B2723">
+<title>Meridian Morph Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist:wght@300..700&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   MORPH LAB. One surface that deforms.
+   Every form on the page carries ONE number, --h:
+     +1  plateau (risen out of the page)      0  flat page      -1  well (pressed into the page)
+   Shadows are computed from --h and from the light direction (--lx, --ly),
+   so anything can travel continuously between raised, flat and pressed.
+   That is the whole trick: nothing slides over the page; the page itself
+   rises, flattens, sinks and flows.
+   ===================================================================== */
+@property --h{syntax:'<number>';inherits:false;initial-value:0}
+@property --lx{syntax:'<number>';inherits:true;initial-value:1}
+@property --ly{syntax:'<number>';inherits:true;initial-value:1}
+:root{
+  --surf:#2B2723; --cream:#F3EDE4;
+  --t2:rgba(243,237,228,.68); --t3:rgba(243,237,228,.57); --t4:rgba(243,237,228,.30);
+  --sun:#FF6B3D; --sun2:#FF8F5E; --night:#98A2FC; --rec:#A39C92;
+  --disp:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --ui:"Geist",ui-sans-serif,system-ui,sans-serif;
+  --gut:20px; --tabh:84px;
+  --ease:cubic-bezier(.2,.8,.2,1); --spr:cubic-bezier(.34,1.45,.55,1); --press:cubic-bezier(.3,.7,.4,1);
+  --deb:calc(var(--lx)*-1px) calc(var(--ly)*-1px) 0 rgba(0,0,0,.45),calc(var(--lx)*1px) calc(var(--ly)*1px) 0 rgba(255,238,220,.06);
+  --emb:calc(var(--lx)*2px) calc(var(--ly)*2px) 5px rgba(12,9,6,.55),calc(var(--lx)*-1px) calc(var(--ly)*-1px) 1px rgba(255,238,220,.07);
+  --groove:linear-gradient(rgba(12,9,6,.5) 0 1px,rgba(255,238,220,.06) 1px 2px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#1C1916;color:var(--cream);font-family:var(--ui);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+body{display:flex;justify-content:center}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+input{font:inherit;color:inherit;border:0;outline:0;background:none}
+.app{position:relative;width:100%;max-width:430px;height:100dvh;overflow:hidden;background:var(--surf);--lx:1;--ly:1}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- the two depth recipes ---------- */
+/* regions: plateaus (rows, sheets, bars) and wells (results, Later) */
+.f{box-shadow:
+  calc(max(var(--h),0)*12px*var(--lx)) calc(max(var(--h),0)*12px*var(--ly)) calc(max(var(--h),0)*28px) rgba(12,9,6,.46),
+  calc(max(var(--h),0)*-9px*var(--lx)) calc(max(var(--h),0)*-9px*var(--ly)) calc(max(var(--h),0)*22px) rgba(255,238,220,.052),
+  calc(max(var(--h),0)*2px*var(--lx)) calc(max(var(--h),0)*2px*var(--ly)) calc(max(var(--h),0)*5px) rgba(12,9,6,.2),
+  inset calc(max(calc(var(--h) * -1),0)*7px*var(--lx)) calc(max(calc(var(--h) * -1),0)*7px*var(--ly)) calc(max(calc(var(--h) * -1),0)*16px) rgba(12,9,6,.46),
+  inset calc(max(calc(var(--h) * -1),0)*-6px*var(--lx)) calc(max(calc(var(--h) * -1),0)*-6px*var(--ly)) calc(max(calc(var(--h) * -1),0)*14px) rgba(255,238,220,.045);
+  translate:calc(var(--h)*var(--px,0)*1px) calc(var(--h)*var(--py,0)*1px)}
+/* keys: smaller, crisper; the thing you press */
+.fk{--h:1;box-shadow:
+  calc(max(var(--h),0)*5px*var(--lx)) calc(max(var(--h),0)*5px*var(--ly)) calc(max(var(--h),0)*12px) rgba(12,9,6,.58),
+  calc(max(var(--h),0)*-4px*var(--lx)) calc(max(var(--h),0)*-4px*var(--ly)) calc(max(var(--h),0)*10px) rgba(255,238,220,.075),
+  inset calc(max(calc(var(--h) * -1),0)*4px*var(--lx)) calc(max(calc(var(--h) * -1),0)*4px*var(--ly)) calc(max(calc(var(--h) * -1),0)*10px) rgba(12,9,6,.62),
+  inset calc(max(calc(var(--h) * -1),0)*-3px*var(--lx)) calc(max(calc(var(--h) * -1),0)*-3px*var(--ly)) calc(max(calc(var(--h) * -1),0)*9px) rgba(255,238,220,.085);
+  background:var(--surf);transition:--h .36s var(--spr),transform .36s var(--spr),color .25s;
+  translate:calc(var(--h)*var(--px,0)*.6px) calc(var(--h)*var(--py,0)*.6px)}
+.fk.down{--h:-.75;transform:scale(.96);transition:--h .08s var(--press),transform .08s var(--press)}
+.fk.on,.fk.done{--h:-1}
+.fk.lo{--h:.55}
+.fk:disabled{--h:0;color:var(--t4)}
+.fk.held{--h:-1.15!important;transition:--h .3s var(--ease)}
+:focus{outline:none}
+input:focus-visible{outline:none}
+:focus-visible{outline:2px solid var(--sun2);outline-offset:3px;border-radius:14px}
+
+/* grain */
+.grain{position:absolute;inset:0;z-index:90;pointer-events:none;opacity:.07;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.2'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");background-size:160px 160px}
+
+/* ---------- chrome ---------- */
+.sbar{position:absolute;top:0;left:0;right:0;height:50px;z-index:70;display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0 30px;pointer-events:none}
+.sbar .clk{font:600 16px/1 var(--ui)}
+.sbar .gd{pointer-events:auto;font:500 12.5px/1 var(--ui);color:var(--t2);padding:9px 13px;border-radius:99px;--h:.55;text-shadow:var(--deb)}
+.sbar .gd b{color:var(--cream);font-weight:600}
+.topbar{position:absolute;top:0;left:0;right:0;height:96px;z-index:35;background:var(--surf);display:flex;align-items:flex-end;justify-content:center;padding-bottom:13px;font:600 16px/1 var(--disp);opacity:0;pointer-events:none;border-radius:0 0 26px 26px}
+.topbar span{text-shadow:var(--emb)}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:200px;display:none;-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{display:none}
+.screen.on{display:block}
+.screen.out{opacity:0;transition:opacity .16s linear}
+.screen.in{animation:txin .32s var(--ease) both}
+@keyframes txin{from{opacity:0}}
+.screen.dim{opacity:.5;transition:opacity .3s var(--ease)}
+
+/* header */
+.head{position:relative;padding:60px var(--gut) 0;display:flex;align-items:flex-start;justify-content:space-between}
+.head h1{font:600 34px/1 var(--disp);font-variation-settings:"wdth" 88;letter-spacing:-.02em;text-shadow:var(--emb);transform-origin:left bottom}
+.head .sub{margin-top:7px;font:400 15px/1.2 var(--ui);color:var(--t2);text-shadow:var(--deb)}
+.hicons{display:flex;gap:10px;margin-top:-4px}
+.ib{position:relative;width:42px;height:42px;display:grid;place-items:center;border-radius:50%;color:var(--t2);--h:.6}
+.ib svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.07))}
+.ib .n{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--surf);font:700 10.5px/18px var(--ui);color:var(--cream);text-align:center;box-shadow:2px 2px 5px rgba(12,9,6,.5),-1px -1px 3px rgba(255,238,220,.05)}
+.ib .n.pop{animation:pop .5s var(--spr)}
+@keyframes pop{0%{transform:scale(.4)}100%{transform:none}}
+
+/* pull to sync */
+.pull{position:absolute;top:50px;left:50%;width:150px;height:30px;margin-left:-75px;border-radius:15px;z-index:5;display:grid;place-items:center;font:500 11.5px var(--ui);color:var(--t3);overflow:hidden;opacity:0}
+.pull .lt{position:absolute;left:0;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,143,94,.5),transparent);transform:translateX(-120%)}
+.pull.sync .lt{animation:sweep 1s var(--ease) infinite}
+@keyframes sweep{to{transform:translateX(320%)}}
+
+/* arc placeholder (the studio owns the real arc) */
+.arc{position:relative;height:128px;margin-top:4px}
+.arc svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* results strip */
+.strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:14px;padding:6px var(--gut) 10px}
+.strip::-webkit-scrollbar{display:none}
+.panel{position:relative;flex:0 0 76%;scroll-snap-align:start;scroll-margin-left:var(--gut);border-radius:26px;padding:13px 16px 13px;text-align:left;min-height:136px;--h:-1}
+.panel .k{display:flex;align-items:center;gap:8px;font:600 13px var(--ui);color:var(--ht,var(--t2))}
+.panel .k:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hf,var(--t3));box-shadow:0 0 6px var(--hf,transparent)}
+.panel .big{margin-top:8px;font:300 40px/1 var(--disp);letter-spacing:-.02em}
+.panel .big small{font:400 17px var(--ui);color:var(--t2);margin-left:4px;letter-spacing:0}
+.panel .ln{margin-top:6px;font:400 13.5px/1.32 var(--ui);color:var(--t2)}
+.panel .mini{display:flex;gap:4px;align-items:flex-end;height:24px;margin-top:10px}
+.panel .mini i{width:7px;border-radius:2px;background:rgba(243,237,228,.24)}
+.panel .mini i.hi{background:var(--hf);box-shadow:0 0 8px var(--hf)}
+.panel .px{position:absolute;top:9px;right:9px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--t3);--h:.5}
+.panel .open{position:absolute;inset:0;border-radius:26px}
+.panel > *:not(.open):not(.px){pointer-events:none}
+
+/* sections */
+.sec{margin-top:16px}
+.sech{display:flex;justify-content:space-between;align-items:center;padding:0 var(--gut);margin-bottom:10px}
+.sech h2{font:650 12px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--t2);text-shadow:var(--deb)}
+.sech .aside{font:500 13px var(--ui);color:var(--t2);text-shadow:var(--deb)}
+
+/* Now rows: plateaus */
+.rows{padding:0 var(--gut)}
+.row{position:relative;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 34px;border-radius:24px;margin-bottom:12px;--h:1;min-height:72px}
+.row.full{flex-wrap:wrap}
+.row .open{position:absolute;inset:0 84px 0 0;border-radius:24px}
+.row.full .open{right:0;bottom:60px}
+.row .txt{flex:1;min-width:0;pointer-events:none}
+.row .nm{font:550 21px/1.1 var(--disp);letter-spacing:-.01em;transition:opacity .3s}
+.row.lead .nm{font-size:26px}
+.row .st{margin-top:4px;font:400 14px/1.3 var(--ui);color:var(--t2);transition:opacity .3s}
+.row .st b{color:var(--cream);font-weight:550;display:inline-block}
+.row .st b.roll{animation:roll .42s var(--spr)}
+@keyframes roll{from{transform:translateY(70%);opacity:0}}
+.row.melt .nm,.row.melt .st{opacity:.45}
+.row .ctl{display:flex;gap:8px;align-items:center;position:relative;z-index:2}
+.inl{position:absolute;left:14px;top:16px;bottom:16px;width:7px;border-radius:4px;background:color-mix(in oklab,var(--hf,#1d1a17) 18%,var(--surf));box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07);overflow:hidden;pointer-events:none}
+.inl i{position:absolute;left:0;right:0;bottom:0;border-radius:4px;background:var(--hf);box-shadow:0 0 10px var(--hf);transition:height .7s var(--ease)}
+.row.task .inl{background:var(--surf)}
+.more{display:block;margin:2px auto 0;padding:11px 18px;border-radius:99px;font:500 14px var(--ui);color:var(--t2);--h:.55}
+
+/* keys */
+.kr{position:relative;width:48px;height:48px;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+.kr .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--hf,var(--sun));transition:height .55s var(--ease)}
+.kr.done .fill{height:100%;box-shadow:inset 3px 3px 7px rgba(0,0,0,.32),inset -2px -2px 6px rgba(255,255,255,.16)}
+.kr svg{position:relative;z-index:1}
+.kr .pl{stroke:var(--ht,var(--cream))}
+.kr .ck{stroke:#17130F;stroke-dasharray:22;stroke-dashoffset:22;transition:stroke-dashoffset .35s .25s var(--ease)}
+.kr.done .pl{opacity:0}
+.kr.done .ck{stroke-dashoffset:0}
+.kr .ck.ghost{stroke:var(--t3);stroke-dashoffset:0}
+.ks{height:48px;padding:0 13px;border-radius:24px;display:flex;gap:5px;align-items:center}
+.ks i{position:relative;width:9px;height:24px;border-radius:5px;overflow:hidden;background:color-mix(in oklab,var(--hf,#1d1a17) 14%,var(--surf));box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.ks i:after{content:"";position:absolute;inset:0;background:var(--hf);transform:scaleY(0);transform-origin:bottom;transition:transform .5s var(--ease);box-shadow:0 0 6px var(--hf)}
+.ks i.on:after{transform:none}
+.kw{height:44px;padding:0 15px;border-radius:22px;font:500 14px var(--ui);color:var(--t2);--h:.6}
+.kw.on{color:var(--cream)}
+.kp{height:46px;padding:0 16px 0 13px;border-radius:23px;display:flex;align-items:center;gap:7px;font:550 15px var(--ui);color:var(--cream)}
+.kp svg{color:var(--ht)}
+.kp.on{color:var(--ht)}
+.amt{display:flex;gap:9px;width:100%;margin-top:2px}
+.tile{position:relative;flex:1;height:48px;border-radius:16px;overflow:hidden;font:500 16.5px var(--ui)}
+.tile span{position:relative;z-index:1}
+.tile .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--hf)}
+.tile.pour .fill{animation:pour 1.1s var(--ease)}
+.tile.pour span{animation:pourtx 1.1s var(--ease)}
+@keyframes pour{0%{height:0}38%{height:100%}100%{height:0}}
+@keyframes pourtx{0%,10%{color:var(--cream)}30%,55%{color:#17130F}100%{color:var(--cream)}}
+.level{position:relative;width:100%;height:7px;border-radius:4px;margin:8px 0 12px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.level i{position:absolute;left:1px;top:1px;bottom:1px;border-radius:3px;background:var(--hf);box-shadow:0 0 10px var(--hf);transition:width .8s var(--spr)}
+
+/* Later: one well, set as type */
+.later{margin:0 var(--gut);padding:14px 16px 14px;border-radius:26px;--h:-1}
+.lg{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:4px 0}
+.lg .h{width:100%;font:500 12.5px var(--ui);color:var(--t3);text-shadow:var(--deb);margin-top:4px}
+.tok{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:19px;font:500 15px var(--ui);color:var(--cream);--h:.6}
+.tok .hp{width:8px;height:8px;border-radius:50%;background:color-mix(in oklab,var(--hf) 18%,var(--surf));box-shadow:inset 1px 1px 2px rgba(0,0,0,.6);transition:background .4s,box-shadow .4s}
+.tok.on{color:var(--ht)}
+.tok.on .hp{background:var(--hf);box-shadow:0 0 7px var(--hf)}
+
+/* suggestion */
+.sug{margin:0 var(--gut);padding:15px 16px 14px;border-radius:26px;--h:1}
+.sug .sn{display:flex;align-items:center;gap:9px;font:550 20px var(--disp)}
+.sug .sn:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--hf);box-shadow:0 0 7px var(--hf)}
+.sug .sr{margin-top:5px;font:400 14px/1.35 var(--ui);color:var(--t2)}
+.sug .sb{display:flex;gap:10px;margin-top:13px}
+
+/* settled */
+.settled{padding:4px var(--gut) 0;display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--t2);font:500 14px var(--ui);text-shadow:var(--deb)}
+.settled span{display:inline-flex;align-items:center;gap:7px}
+.settled span i{width:7px;height:7px;border-radius:50%;background:var(--hf);box-shadow:0 0 6px var(--hf)}
+.settled span.new{animation:settle .7s var(--ease)}
+@keyframes settle{0%{opacity:0;filter:blur(2px)}100%{opacity:1}}
+.settled span.new i{animation:lightup 1.1s var(--ease)}
+@keyframes lightup{0%{box-shadow:0 0 0 var(--hf);transform:scale(.3)}40%{box-shadow:0 0 16px var(--hf);transform:scale(1.4)}100%{box-shadow:0 0 6px var(--hf)}}
+
+/* empty */
+.empty{padding:40px var(--gut) 0;text-align:center}
+.empty p{font:400 15px/1.45 var(--ui);color:var(--t2);text-shadow:var(--deb);max-width:280px;margin:0 auto 20px}
+.empty h3{font:550 26px var(--disp);text-shadow:var(--emb);margin-bottom:8px}
+
+/* buttons */
+.btn{height:50px;padding:0 20px;border-radius:25px;font:550 15.5px var(--ui);color:var(--t2);display:inline-flex;align-items:center;justify-content:center;gap:9px}
+.btn.primary{color:var(--ht,var(--cream))}
+.btn.primary:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--hf,var(--sun2))}
+.btn.ghost{--h:0;color:var(--t2)}
+.btn.ghost.down{--h:-.6}
+.btn.wide{width:100%}
+.btns{display:flex;gap:12px;padding:6px var(--gut) 0}
+.btns .btn{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:10px;padding:2px var(--gut)}
+.chip{height:40px;padding:0 15px;border-radius:20px;font:500 14px var(--ui);color:var(--t2);display:inline-flex;align-items:center;gap:8px;--h:.6}
+.chip.on{color:var(--cream)}
+.chip.on:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--hf,var(--sun2))}
+
+/* tab bar */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:var(--tabh);z-index:50;background:var(--surf);display:grid;grid-template-columns:repeat(5,1fr);align-items:start;padding:8px 8px 0}
+.tabbar:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
+.tw{position:absolute;top:8px;height:54px;border-radius:17px;--h:-1;pointer-events:none}
+.tab{position:relative;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px var(--ui);color:var(--t3);border-radius:17px;transition:color .3s}
+.tab svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.06));transition:color .3s}
+.tab.on{color:var(--cream)}
+.tab.on svg{color:var(--sun2);filter:none}
+.logkey{justify-self:center;width:60px;height:60px;border-radius:50%;margin-top:-14px;display:grid;place-items:center;color:var(--sun2);--h:1.25}
+.logkey.held{--h:-1!important}
+
+/* morph layers (sheets, pages, bars, fields grow out of whatever you touched) */
+.mo{position:absolute;z-index:60;background:var(--surf);overflow:hidden;will-change:left,top,width,height}
+.mo .mghost,.mo .inner{position:absolute;left:0;top:0}
+.mo .mghost{pointer-events:none;box-shadow:none!important;margin:0!important;translate:none!important}
+.mo .inner{opacity:0}
+.mo.page{z-index:40}
+.mo.bar{z-index:44}
+.mo.field{z-index:36}
+.catch{position:absolute;inset:0;z-index:55}
+.sheetin{display:flex;flex-direction:column}
+.sheetin .body{overflow-y:auto;flex:1;padding-bottom:40px;scrollbar-width:none}
+.sheetin .body::-webkit-scrollbar{display:none}
+.grab{height:30px;display:grid;place-items:center;touch-action:none;cursor:grab;flex:none}
+.grab i{width:42px;height:6px;border-radius:3px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.sh{display:flex;align-items:flex-start;justify-content:space-between;padding:4px var(--gut) 12px;touch-action:none}
+.sh h3{font:600 26px/1.1 var(--disp);letter-spacing:-.01em;text-shadow:var(--emb)}
+.sh .s2{margin-top:5px;font:400 14px var(--ui);color:var(--t2)}
+.close{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--t2);flex:none;--h:.6}
+.lab{padding:16px var(--gut) 9px;font:650 12px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--t2);text-shadow:var(--deb)}
+.well{margin:0 var(--gut);border-radius:22px;padding:14px 16px;--h:-1}
+.li{position:relative;display:flex;align-items:center;gap:12px;min-height:54px;padding:6px 0}
+.li+.li:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
+.li .tm{font:500 14px var(--ui);color:var(--t2);width:46px}
+.li .v{flex:1;font:500 16px var(--ui)}
+.li .rm{height:36px;padding:0 13px;border-radius:18px;font:500 13px var(--ui);color:var(--t2);--h:.55}
+.bars{display:flex;gap:10px;align-items:flex-end;height:96px;padding-top:6px}
+.bars .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;font:500 11px var(--ui);color:var(--t3)}
+.bars .c b{position:relative;width:100%;height:70px;border-radius:7px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.7),inset -1px -1px 2px rgba(255,238,220,.06);overflow:hidden}
+.bars .c b i{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--hf);box-shadow:0 0 8px var(--hf);border-radius:6px;transition:height .7s var(--spr)}
+.para{padding:2px var(--gut);font:400 15px/1.5 var(--ui);color:var(--t2)}
+.para b{color:var(--cream);font-weight:550}
+.search{display:flex;align-items:center;gap:10px;height:48px;padding:0 15px;color:var(--t2)}
+.search input{flex:1;font:500 16px var(--ui);color:var(--cream)}
+.search input::placeholder{color:var(--t3)}
+
+/* switch: a bead that flows under the surface; the hue fills in behind it */
+.sw{position:relative;width:56px;height:32px;border-radius:16px;flex:none;--h:-1;overflow:visible}
+.sw .liq{position:absolute;left:3px;top:3px;bottom:3px;width:26px;border-radius:13px;background:var(--hf,var(--sun));opacity:0;transition:width .38s var(--ease),opacity .25s}
+.sw .bead{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:12px;background:var(--surf);--h:1;
+  transition:left .42s var(--spr),width .2s var(--ease)}
+.sw.mv .bead{width:34px}
+.sw.on .bead{left:28px}
+.sw.on.mv .bead{left:18px}
+.sw.on .liq{width:50px;opacity:1}
+.set{display:flex;align-items:center;gap:14px;min-height:62px;padding:8px 0}
+.set+.set{position:relative}
+.set+.set:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
+.set .sl{flex:1}
+.set .sl b{display:block;font:500 16px var(--ui)}
+.set .sl small{display:block;margin-top:3px;font:400 13px var(--ui);color:var(--t2)}
+
+/* segmented: the chosen well flows */
+.seg{position:relative;display:flex;margin:0 var(--gut);padding:5px;border-radius:22px;--h:.7}
+.seg .sw2{position:absolute;top:5px;bottom:5px;border-radius:17px;--h:-1;pointer-events:none}
+.seg button{position:relative;flex:1;height:40px;font:500 14px var(--ui);color:var(--t3);transition:color .3s}
+.seg button.on{color:var(--cream)}
+
+/* stepper */
+.stepper{display:flex;align-items:center;gap:14px;padding:8px;border-radius:30px;--h:-1}
+.stepper button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font:500 22px/1 var(--ui);color:var(--cream)}
+.stepper .num{min-width:36px;height:44px;overflow:hidden;position:relative;text-align:center;font:500 22px/44px var(--disp)}
+.stepper .num span{position:absolute;left:0;right:0}
+.stepper .num .up-in{animation:upin .38s var(--spr)}
+.stepper .num .up-out{animation:upout .3s var(--ease) forwards}
+.stepper .num .dn-in{animation:dnin .38s var(--spr)}
+.stepper .num .dn-out{animation:dnout .3s var(--ease) forwards}
+@keyframes upin{from{transform:translateY(100%);opacity:0}}
+@keyframes upout{to{transform:translateY(-100%);opacity:0}}
+@keyframes dnin{from{transform:translateY(-100%);opacity:0}}
+@keyframes dnout{to{transform:translateY(100%);opacity:0}}
+
+/* time wheel: the chosen hour sits in a well; neighbours rise away from it */
+.wheel{position:relative;height:150px;margin:0 var(--gut);border-radius:24px;--h:.6;overflow:hidden}
+.wheel .band{position:absolute;left:10px;right:10px;top:53px;height:44px;border-radius:14px;--h:-1;pointer-events:none}
+.wheel .wl{position:absolute;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:53px 0}
+.wheel .wl::-webkit-scrollbar{display:none}
+.wheel .wi{height:44px;display:grid;place-items:center;scroll-snap-align:center;font:500 20px var(--disp);color:var(--cream);will-change:transform,opacity}
+
+/* swatches */
+.swatches{display:flex;gap:12px;padding:2px var(--gut);flex-wrap:wrap}
+.sw8{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;--h:.6}
+.sw8 i{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:inset 1px 1px 2px rgba(0,0,0,.35)}
+.sw8.on i{box-shadow:0 0 0 3px var(--surf),0 0 0 5px var(--c),0 0 10px var(--c)}
+
+/* skeleton: the surface breathes while it waits */
+.skel{height:18px;border-radius:9px;margin:12px 0;animation:breathe 1.6s ease-in-out infinite}
+.skel:nth-child(2){animation-delay:.18s;width:76%}
+.skel:nth-child(3){animation-delay:.36s;width:58%}
+@keyframes breathe{0%,100%{--h:.05}50%{--h:.55}}
+
+/* toast: a blister that swells out of the surface */
+.toast{position:absolute;left:50%;height:58px;border-radius:29px;background:var(--surf);z-index:58;overflow:hidden;translate:-50% 0}
+.toast .tin{position:absolute;top:0;left:50%;height:58px;display:flex;align-items:center;gap:12px;padding:0 9px 0 20px;transform:translateX(-50%);opacity:0;transition:opacity .2s}
+.toast .tx{flex:1;font:500 14.5px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toast .tx b{font-weight:600}
+.toast .undo{height:40px;padding:0 15px;border-radius:20px;font:600 14px var(--ui);color:var(--sun2);--h:.6}
+.toast .tg{position:absolute;left:24px;right:24px;bottom:6px;height:3px;border-radius:2px;box-shadow:inset 1px 1px 2px rgba(12,9,6,.7)}
+.toast .tg i{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:var(--t4)}
+
+/* live bar inner */
+.live{display:flex;align-items:center;gap:10px;height:64px;padding:0 10px 0 18px}
+.live .ln2{flex:1}
+.live .ln2 b{display:block;font:550 16px var(--ui)}
+.live .ln2 small{font:500 13px var(--ui);color:var(--ht);font-variant-numeric:tabular-nums}
+.live .kw{height:40px}
+.live .lp{position:absolute;left:18px;right:18px;bottom:7px;height:4px;border-radius:2px;box-shadow:inset 1px 1px 2px rgba(12,9,6,.7)}
+.live .lp i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--hf);box-shadow:0 0 8px var(--hf);transition:width 1s linear}
+
+/* Time */
+.mon{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;padding:0 var(--gut)}
+.mon .wd{font:600 11px var(--ui);color:var(--t3);text-align:center;letter-spacing:.06em}
+.dc{position:relative;aspect-ratio:1;border-radius:14px;--h:-.7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 13px var(--ui);color:var(--t2)}
+.dc.today{color:var(--cream)}
+.dc.fut{color:var(--t4)}
+.dc .ds{display:flex;gap:2px;pointer-events:none}
+.dc .ds i{width:4px;height:4px;border-radius:50%;background:var(--c);box-shadow:0 0 4px var(--c)}
+.dc > span{pointer-events:none}
+
+/* Routines */
+.rrow{position:relative;display:flex;align-items:center;gap:12px;margin:0 var(--gut) 12px;padding:14px 14px 14px 34px;border-radius:22px;--h:1;text-align:left;width:calc(100% - 2*var(--gut))}
+.rrow .nm{font:550 19px var(--disp)}
+.rrow .st{margin-top:3px;font:400 13.5px var(--ui);color:var(--t2)}
+.rrow > div{flex:1;pointer-events:none}
+.rrow svg{color:var(--t3);pointer-events:none}
+.pagein{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:0 0 60px}
+.pagein::-webkit-scrollbar{display:none}
+.pagehead{padding:58px var(--gut) 8px;display:flex;align-items:center;gap:12px}
+.pagehead h2{font:600 32px/1 var(--disp);letter-spacing:-.02em;text-shadow:var(--emb)}
+.back{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--t2);--h:.6}
+
+/* guide */
+.gi{position:relative;margin:0 var(--gut) 10px;border-radius:20px;--h:.8;overflow:hidden}
+.gi > button{display:flex;width:100%;align-items:center;gap:12px;padding:13px 14px;text-align:left}
+.gi .gn{flex:1;font:550 16px var(--ui)}
+.gi .gs{font:500 11.5px var(--ui);color:var(--t3);letter-spacing:.04em}
+.gi .gs.b{color:var(--sun2)}
+.gi .gd2{height:0;overflow:hidden;transition:height .38s var(--ease)}
+.gi .gd2 > div{padding:0 14px 14px}
+.gi .gd2 p{font:400 14px/1.45 var(--ui);color:var(--t2)}
+.gi .gd2 code{display:block;margin-top:8px;font:500 12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--t3);white-space:pre-wrap}
+.gi .gd2 .btn{margin-top:12px;height:42px}
+.gi.open{--h:-.8}
+.dl{display:flex;gap:10px;padding:4px var(--gut) 16px}
+.dl .btn{flex:1;height:44px;font-size:14px}
+
+@media (prefers-reduced-motion: reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.rm-on *,.rm-on *:before,.rm-on *:after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="pull f" id="pull"><span class="lt"></span><span id="pullt">Pull to sync from Health</span></div>
+
+  <!-- TODAY -->
+  <section class="screen on" id="s-today" data-title="Tuesday, 27 October"></section>
+  <!-- TIME -->
+  <section class="screen" id="s-time" data-title="October"></section>
+  <!-- ROUTINES -->
+  <section class="screen" id="s-routines" data-title="Routines"></section>
+  <!-- YOU -->
+  <section class="screen" id="s-you" data-title="You"></section>
+
+  <div class="topbar f" id="topbar"><span id="toptitle">Tuesday, 27 October</span></div>
+  <div class="sbar"><span class="clk">08:40</span><button class="gd fk" id="guidebtn" data-act="guide"><b>Guide</b>, 34 interactions</button></div>
+
+  <nav class="tabbar" id="tabbar">
+    <span class="tw f" id="tw"></span>
+    <button class="tab on" data-tab="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 17h18"/><path d="M6 17a6 6 0 0 1 12 0"/></svg>Today</button>
+    <button class="tab" data-tab="time"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19V11M10 19V6M15 19v-9M20 19V8"/></svg>Time</button>
+    <button class="logkey fk" data-act="log" aria-label="Log"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="tab" data-tab="routines"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg>Routines</button>
+    <button class="tab" data-tab="you"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</button>
+  </nav>
+  <div class="grain"></div>
+</div>
+<script>
+/* The inventory: every interactive or transitional element, how it morphs, how it feels, and its native route.
+   status: Built = working in this lab, Spec = written down only. try = a TRY key in app.js. */
+const GUIDE=[
+/* ---- the surface ---- */
+{id:'scroll',group:'The surface',name:'Scrolling folds the page',status:'Built',try:'scroll',
+ how:'Rows rise out of the page as they come up from the tab bar and sink back flat as they reach the top. A fast flick flattens everything slightly, as if the surface were moving under your finger, and it all rises again when you stop.',
+ feel:'No haptic. The motion is the feedback.',
+ native:'ScrollView + .scrollTransition(.interactive) { c, phase in c.neuDepth(rest * (1 - abs(phase.value))) }. Flick dip: onScrollGeometryChange + onScrollPhaseChange (iOS 18, context.velocity) feeding one @State dip.'},
+{id:'title',group:'The surface',name:'Day name folds into the top bar',status:'Built',try:'scroll',
+ how:'As you scroll, the big day name shrinks and fades while a low ridge forms across the top of the page with the short title on it. Nothing slides in; the bar rises out of the same surface.',
+ native:'onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } -> progress; bar = surface shape with .neuDepth(0.45 * progress); title .opacity(progress).'},
+{id:'strip',group:'The surface',name:'Results deepen as they reach the centre',status:'Built',try:'report',
+ how:'In the swipeable results row, the reading in front is a full hollow; the ones at the edge are shallow and deepen as you swipe them in.',
+ native:'Horizontal ScrollView + .scrollTargetBehavior(.viewAligned) + .scrollTransition(axis: .horizontal) driving depth.'},
+{id:'pull',group:'The surface',name:'Pull to sync',status:'Built',try:'pull',
+ how:'Pull Today down and a hollow forms above the header, deepening with your pull. Past the point of no return you feel a tick and the label turns to Release. A line of light sweeps inside the hollow while Health syncs, then it heals flat.',
+ feel:'One tick at the threshold, one when done.',
+ native:'Custom, not .refreshable (its spinner cannot be restyled): onScrollGeometryChange reads negative contentOffset; .sensoryFeedback(.impact(weight: .light), trigger: armed); HealthKit HKObserverQuery refresh. In this lab the pull only works on iPhone (Safari reports the bounce); Try it plays the sync.'},
+{id:'tilt',group:'The surface',name:'Layers pop: light follows the phone',status:'Built',try:'tilt',
+ how:'Every shadow and highlight is drawn from one light. Tilt the phone and the light swings: shadows lengthen on one side, highlights move, and raised things drift a few points against the page (parallax by height). Wells drift the other way. This is what makes it read as real depth rather than a drawing.',
+ feel:'Subtle: at most 2-3 pt of drift; never on by default for motion-sensitive users.',
+ native:'CoreMotion CMMotionManager.deviceMotion (attitude.roll/pitch) at 30 Hz, smoothed, into an @Observable Light {x, y}; NeuDepth reads it for shadow offsets and .offset(x: h * px). Respect accessibilityReduceMotion. On the web lab: turn on in You (asks motion permission on iPhone); a mouse moves the light on desktop.'},
+{id:'edges',group:'The surface',name:'Content passes under the tab bar',status:'Built',try:'scroll',
+ how:'The tab bar is the same page divided by one groove. Rows reaching it flatten into it rather than sliding under a floating bar.',
+ native:'Same scrollTransition as above; tab bar = .safeAreaInset(edge: .bottom) with the surface colour and a 2 pt groove.'},
+
+/* ---- keys and logging ---- */
+{id:'key',group:'Keys and logging',name:'A key sinks and springs back',status:'Built',try:'key',
+ how:'Touch down: the key sinks into the page in 80 ms and shrinks to 96 %. Release: it springs back up with a little overshoot. Raised means you can press it; pressed in means chosen or done.',
+ feel:'Light impact on touch down: the mechanical-key moment.',
+ native:'ButtonStyle reading configuration.isPressed -> depth -0.75, .scaleEffect(0.96), .animation(.spring(response: 0.28, dampingFraction: 0.6)); .sensoryFeedback(.impact(weight: .light), trigger: isPressed).'},
+{id:'done',group:'Keys and logging',name:'Done: the key stays in and fills',status:'Built',try:'key',
+ how:'On a one-tap routine the key stays pressed in, its routine colour rises from the bottom like liquid, and the check draws over it. Its groove on the left of the row fills to the new level.',
+ feel:'Success haptic for routines. Records (coffee, doses) get a plain tick, never a reward.',
+ native:'Rectangle masked by the key Circle with animated height; Path trim for the check; .sensoryFeedback(.success, trigger: done).'},
+{id:'count',group:'Keys and logging',name:'Count: the next slot fills',status:'Built',try:'count',
+ how:'Meals has one slot per meal set into the key. Each tap fills the next slot from the bottom. The figure in the status rolls up to the new number.',
+ native:'HStack of slot Capsules; fill via .scaleEffect(y:, anchor: .bottom); figure with .contentTransition(.numericText()).'},
+{id:'pour',group:'Keys and logging',name:'Amount: the tile pours',status:'Built',try:'pour',
+ how:'Tap 250: the tile presses in, light pours up inside it and drains, and the level groove above fills with a springy overshoot.',
+ native:'Tile ButtonStyle + PhaseAnimator([0, 1, 0]) for the pour; level width .animation(.spring(response: 0.5, dampingFraction: 0.6)).'},
+{id:'hold',group:'Keys and logging',name:'Hold: the key sinks deeper, then options grow out of it',status:'Built',try:'hold',
+ how:'Keep holding a key and it keeps sinking past normal pressed depth, like a key with a second stage. At the bottom you feel a tick and the options sheet grows out of the key itself.',
+ feel:'Tick at the second stage.',
+ native:'.onLongPressGesture(minimumDuration: 0.55, perform:, onPressingChanged:) driving depth over time; sheet via matchedGeometryEffect / .matchedTransitionSource + .navigationTransition(.zoom) (iOS 18).'},
+{id:'leave',group:'Keys and logging',name:'Completed row melts into the page',status:'Built',try:'key',
+ how:'After you finish something, the row holds still for 0.75 s (so no tap lands on a row that moved), then sinks flat into the page, the gap flows closed, and its light appears in Settled.',
+ native:'Custom Transition (iOS 17 Transition protocol): removal = depth -> 0 then .frame(height: 0); withAnimation(.spring(response: 0.35, dampingFraction: 1)) after a 0.75 s Task.sleep.'},
+{id:'undo',group:'Keys and logging',name:'Undo: the row rises back where it was',status:'Built',try:'key',
+ how:'Undo in the toast reverses it exactly: the gap opens, the row rises out of the page in its old place, and the key comes back up.',
+ native:'Same Transition, insertion = height opens then depth 0 -> 1 with .spring(response: 0.46, dampingFraction: 0.62).'},
+{id:'toast',group:'Keys and logging',name:'Toast swells out like a blister',status:'Built',try:'toast',
+ how:'The confirmation starts as a small bump above the tab bar, swells sideways into a slab, shows the running total and Undo, drains a groove for 4 s, then sinks back flat. A new toast replaces the old one by flattening it first.',
+ native:'Overlay in .safeAreaInset(edge: .bottom); width + depth driven by one spring; TimelineView(.animation) for the draining groove.'},
+{id:'onit',group:'Keys and logging',name:'On it stays pressed in',status:'Built',try:'onit',
+ how:'A dated task can be marked On it: the word key stays pressed in until done, and its status says so. Tap again to lift it.',
+ native:'Toggle with a custom ToggleStyle mapping isOn -> depth -1.'},
+{id:'tok',group:'Keys and logging',name:'Later words are small keys',status:'Built',try:'tok',
+ how:'In the Later hollow, each routine name is a small raised key. Tap and it presses in and its pit lights in its colour.',
+ native:'Same ButtonStyle at a smaller scale inside a flow layout (Layout protocol).'},
+{id:'live',group:'Keys and logging',name:'Session: the live bar lifts out of the row',status:'Built',try:'live',
+ how:'Start Reading: a bar lifts out of the row and travels down to dock above the tab bar with the live time. End sinks it back into the row, which then melts into Settled.',
+ native:'matchedGeometryEffect(id: "live-\\(id)") between the row and a .safeAreaInset(edge: .bottom) bar; Live Activity (ActivityKit) for the lock screen.'},
+
+/* ---- appear and disappear ---- */
+{id:'more',group:'Appearing and disappearing',name:'More: hidden rows rise one by one',status:'Built',try:'more',
+ how:'Tap 2 more: the page opens a gap and each row rises out of it, one after another. Fewer melts them back.',
+ native:'ForEach with the custom rise/melt Transition and .animation(.spring.delay(i * 0.09)).'},
+{id:'dismiss',group:'Appearing and disappearing',name:'Hidden result: the hollow heals',status:'Built',try:'dismiss',
+ how:'Tap the x on a reading: its content fades, the hollow fills back up to flat page, then the row of readings flows closed. Undo reopens the gap and sinks the hollow back in.',
+ native:'Same Transition, with depth -1 -> 0 for wells.'},
+{id:'arrive',group:'Appearing and disappearing',name:'New reading arrives: a hollow forms',status:'Built',try:'arrive',
+ how:'When a walk comes in from the Watch, a gap opens at the front of the readings, a hollow presses into the page, and then the reading appears inside it.',
+ native:'HKObserverQuery -> model insert; insertion Transition for wells (width opens, depth 0 -> -1, then content .opacity).'},
+{id:'notnow',group:'Appearing and disappearing',name:'Not now: the suggestion melts',status:'Built',try:'notnow',
+ how:'The suggestion sinks into the page and the space closes. No scolding, no badge left behind.',
+ native:'Removal Transition as above.'},
+{id:'filter',group:'Appearing and disappearing',name:'Filters: rows melt and rise',status:'Built',try:'filter',
+ how:'In Routines, pick Body and the other rows melt away while the gap flows closed; pick All and they rise back.',
+ native:'Filtered ForEach + the rise/melt Transition inside withAnimation.'},
+{id:'reveal',group:'Appearing and disappearing',name:'A setting reveals more',status:'Built',try:'wheel',
+ how:'Turning Remind me on opens the page and the time wheel rises into it. Turning it off melts it back.',
+ native:'if reminder { TimeWheel().transition(.neuRise) } in a Form-free VStack.'},
+{id:'loading',group:'Appearing and disappearing',name:'Loading: the surface breathes',status:'Built',try:'loading',
+ how:'No shimmer. While Health syncs, a few faint ridges slowly rise and settle in a wave across the hollow. When data lands, they flatten into the real lines.',
+ native:'PhaseAnimator over depth 0.05 <-> 0.55 with staggered delays; .redacted is not used.'},
+{id:'empty',group:'Appearing and disappearing',name:'Empty (day one): the page melts, one invitation rises',status:'Built',try:'empty',
+ how:'Everything flattens into the page, then a single hollow forms with Start with one thing and one key.',
+ native:'Root view switches on model.isEmpty with the melt/rise Transition.'},
+{id:'badge',group:'Appearing and disappearing',name:'Counts and badges',status:'Built',try:'held',
+ how:'Bring back the held item: the row in the sheet closes, the sheet sinks back into the flag key, and the badge count rolls then sinks away.',
+ native:'.contentTransition(.numericText()) + scale/opacity Transition on the badge.'},
+
+/* ---- navigation ---- */
+{id:'tabs',group:'Moving around',name:'Tabs: the well flows, screens melt and rise',status:'Built',try:'tabs',
+ how:'The current tab is a pressed well. Pick another and the well flows across, leading edge first, like a dent travelling under the surface. The old screen melts flat and fades; the new one rises out of the page from the top down.',
+ feel:'Selection tick.',
+ native:'Custom tab bar (not TabView chrome): matchedGeometryEffect for the well with two edge springs; content swap with the rise Transition, delays by row index. .sensoryFeedback(.selection, trigger: tab).'},
+{id:'push',group:'Moving around',name:'Open a routine: the row grows into the page',status:'Built',try:'push',
+ how:'Tap a routine and its plateau rises a little higher, then spreads to fill the screen and settles flat, becoming the new page. Back shrinks it home. Swipe from the left edge to scrub it back by hand.',
+ native:'NavigationStack + .matchedTransitionSource(id:in:) on the row and .navigationTransition(.zoom(sourceID:in:)) (iOS 18), which also gives the interactive edge swipe.'},
+{id:'log',group:'Moving around',name:'Log key: the sheet grows out of +',status:'Built',try:'log',
+ how:'The + key sinks and stays pressed in while the Log sheet grows out of it. Closing sinks the sheet back into the key, and the key springs up.',
+ native:'.matchedTransitionSource on the key + .sheet with .navigationTransition(.zoom). Key depth bound to isPresented.'},
+{id:'sheet',group:'Moving around',name:'Details grow out of the row',status:'Built',try:'details',
+ how:'Tap a row and the row itself lifts and becomes the sheet. Where it was, a shallow dent stays in the page. The page behind flattens and dims; there is no black overlay. Drag the top down and the sheet shrinks back toward its row as you pull.',
+ native:'.matchedTransitionSource(id: row.id) + .sheet(item:) { Details().navigationTransition(.zoom(sourceID:in:)) }; .presentationBackground(.surface); dent = source row depth -0.35 while presented.'},
+{id:'report',group:'Moving around',name:'Report: a hollow fills and rises',status:'Built',try:'report',
+ how:'Opening a reading runs the morph in reverse: the hollow fills up, passes through flat, and keeps rising into the report sheet.',
+ native:'Same zoom transition; depth interpolated from -1 to +1.25 in the presented view.'},
+{id:'search',group:'Moving around',name:'Search: the key spreads into a field',status:'Built',try:'search',
+ how:'The search disc sinks and spreads across the header into a pressed field, the page melts, and results rise beneath it. Cancel draws it back into the disc.',
+ native:'matchedGeometryEffect between the disc and a TextField container, depth +0.6 -> -1; .searchable is not used (its chrome cannot morph).'},
+{id:'context',group:'Moving around',name:'Small sheets from header keys',status:'Built',try:'context',
+ how:'Context and Held open from their small keys the same way: the key stays pressed in while its sheet is out.',
+ native:'As the Log key.'},
+{id:'day',group:'Moving around',name:'A day in the month grows into its sheet',status:'Built',try:'day',
+ how:'In Time, each day is a small hollow. Tap one and it fills and rises into that day.',
+ native:'LazyVGrid cells with .matchedTransitionSource; .sheet with .navigationTransition(.zoom).'},
+{id:'drag',group:'Moving around',name:'Drag to dismiss scrubs the morph',status:'Built',try:'details',
+ how:'Dragging a sheet down does not just slide it: it runs the morph backwards under your finger, shrinking it toward where it came from. Let go past the line and it finishes; otherwise it springs back up.',
+ native:'Built into the zoom transition interactive dismissal (iOS 18).'},
+
+/* ---- controls ---- */
+{id:'sw',group:'Controls',name:'Switch: a bead flows under the surface',status:'Built',try:'sw',
+ how:'The knob is a raised bead. Flip it and it stretches as it travels, then settles, while the colour fills in behind it like liquid. Off drains it.',
+ feel:'Tick on settle.',
+ native:'Custom ToggleStyle: Capsule well + bead Capsule whose width animates 24 -> 34 -> 24 via PhaseAnimator while offset springs; fill = Capsule width animation.'},
+{id:'seg',group:'Controls',name:'Segmented choice: the well flows',status:'Built',try:'filter',
+ how:'The chosen option is a pressed well. Pick another and it flows there, leading edge first, the same motion as the tab bar.',
+ native:'HStack of buttons + one well with matchedGeometryEffect; two springs for the edges (or a single .spring with a stretch PhaseAnimator).'},
+{id:'stepper',group:'Controls',name:'Stepper: the number rolls',status:'Built',try:'stepper',
+ how:'The +/- keys press like any key; the number rolls up or down out of a small window.',
+ native:'.contentTransition(.numericText(countsDown:)) + .sensoryFeedback(.increase/.decrease).'},
+{id:'wheel',group:'Controls',name:'Time wheel: the hour sits in a well',status:'Built',try:'wheel',
+ how:'A short wheel with one pressed band across the middle. The chosen hour sits in the well; neighbours fade and lift away from it. A tick for every hour you pass.',
+ feel:'Selection tick per detent: the most mechanical-key moment in the app.',
+ native:'ScrollView + .scrollTargetBehavior(.viewAligned) + .scrollPosition(id:) and .scrollTransition per row; .sensoryFeedback(.selection, trigger: hour). (Picker(.wheel) cannot be restyled to match.)'},
+{id:'swatch',group:'Controls',name:'Colour: the chosen swatch sinks, the page changes light',status:'Built',try:'swatch',
+ how:'The old swatch rises back up as the new one sinks in, and the routine page carries its new colour.',
+ native:'Buttons with depth bound to selection; routine hue in the environment so dependants animate.'},
+{id:'chips',group:'Controls',name:'Chips: raised until chosen',status:'Built',try:'hold',
+ how:'Options like times or contexts are small raised keys; the chosen one stays pressed in with a dot, so the state reads without colour.',
+ native:'Same ButtonStyle with a selected flag.'},
+{id:'field',group:'Controls',name:'Text field: a well that deepens on focus',status:'Spec',
+ how:'Fields are hollows. On focus the hollow deepens slightly and the caret takes the routine colour; on blur it relaxes.',
+ native:'@FocusState -> depth -0.8 / -1.1 with .spring.'},
+{id:'reorder',group:'Controls',name:'Reordering: the row lifts higher',status:'Spec',
+ how:'Long-press a routine in edit mode and it rises well above the others; the rows around it flow out of the way as you drag, and it settles back flat into its new place.',
+ native:'.draggable/.dropDestination, or List .onMove with a custom row that raises depth to 1.8 while dragged.'},
+{id:'confirm',group:'Controls',name:'Confirmations without alerts',status:'Spec',
+ how:'Retire and Let go do not open a system alert. The key itself asks: it presses in, its label changes to Tap again to let go, and it springs back if you leave it. Everything else is undoable, so it needs no confirmation.',
+ native:'Two-stage Button state with a 3 s timeout; no .alert or .confirmationDialog.'},
+
+/* ---- system ---- */
+{id:'haptics',group:'System',name:'Haptics map',status:'Built',try:'key',
+ how:'Press: light impact. Routine done: success. Record (coffee, dose, observation): selection only, never a reward. Hold second stage, pull threshold, wheel detent, tab change: selection. Errors: none (nothing in Meridian fails loudly).',
+ native:'.sensoryFeedback for each; Core Haptics only if we add the pour texture later. The web lab uses the iOS 18 Safari switch trick, so it ticks on iPhone (System Haptics must be on).'},
+{id:'reduce',group:'System',name:'Reduce motion',status:'Built',try:'tilt',
+ how:'All depth changes become instant and the light stops following the phone. State still reads by depth, glyph and position, never by motion alone.',
+ native:'@Environment(\\.accessibilityReduceMotion) swaps springs for .linear(duration: 0) and disables CoreMotion.'},
+{id:'widget',group:'System',name:'Widgets and Live Activities',status:'Spec',
+ how:'Widgets cannot run these animations. They use the same static depth recipe (rendered shadows) and the system content transitions on refresh. The live session uses a Live Activity whose progress groove updates.',
+ native:'WidgetKit + .contentTransition(.numericText()); ActivityKit for the session.'},
+];
+if(typeof module!=='undefined')module.exports=GUIDE;
+
+const MORPH_MD="# Meridian morph lab: one surface that deforms\n\nLive: https://bertonceljmark.github.io/meridian-app/morph/ (source: evolve/base7/neu-morph/src, `node src/build.js`).\nOwner of the arc and of static depth: Meridian studio. This lab owns motion: how things rise, flatten, sink and flow.\n\n## The idea in one paragraph\nNothing is a card laid on the page, and nothing slides over it. Every form carries ONE number, its height `--h`: +1 is a plateau risen out of the page, 0 is flat page, -1 is a well pressed into it. The shadows are computed from that number and from one light direction, so any form can travel continuously from raised, through flat, to pressed. Every interaction below is a change of that number, of a shape's outline, or of the light. A sheet is not a layer that slides up: the thing you touched rises and becomes the sheet, leaving a dent where it was, and sinks back into it when you close it.\n\n## Rules\n1. **Depth is state.** Raised: you can press it. Pressed in: chosen or done. Flat: not a control, or gone.\n2. **Whatever you touch is what changes.** A row becomes its sheet, a key becomes its options, the search disc becomes the field, a day cell becomes its day. No generic slide-up panel.\n3. **Things leave by melting, arrive by rising.** Removal: height to 0, then the gap flows closed. Arrival: the gap opens, then the form rises. Never a fade on its own.\n4. **No black overlay.** Behind a sheet the page flattens and dims; it recedes, it is not covered.\n5. **One light.** Shadows, highlights and parallax all come from one light (top left). Tilting the phone moves it; that is what makes the layers read as real depth.\n6. **Springs, not curves.** Every motion is a spring given as response and damping, the same numbers SwiftUI uses. Presses: 0.08 s down, spring back (0.28, 0.6). Rises: (0.46, 0.62). Melts: (0.34, 1.0). Sheets open (0.5, 0.8), close (0.4, 0.92).\n7. **Hold still before moving.** A finished row waits 0.75 s before it melts, so no tap lands on a row that moved (OP-04).\n8. **Reduce motion** turns every change instant; state still reads by depth, glyph and position.\n\n## The engine (for whoever ports it)\n- CSS: `@property --h {syntax:'<number>'}` per form; `--lx/--ly` (light) on the app root. Two shadow recipes, regions (`.f`) and keys (`.fk`), each a list of outer shadows scaled by max(h,0) and inset shadows scaled by max(-h,0), offsets multiplied by the light vector.\n- JS: one rAF loop sets each form's h = rest x fold(position on screen) x (1 - flick dip) x page energy x its own multiplier. Springs are integrated from (response, damping fraction).\n- **SwiftUI**: one `NeuDepth(h: Double, light: Light)` ViewModifier that draws the paired outer shadows when h > 0 and `.fill(.surface.shadow(.inner(...)))` when h < 0 (iOS 17 ShapeStyle inner shadows), interpolating through 0. Make h an `Animatable` value so springs drive it. Light is an @Observable from CoreMotion. Morphs use `.matchedTransitionSource` + `.navigationTransition(.zoom)` (iOS 18) and matchedGeometryEffect.\n\n## Every interactive and transitional element (47)\n\n### The surface\n\n**Scrolling folds the page** (built)\n- How: Rows rise out of the page as they come up from the tab bar and sink back flat as they reach the top. A fast flick flattens everything slightly, as if the surface were moving under your finger, and it all rises again when you stop.\n- Feel: No haptic. The motion is the feedback.\n- SwiftUI: ScrollView + .scrollTransition(.interactive) { c, phase in c.neuDepth(rest * (1 - abs(phase.value))) }. Flick dip: onScrollGeometryChange + onScrollPhaseChange (iOS 18, context.velocity) feeding one @State dip.\n\n**Day name folds into the top bar** (built)\n- How: As you scroll, the big day name shrinks and fades while a low ridge forms across the top of the page with the short title on it. Nothing slides in; the bar rises out of the same surface.\n- SwiftUI: onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } -> progress; bar = surface shape with .neuDepth(0.45 * progress); title .opacity(progress).\n\n**Results deepen as they reach the centre** (built)\n- How: In the swipeable results row, the reading in front is a full hollow; the ones at the edge are shallow and deepen as you swipe them in.\n- SwiftUI: Horizontal ScrollView + .scrollTargetBehavior(.viewAligned) + .scrollTransition(axis: .horizontal) driving depth.\n\n**Pull to sync** (built)\n- How: Pull Today down and a hollow forms above the header, deepening with your pull. Past the point of no return you feel a tick and the label turns to Release. A line of light sweeps inside the hollow while Health syncs, then it heals flat.\n- Feel: One tick at the threshold, one when done.\n- SwiftUI: Custom, not .refreshable (its spinner cannot be restyled): onScrollGeometryChange reads negative contentOffset; .sensoryFeedback(.impact(weight: .light), trigger: armed); HealthKit HKObserverQuery refresh. In this lab the pull only works on iPhone (Safari reports the bounce); Try it plays the sync.\n\n**Layers pop: light follows the phone** (built)\n- How: Every shadow and highlight is drawn from one light. Tilt the phone and the light swings: shadows lengthen on one side, highlights move, and raised things drift a few points against the page (parallax by height). Wells drift the other way. This is what makes it read as real depth rather than a drawing.\n- Feel: Subtle: at most 2-3 pt of drift; never on by default for motion-sensitive users.\n- SwiftUI: CoreMotion CMMotionManager.deviceMotion (attitude.roll/pitch) at 30 Hz, smoothed, into an @Observable Light {x, y}; NeuDepth reads it for shadow offsets and .offset(x: h * px). Respect accessibilityReduceMotion. On the web lab: turn on in You (asks motion permission on iPhone); a mouse moves the light on desktop.\n\n**Content passes under the tab bar** (built)\n- How: The tab bar is the same page divided by one groove. Rows reaching it flatten into it rather than sliding under a floating bar.\n- SwiftUI: Same scrollTransition as above; tab bar = .safeAreaInset(edge: .bottom) with the surface colour and a 2 pt groove.\n\n### Keys and logging\n\n**A key sinks and springs back** (built)\n- How: Touch down: the key sinks into the page in 80 ms and shrinks to 96 %. Release: it springs back up with a little overshoot. Raised means you can press it; pressed in means chosen or done.\n- Feel: Light impact on touch down: the mechanical-key moment.\n- SwiftUI: ButtonStyle reading configuration.isPressed -> depth -0.75, .scaleEffect(0.96), .animation(.spring(response: 0.28, dampingFraction: 0.6)); .sensoryFeedback(.impact(weight: .light), trigger: isPressed).\n\n**Done: the key stays in and fills** (built)\n- How: On a one-tap routine the key stays pressed in, its routine colour rises from the bottom like liquid, and the check draws over it. Its groove on the left of the row fills to the new level.\n- Feel: Success haptic for routines. Records (coffee, doses) get a plain tick, never a reward.\n- SwiftUI: Rectangle masked by the key Circle with animated height; Path trim for the check; .sensoryFeedback(.success, trigger: done).\n\n**Count: the next slot fills** (built)\n- How: Meals has one slot per meal set into the key. Each tap fills the next slot from the bottom. The figure in the status rolls up to the new number.\n- SwiftUI: HStack of slot Capsules; fill via .scaleEffect(y:, anchor: .bottom); figure with .contentTransition(.numericText()).\n\n**Amount: the tile pours** (built)\n- How: Tap 250: the tile presses in, light pours up inside it and drains, and the level groove above fills with a springy overshoot.\n- SwiftUI: Tile ButtonStyle + PhaseAnimator([0, 1, 0]) for the pour; level width .animation(.spring(response: 0.5, dampingFraction: 0.6)).\n\n**Hold: the key sinks deeper, then options grow out of it** (built)\n- How: Keep holding a key and it keeps sinking past normal pressed depth, like a key with a second stage. At the bottom you feel a tick and the options sheet grows out of the key itself.\n- Feel: Tick at the second stage.\n- SwiftUI: .onLongPressGesture(minimumDuration: 0.55, perform:, onPressingChanged:) driving depth over time; sheet via matchedGeometryEffect / .matchedTransitionSource + .navigationTransition(.zoom) (iOS 18).\n\n**Completed row melts into the page** (built)\n- How: After you finish something, the row holds still for 0.75 s (so no tap lands on a row that moved), then sinks flat into the page, the gap flows closed, and its light appears in Settled.\n- SwiftUI: Custom Transition (iOS 17 Transition protocol): removal = depth -> 0 then .frame(height: 0); withAnimation(.spring(response: 0.35, dampingFraction: 1)) after a 0.75 s Task.sleep.\n\n**Undo: the row rises back where it was** (built)\n- How: Undo in the toast reverses it exactly: the gap opens, the row rises out of the page in its old place, and the key comes back up.\n- SwiftUI: Same Transition, insertion = height opens then depth 0 -> 1 with .spring(response: 0.46, dampingFraction: 0.62).\n\n**Toast swells out like a blister** (built)\n- How: The confirmation starts as a small bump above the tab bar, swells sideways into a slab, shows the running total and Undo, drains a groove for 4 s, then sinks back flat. A new toast replaces the old one by flattening it first.\n- SwiftUI: Overlay in .safeAreaInset(edge: .bottom); width + depth driven by one spring; TimelineView(.animation) for the draining groove.\n\n**On it stays pressed in** (built)\n- How: A dated task can be marked On it: the word key stays pressed in until done, and its status says so. Tap again to lift it.\n- SwiftUI: Toggle with a custom ToggleStyle mapping isOn -> depth -1.\n\n**Later words are small keys** (built)\n- How: In the Later hollow, each routine name is a small raised key. Tap and it presses in and its pit lights in its colour.\n- SwiftUI: Same ButtonStyle at a smaller scale inside a flow layout (Layout protocol).\n\n**Session: the live bar lifts out of the row** (built)\n- How: Start Reading: a bar lifts out of the row and travels down to dock above the tab bar with the live time. End sinks it back into the row, which then melts into Settled.\n- SwiftUI: matchedGeometryEffect(id: \"live-\\(id)\") between the row and a .safeAreaInset(edge: .bottom) bar; Live Activity (ActivityKit) for the lock screen.\n\n### Appearing and disappearing\n\n**More: hidden rows rise one by one** (built)\n- How: Tap 2 more: the page opens a gap and each row rises out of it, one after another. Fewer melts them back.\n- SwiftUI: ForEach with the custom rise/melt Transition and .animation(.spring.delay(i * 0.09)).\n\n**Hidden result: the hollow heals** (built)\n- How: Tap the x on a reading: its content fades, the hollow fills back up to flat page, then the row of readings flows closed. Undo reopens the gap and sinks the hollow back in.\n- SwiftUI: Same Transition, with depth -1 -> 0 for wells.\n\n**New reading arrives: a hollow forms** (built)\n- How: When a walk comes in from the Watch, a gap opens at the front of the readings, a hollow presses into the page, and then the reading appears inside it.\n- SwiftUI: HKObserverQuery -> model insert; insertion Transition for wells (width opens, depth 0 -> -1, then content .opacity).\n\n**Not now: the suggestion melts** (built)\n- How: The suggestion sinks into the page and the space closes. No scolding, no badge left behind.\n- SwiftUI: Removal Transition as above.\n\n**Filters: rows melt and rise** (built)\n- How: In Routines, pick Body and the other rows melt away while the gap flows closed; pick All and they rise back.\n- SwiftUI: Filtered ForEach + the rise/melt Transition inside withAnimation.\n\n**A setting reveals more** (built)\n- How: Turning Remind me on opens the page and the time wheel rises into it. Turning it off melts it back.\n- SwiftUI: if reminder { TimeWheel().transition(.neuRise) } in a Form-free VStack.\n\n**Loading: the surface breathes** (built)\n- How: No shimmer. While Health syncs, a few faint ridges slowly rise and settle in a wave across the hollow. When data lands, they flatten into the real lines.\n- SwiftUI: PhaseAnimator over depth 0.05 <-> 0.55 with staggered delays; .redacted is not used.\n\n**Empty (day one): the page melts, one invitation rises** (built)\n- How: Everything flattens into the page, then a single hollow forms with Start with one thing and one key.\n- SwiftUI: Root view switches on model.isEmpty with the melt/rise Transition.\n\n**Counts and badges** (built)\n- How: Bring back the held item: the row in the sheet closes, the sheet sinks back into the flag key, and the badge count rolls then sinks away.\n- SwiftUI: .contentTransition(.numericText()) + scale/opacity Transition on the badge.\n\n### Moving around\n\n**Tabs: the well flows, screens melt and rise** (built)\n- How: The current tab is a pressed well. Pick another and the well flows across, leading edge first, like a dent travelling under the surface. The old screen melts flat and fades; the new one rises out of the page from the top down.\n- Feel: Selection tick.\n- SwiftUI: Custom tab bar (not TabView chrome): matchedGeometryEffect for the well with two edge springs; content swap with the rise Transition, delays by row index. .sensoryFeedback(.selection, trigger: tab).\n\n**Open a routine: the row grows into the page** (built)\n- How: Tap a routine and its plateau rises a little higher, then spreads to fill the screen and settles flat, becoming the new page. Back shrinks it home. Swipe from the left edge to scrub it back by hand.\n- SwiftUI: NavigationStack + .matchedTransitionSource(id:in:) on the row and .navigationTransition(.zoom(sourceID:in:)) (iOS 18), which also gives the interactive edge swipe.\n\n**Log key: the sheet grows out of +** (built)\n- How: The + key sinks and stays pressed in while the Log sheet grows out of it. Closing sinks the sheet back into the key, and the key springs up.\n- SwiftUI: .matchedTransitionSource on the key + .sheet with .navigationTransition(.zoom). Key depth bound to isPresented.\n\n**Details grow out of the row** (built)\n- How: Tap a row and the row itself lifts and becomes the sheet. Where it was, a shallow dent stays in the page. The page behind flattens and dims; there is no black overlay. Drag the top down and the sheet shrinks back toward its row as you pull.\n- SwiftUI: .matchedTransitionSource(id: row.id) + .sheet(item:) { Details().navigationTransition(.zoom(sourceID:in:)) }; .presentationBackground(.surface); dent = source row depth -0.35 while presented.\n\n**Report: a hollow fills and rises** (built)\n- How: Opening a reading runs the morph in reverse: the hollow fills up, passes through flat, and keeps rising into the report sheet.\n- SwiftUI: Same zoom transition; depth interpolated from -1 to +1.25 in the presented view.\n\n**Search: the key spreads into a field** (built)\n- How: The search disc sinks and spreads across the header into a pressed field, the page melts, and results rise beneath it. Cancel draws it back into the disc.\n- SwiftUI: matchedGeometryEffect between the disc and a TextField container, depth +0.6 -> -1; .searchable is not used (its chrome cannot morph).\n\n**Small sheets from header keys** (built)\n- How: Context and Held open from their small keys the same way: the key stays pressed in while its sheet is out.\n- SwiftUI: As the Log key.\n\n**A day in the month grows into its sheet** (built)\n- How: In Time, each day is a small hollow. Tap one and it fills and rises into that day.\n- SwiftUI: LazyVGrid cells with .matchedTransitionSource; .sheet with .navigationTransition(.zoom).\n\n**Drag to dismiss scrubs the morph** (built)\n- How: Dragging a sheet down does not just slide it: it runs the morph backwards under your finger, shrinking it toward where it came from. Let go past the line and it finishes; otherwise it springs back up.\n- SwiftUI: Built into the zoom transition interactive dismissal (iOS 18).\n\n### Controls\n\n**Switch: a bead flows under the surface** (built)\n- How: The knob is a raised bead. Flip it and it stretches as it travels, then settles, while the colour fills in behind it like liquid. Off drains it.\n- Feel: Tick on settle.\n- SwiftUI: Custom ToggleStyle: Capsule well + bead Capsule whose width animates 24 -> 34 -> 24 via PhaseAnimator while offset springs; fill = Capsule width animation.\n\n**Segmented choice: the well flows** (built)\n- How: The chosen option is a pressed well. Pick another and it flows there, leading edge first, the same motion as the tab bar.\n- SwiftUI: HStack of buttons + one well with matchedGeometryEffect; two springs for the edges (or a single .spring with a stretch PhaseAnimator).\n\n**Stepper: the number rolls** (built)\n- How: The +/- keys press like any key; the number rolls up or down out of a small window.\n- SwiftUI: .contentTransition(.numericText(countsDown:)) + .sensoryFeedback(.increase/.decrease).\n\n**Time wheel: the hour sits in a well** (built)\n- How: A short wheel with one pressed band across the middle. The chosen hour sits in the well; neighbours fade and lift away from it. A tick for every hour you pass.\n- Feel: Selection tick per detent: the most mechanical-key moment in the app.\n- SwiftUI: ScrollView + .scrollTargetBehavior(.viewAligned) + .scrollPosition(id:) and .scrollTransition per row; .sensoryFeedback(.selection, trigger: hour). (Picker(.wheel) cannot be restyled to match.)\n\n**Colour: the chosen swatch sinks, the page changes light** (built)\n- How: The old swatch rises back up as the new one sinks in, and the routine page carries its new colour.\n- SwiftUI: Buttons with depth bound to selection; routine hue in the environment so dependants animate.\n\n**Chips: raised until chosen** (built)\n- How: Options like times or contexts are small raised keys; the chosen one stays pressed in with a dot, so the state reads without colour.\n- SwiftUI: Same ButtonStyle with a selected flag.\n\n**Text field: a well that deepens on focus** (spec only)\n- How: Fields are hollows. On focus the hollow deepens slightly and the caret takes the routine colour; on blur it relaxes.\n- SwiftUI: @FocusState -> depth -0.8 / -1.1 with .spring.\n\n**Reordering: the row lifts higher** (spec only)\n- How: Long-press a routine in edit mode and it rises well above the others; the rows around it flow out of the way as you drag, and it settles back flat into its new place.\n- SwiftUI: .draggable/.dropDestination, or List .onMove with a custom row that raises depth to 1.8 while dragged.\n\n**Confirmations without alerts** (spec only)\n- How: Retire and Let go do not open a system alert. The key itself asks: it presses in, its label changes to Tap again to let go, and it springs back if you leave it. Everything else is undoable, so it needs no confirmation.\n- SwiftUI: Two-stage Button state with a 3 s timeout; no .alert or .confirmationDialog.\n\n### System\n\n**Haptics map** (built)\n- How: Press: light impact. Routine done: success. Record (coffee, dose, observation): selection only, never a reward. Hold second stage, pull threshold, wheel detent, tab change: selection. Errors: none (nothing in Meridian fails loudly).\n- SwiftUI: .sensoryFeedback for each; Core Haptics only if we add the pour texture later. The web lab uses the iOS 18 Safari switch trick, so it ticks on iPhone (System Haptics must be on).\n\n**Reduce motion** (built)\n- How: All depth changes become instant and the light stops following the phone. State still reads by depth, glyph and position, never by motion alone.\n- SwiftUI: @Environment(\\.accessibilityReduceMotion) swaps springs for .linear(duration: 0) and disables CoreMotion.\n\n**Widgets and Live Activities** (spec only)\n- How: Widgets cannot run these animations. They use the same static depth recipe (rendered shadows) and the system content transitions on refresh. The live session uses a Live Activity whose progress groove updates.\n- SwiftUI: WidgetKit + .contentTransition(.numericText()); ActivityKit for the session.\n\n\n## Taste calls (logged, not asked)\n- **The tab bar does not hide on scroll.** Hiding it saves 84 pt but moves the one stable anchor; for an ADHD user a fixed home base beats the extra space.\n- **No black scrim.** A dimmed, flattened page reads as one surface; a dark overlay reads as a layer on top.\n- **Parallax is capped at 2-3 pt.** More starts to look like a 2013 iOS 7 wallpaper effect, which is the gimmick Mark rejects.\n- **Loading never shimmers.** Shimmer is the most recognisable template tell; the breathing ridge belongs to this surface.\n- **No system alert or confirmation dialog anywhere.** Their chrome cannot morph; everything is undoable or uses a two-stage key.\n\n## Limits of the web lab\n- The arc is a flat placeholder; the studio owns it.\n- Haptics: real ticks only on iPhone with iOS 18 or later, through the Safari switch trick; one strength only. Native has the full map.\n- Tilt light asks for motion permission on iPhone (You > Light follows the phone).\n- Animated box-shadows are heavier on the web than native; if it stutters on an older phone, that is the web, not the design.\n";
+</script>
+<script>
+'use strict';
+/* Meridian morph lab. One surface; everything is a change of --h on it. */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const app=$('#app');
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ss=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+let RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,RM?0:ms));
+
+/* ---------- haptics ----------
+   iOS 18+ Safari gives a real system tick when a <input switch> is toggled.
+   We toggle a hidden one from inside user gestures. Elsewhere: vibrate if present. */
+let HAPT=true;
+const hapL=document.createElement('label');hapL.setAttribute('aria-hidden','true');
+hapL.style.cssText='position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0';
+const hapI=document.createElement('input');hapI.type='checkbox';hapI.setAttribute('switch','');hapI.tabIndex=-1;hapL.appendChild(hapI);
+hapL.addEventListener('click',e=>e.stopPropagation());document.body.appendChild(hapL);
+function tick(){if(!HAPT)return;try{if(navigator.vibrate)navigator.vibrate(8);else hapL.click()}catch(e){}}
+
+/* ---------- springs (response in s, damping fraction), same parameters as SwiftUI .spring(response:dampingFraction:) ---------- */
+const sp=(resp=.42,z=.8)=>({k:(2*Math.PI/resp)**2,c:4*Math.PI*z/resp});
+function spring(from,to,cfg,on,done){
+  if(RM){on(to);done&&done();return{stop(){}}}
+  let x=from,v=cfg.v||0,last=null,stopped=false;const span=Math.max(Math.abs(to-from),.02);
+  function f(now){
+    if(stopped)return;if(last==null)last=now;const dt=Math.min(.034,(now-last)/1000);last=now;
+    for(let i=0;i<4;i++){const h=dt/4,a=-cfg.k*(x-to)-cfg.c*v;v+=a*h;x+=v*h}
+    if(Math.abs(x-to)<span*.002&&Math.abs(v)<span*.03){on(to);done&&done();return}
+    on(x);requestAnimationFrame(f);
+  }
+  requestAnimationFrame(f);
+  return{stop(){stopped=true},get v(){return v}};
+}
+
+/* ---------- the surface engine ----------
+   Every form with data-b (its resting height) is re-evaluated each frame:
+   h = rest x fold(position) x (1 - speed dip) x page energy x its own multiplier.
+   fold: things rise out of the page from under the tab bar and sink back
+   into it as they reach the top bar. */
+const G={E:1,dip:0,dipT:0};
+let managed=[],raf=0,TABH=84,barP=0;
+const cur=()=>$('.screen.on');
+function refresh(){managed=$$('.screen.on [data-b]')}
+function req(){if(!raf)raf=requestAnimationFrame(frame)}
+function frame(){
+  raf=0;const ar=app.getBoundingClientRect();
+  G.dip+=(G.dipT-G.dip)*.16;if(Math.abs(G.dip-G.dipT)>.002)req();
+  const top=ar.top+52+barP*44,bot=ar.top+ar.height-TABH;
+  for(const el of managed){
+    if(!el.isConnected)continue;
+    const r=el.getBoundingClientRect();if(r.bottom<ar.top-60||r.top>ar.bottom+60)continue;
+    const c=r.top+Math.min(r.height,140)/2;
+    let f=ss(top-30,top+90,c)*ss(bot+30,bot-90,c);
+    if(el.dataset.x){const cx=r.left+r.width/2-ar.left;f*=lerp(.35,1,ss(ar.width+20,ar.width*.62,cx)*ss(-r.width*.2,r.width*.35,cx))}
+    const h=el._lift?-.35:(+el.dataset.b)*f*(1-G.dip)*G.E*(el._m??1);
+    if(Math.abs(h-(el._h??99))>.003){el._h=h;el.style.setProperty('--h',h.toFixed(3))}
+  }
+}
+function setM(el,to,cfg=sp(.44,.72),delay=0){
+  return new Promise(res=>{const go=()=>{el._ms&&el._ms.stop();el._ms=spring(el._m??1,to,cfg,x=>{el._m=x;req()},res)};delay&&!RM?setTimeout(go,delay):go()});
+}
+function springE(to,cfg=sp(.3,1)){return new Promise(res=>{G._s&&G._s.stop();G._s=spring(G.E,to,cfg,x=>{G.E=x;req()},res)})}
+
+/* height collapse / expand: the gap flows closed, or opens */
+function collapse(el,dur=340){return new Promise(res=>{
+  if(RM){el.style.display='none';return res()}
+  const h=el.offsetHeight,cs=getComputedStyle(el);
+  Object.assign(el.style,{height:h+'px',overflow:'hidden',marginBottom:cs.marginBottom,paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,flexBasis:el.offsetWidth+'px'});
+  el.offsetHeight;
+  el.style.transition=`height ${dur}ms var(--ease),margin ${dur}ms var(--ease),padding ${dur}ms var(--ease),opacity ${dur*.7}ms,flex-basis ${dur}ms var(--ease),min-height ${dur}ms`;
+  if(el.dataset.horiz){Object.assign(el.style,{flexBasis:'0px',minWidth:'0px',paddingLeft:'0px',paddingRight:'0px',marginRight:'-14px',opacity:'0'})}
+  else Object.assign(el.style,{height:'0px',minHeight:'0px',marginBottom:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:'0'});
+  setTimeout(res,dur+30);
+})}
+function expand(el,dur=360){return new Promise(res=>{
+  el.style.display='';el.style.transition='none';
+  if(el.dataset.horiz){
+    Object.assign(el.style,{flexBasis:'0px',minWidth:'0px',paddingLeft:'0px',paddingRight:'0px',marginRight:'-14px',opacity:'0',overflow:'hidden'});el.offsetHeight;
+    el.style.transition=`flex-basis ${dur}ms var(--ease),padding ${dur}ms var(--ease),margin ${dur}ms var(--ease),opacity ${dur}ms`;
+    Object.assign(el.style,{flexBasis:'',paddingLeft:'',paddingRight:'',marginRight:'',opacity:''});
+  }else{
+    Object.assign(el.style,{height:'',minHeight:'',marginBottom:'',paddingTop:'',paddingBottom:'',opacity:''});
+    const H=el.offsetHeight,cs=getComputedStyle(el);const mb=cs.marginBottom,pt=cs.paddingTop,pb=cs.paddingBottom;
+    Object.assign(el.style,{height:'0px',minHeight:'0px',marginBottom:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:'0',overflow:'hidden'});el.offsetHeight;
+    el.style.transition=`height ${dur}ms var(--ease),margin ${dur}ms var(--ease),padding ${dur}ms var(--ease),opacity ${dur}ms`;
+    Object.assign(el.style,{height:H+'px',marginBottom:mb,paddingTop:pt,paddingBottom:pb,opacity:'1'});
+  }
+  setTimeout(()=>{['height','minHeight','marginBottom','paddingTop','paddingBottom','opacity','overflow','transition','flexBasis','minWidth','paddingLeft','paddingRight','marginRight'].forEach(p=>el.style[p]='');res()},RM?0:dur+30);
+})}
+/* melt: a plateau sinks flat into the page, then the gap closes */
+async function melt(el){el._m=el._m??1;el.classList.add('melt');await setM(el,0,sp(.34,1));await collapse(el)}
+/* rise: the gap opens, then the form rises out of the page */
+async function rise(el,delay=0){el._m=0;req();await expand(el);await setM(el,1,sp(.46,.62),delay)}
+
+/* ---------- light: tilt the phone (or move the pointer) and the light moves; shadows and highlights swing,
+   raised things drift a little against the base (parallax by height). ---------- */
+const L={x:1,y:1,tx:1,ty:1,on:false};
+function lightTo(tx,ty){L.tx=clamp(tx,-.3,2.1);L.ty=clamp(ty,-.3,2.1);if(!L.raf)L.raf=requestAnimationFrame(lightStep)}
+function lightStep(){L.raf=0;L.x+=(L.tx-L.x)*.14;L.y+=(L.ty-L.y)*.14;
+  app.style.setProperty('--lx',L.x.toFixed(3));app.style.setProperty('--ly',L.y.toFixed(3));
+  app.style.setProperty('--px',((1-L.x)*2.4).toFixed(2));app.style.setProperty('--py',((1-L.y)*2.4).toFixed(2));
+  if(Math.abs(L.tx-L.x)>.002||Math.abs(L.ty-L.y)>.002)L.raf=requestAnimationFrame(lightStep)}
+function onTilt(e){if(e.gamma==null)return;lightTo(1+e.gamma/28,1+(e.beta-50)/28)}
+async function enableTilt(){
+  try{if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){const p=await DeviceOrientationEvent.requestPermission();if(p!=='granted')return false}}catch(e){return false}
+  window.addEventListener('deviceorientation',onTilt);L.on=true;return true}
+function disableTilt(){window.removeEventListener('deviceorientation',onTilt);L.on=false;lightTo(1,1)}
+app.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!L.mouse)return;const r=app.getBoundingClientRect();lightTo(1+((e.clientX-r.left)/r.width-.5)*1.6,1+((e.clientY-r.top)/r.height-.5)*1.6)});
+
+/* ---------- data ---------- */
+const HUE={saf:['#D3A23B','#E8BD6D'],lag:['#40B8EE','#74D1FF'],mos:['#81BE6B','#A1D58F'],jad:['#24C5AB','#6ADCC4'],iri:['#B897F0','#CFB4FF'],ros:['#EF869B','#FFA6B6'],nig:['#98A2FC','#B3BDFF'],emb:['#FF6B3D','#FF8F5E']};
+const hv=h=>`--hf:${HUE[h][0]};--ht:${HUE[h][1]}`;
+const R={
+  meals:{name:'Meals',hue:'saf',kind:'count',n:1,of:3,last:'08:20',lead:1},
+  bins:{name:'Bins out',kind:'task',sub:'<b>Today</b>, by 20:00'},
+  water:{name:'Water',hue:'lag',kind:'amount',ml:580,goal:2000},
+  stretch:{name:'Stretch',hue:'mos',kind:'tap',wk:3,aim:5},
+  reading:{name:'Reading',hue:'iri',kind:'session',usual:20},
+  floss:{name:'Floss',hue:'lag',kind:'tap',wk:4,aim:7,extra:1},
+  spanish:{name:'Spanish',hue:'iri',kind:'tap',wk:2,aim:4,extra:1},
+};
+const ICON={
+  plus:'<svg class="pl" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  check:(g)=>`<svg class="ck${g?' ghost':''}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
+  x:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  play:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg>',
+  chev:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>',
+  back:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>',
+  search:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>',
+  flag:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4M6 4h11l-2 4 2 4H6"/></svg>',
+  ctx:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.7 2.5 13.3 0 16M12 4c-2.5 2.7-2.5 13.3 0 16"/></svg>',
+};
+function statusOf(id){const d=R[id];
+  if(d.kind==='count')return `<b>${d.n} of ${d.of}</b>, last ${d.last}`;
+  if(d.kind==='amount')return `<b>${d.ml} ml</b> of 2 L`;
+  if(d.kind==='task')return d.sub+(d.onit?', on it':'');
+  if(d.kind==='session')return d.live?`<b>Live</b>, started 08:40`:`Usually <b>${d.usual} min</b>`;
+  return `<b>${d.wk} of ${d.aim}</b> this week`}
+function progOf(id){const d=R[id];if(d.kind==='count')return d.n/d.of;if(d.kind==='amount')return d.ml/d.goal;if(d.kind==='tap')return d.wk/d.aim;return 0}
+function keyOf(id){const d=R[id];
+  if(d.kind==='count')return `<button class="key ks fk" data-act="count" data-hold="1" aria-label="Log a meal">${Array.from({length:d.of},(_,i)=>`<i class="${i<d.n?'on':''}"></i>`).join('')}</button>`;
+  if(d.kind==='task')return `<button class="key kw fk" data-act="onit">On it</button><button class="key kr fk" data-act="tap" aria-label="Done">${ICON.check(1)}</button>`;
+  if(d.kind==='session')return `<button class="key kp fk" data-act="start">${ICON.play}Start</button>`;
+  if(d.kind==='amount')return '';
+  return `<button class="key kr fk" data-act="tap" data-hold="1" aria-label="Log ${d.name}"><span class="fill"></span>${ICON.plus}${ICON.check()}</button>`}
+function rowHTML(id){const d=R[id];
+  return `<div class="row f${d.lead?' lead':''}${d.kind==='amount'?' full':''}${d.kind==='task'?' task':''}" data-b="1" data-id="${id}" style="${d.hue?hv(d.hue):''}">
+  <span class="inl"><i style="height:${Math.round(progOf(id)*100)}%"></i></span>
+  <button class="open" data-act="details" aria-label="${d.name} details"></button>
+  <div class="txt"><div class="nm">${d.name}</div><div class="st">${statusOf(id)}</div></div>
+  <div class="ctl">${keyOf(id)}</div>
+  ${d.kind==='amount'?`<div class="level"><i style="width:${Math.min(100,d.ml/d.goal*100)}%"></i></div><div class="amt">${[150,250,330,500,750].map(v=>`<button class="tile fk" data-act="pour" data-ml="${v}"><span class="fill"></span><span>${v}</span></button>`).join('')}</div>`:''}
+  </div>`}
+function updRow(row,rollFig=true){const id=row.dataset.id;const st=$('.st',row);st.innerHTML=statusOf(id);if(rollFig){const b=$('b',st);b&&b.classList.add('roll')}
+  const i=$('.inl i',row);i&&(i.style.height=Math.round(clamp(progOf(id))*100)+'%');const lv=$('.level i',row);lv&&(lv.style.width=Math.min(100,R[id].ml/R[id].goal*100)+'%')}
+
+/* ---------- screens ---------- */
+function todayHTML(){return `
+<header class="head"><div><h1 id="dayname">Tuesday</h1><div class="sub">27 October</div></div>
+ <div class="hicons"><button class="ib fk" data-act="context" aria-label="Context">${ICON.ctx}</button><button class="ib fk" data-act="held" aria-label="Held">${ICON.flag}<span class="n" id="heldn">1</span></button><button class="ib fk" data-act="search" aria-label="Search">${ICON.search}</button></div></header>
+<div class="arc" aria-hidden="true"><svg viewBox="0 0 390 128" preserveAspectRatio="none">
+ <defs><radialGradient id="sg"><stop offset="0" stop-color="#FF8F5E" stop-opacity=".55"/><stop offset="1" stop-color="#FF8F5E" stop-opacity="0"/></radialGradient></defs>
+ <path d="M14 98H376" stroke="rgba(12,9,6,.55)" stroke-width="1"/><path d="M14 99H376" stroke="rgba(255,238,220,.06)" stroke-width="1"/>
+ <path d="M22 98C34 120 66 120 78 98" fill="none" stroke="#98A2FC" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+ <path d="M78 98C100 80 124 62 150 56" fill="none" stroke="#F3EDE4" stroke-width="3" stroke-linecap="round" opacity=".85"/>
+ <path d="M150 56C200 40 262 38 300 64S352 96 372 98" fill="none" stroke="rgba(243,237,228,.28)" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/>
+ <circle cx="150" cy="56" r="26" fill="url(#sg)"/><circle cx="150" cy="56" r="6" fill="#FF8F5E"/>
+ <text x="162" y="46" fill="#FF8F5E" font-size="11.5" font-family="Geist" font-weight="600">08:40</text>
+ <text x="20" y="124" fill="rgba(243,237,228,.5)" font-size="11.5" font-family="Geist">7 h 04 asleep</text></svg></div>
+<div class="strip" id="strip">
+ <div class="panel f" data-b="-1" data-x="1" data-horiz="1" data-id="sleep" style="${hv('nig')}"><button class="open" data-act="report" aria-label="Sleep report"></button><div class="k">Last night, 7 h 04</div><div class="big">23:41<small>to 07:12</small></div><div class="ln">Your usual night.</div><div class="mini">${[16,20,14,22,19,17,21].map((v,i)=>`<i class="${i==6?'hi':''}" style="height:${v}px"></i>`).join('')}</div><button class="px fk" data-act="dismiss" aria-label="Hide">${ICON.x}</button></div>
+ <div class="panel f" data-b="-1" data-x="1" data-horiz="1" data-id="run" style="${hv('mos')}"><button class="open" data-act="report" aria-label="Run report"></button><div class="k">Yesterday</div><div class="big">6.2<small>km run</small></div><div class="ln">5:25 /km. Second fastest of 39 at 5 to 7 km.</div><div class="mini">${[12,16,19,15,22,18].map((v,i)=>`<i class="${i==4?'hi':''}" style="height:${v}px"></i>`).join('')}</div><button class="px fk" data-act="dismiss" aria-label="Hide">${ICON.x}</button></div>
+ <div class="panel f" data-b="-1" data-x="1" data-horiz="1" data-id="week" style="${hv('jad')}"><button class="open" data-act="report" aria-label="Week"></button><div class="k">Last week</div><div class="big">23<small>things done</small></div><div class="ln">Sketching came back on Saturday.</div><div class="mini">${[10,18,14,8,20,22,16].map((v,i)=>`<i class="${i==5?'hi':''}" style="height:${v}px"></i>`).join('')}</div><button class="px fk" data-act="dismiss" aria-label="Hide">${ICON.x}</button></div>
+</div>
+<section class="sec" id="nowsec"><div class="sech"><h2>Now</h2><span class="aside">5 open</span></div>
+ <div class="rows" id="now">${['meals','bins','water','stretch','reading'].map(rowHTML).join('')}</div>
+ <button class="more fk" data-act="more">2 more</button></section>
+<section class="sec"><div class="sech"><h2>Later</h2><span class="aside">Tap to log</span></div>
+ <div class="later f" data-b="-1"><div class="lg"><span class="h">This afternoon</span>
+  <button class="tok fk" data-act="tok" style="${hv('ros')}"><span class="hp"></span>Call Ana</button><button class="tok fk" data-act="tok" style="${hv('jad')}"><span class="hp"></span>Guitar</button><button class="tok fk" data-act="tok" style="${hv('mos')}"><span class="hp"></span>Walk</button>
+  <span class="h">This evening</span><button class="tok fk" data-act="tok" style="${hv('jad')}"><span class="hp"></span>Sketching</button><button class="tok fk" data-act="tok" style="${hv('iri')}"><span class="hp"></span>Journal</button></div></div></section>
+<section class="sec" id="sugsec"><div class="sech"><h2>If you have a moment</h2></div>
+ <div class="sug f" data-b="1" id="sug" style="${hv('ros')}"><div class="sn">Message Luka about Saturday</div><div class="sr">You usually see friends twice a month. Last time was the 9th.</div>
+ <div class="sb"><button class="btn primary fk" data-act="sugstart">Do it now</button><button class="btn fk lo" data-act="notnow">Not now</button></div></div></section>
+<section class="sec"><div class="sech"><h2>Settled</h2></div><div class="settled" id="settled"><span style="${hv('saf')}"><i></i>Vitamin D</span><span style="${hv('mos')}"><i></i>Push-ups</span></div></section>`}
+function todayEmptyHTML(){return `<header class="head"><div><h1 id="dayname">Tuesday</h1><div class="sub">27 October, day one</div></div></header>
+<div class="empty"><div class="well f" data-b="-1" style="padding:26px 20px"><h3>Start with one thing</h3><p>Pick something you already do most days. You can add the rest whenever you like.</p>
+<button class="btn primary fk" data-act="addfirst">Add a routine</button></div><p style="margin-top:22px;font-size:13px">Guide: tap “Back to a full day” to return.</p><button class="btn fk lo" data-act="unempty">Back to a full day</button></div>`}
+function timeHTML(){const days=[];for(let d=1;d<=31;d++)days.push(d);const off=2;
+  const dots=d=>d>27?'':['mos','lag','saf','iri','ros','jad'].filter((_,i)=>((d*7+i*3)%5)<2+(i%2)).slice(0,4).map(h=>`<i style="--c:${HUE[h][0]}"></i>`).join('');
+  return `<header class="head"><div><h1>October</h1><div class="sub">Your month so far</div></div></header>
+  <div class="sec"><div class="mon">${['M','T','W','T','F','S','S'].map(w=>`<span class="wd">${w}</span>`).join('')}${Array(off).fill('<span></span>').join('')}
+  ${days.map(d=>`<button class="dc f${d==27?' today':''}${d>27?' fut':''}" data-b="${d>27?-.35:-.75}" data-act="day" data-d="${d}"><span>${d}</span><span class="ds">${dots(d)}</span></button>`).join('')}</div></div>
+  <section class="sec"><div class="sech"><h2>This week</h2></div><div class="well f" data-b="-1" style="${hv('mos')}"><div class="bars" id="wkbars">${['M','T','W','T','F','S','S'].map((w,i)=>`<div class="c"><b><i style="height:${[60,80,40,70,0,0,0][i]}%"></i></b>${w}</div>`).join('')}</div></div></section>
+  <section class="sec"><div class="sech"><h2>Sleep this month</h2></div><div class="well f" data-b="-1" style="${hv('nig')}"><div class="bars">${[72,64,80,70,58,76,68].map((v,i)=>`<div class="c"><b><i style="height:${v}%"></i></b>W${i+1}</div>`).join('').replace(/W6|W7/g,'')}</div></div></section>`}
+const RL=[['stretch','Stretch','mos','Body','5 a week'],['meals','Meals','saf','Body','3 a day'],['water','Water','lag','Body','2 L a day'],['reading','Reading','iri','Mind','20 min, most days'],['spanish','Spanish','iri','Mind','4 a week'],['date','Date night','ros','People','Twice a month'],['friends','See friends','ros','People','Twice a month'],['guitar','Guitar','jad','Mind','3 a week']];
+function routinesHTML(){return `<header class="head"><div><h1>Routines</h1><div class="sub">8 active, 1 paused</div></div></header>
+ <div class="sec"><div class="seg f" data-b=".7" id="rseg"><span class="sw2 f" style="--h:-1"></span>${['All','Body','Mind','People'].map((t,i)=>`<button class="${i==0?'on':''}" data-act="filter" data-f="${t}">${t}</button>`).join('')}</div></div>
+ <div class="sec" id="rlist">${RL.map(r=>`<button class="rrow f" data-b="1" data-act="push" data-id="${r[0]}" data-area="${r[3]}" style="${hv(r[2])}"><span class="inl"><i style="height:${30+r[1].length*6}%"></i></span><div><div class="nm">${r[1]}</div><div class="st">${r[4]}</div></div>${ICON.chev}</button>`).join('')}</div>`}
+function youHTML(){return `<header class="head"><div><h1>You</h1><div class="sub">Health and settings</div></div></header>
+ <section class="sec"><div class="sech"><h2>From Health</h2><span class="aside" id="syncd">Last sync 07:12</span></div>
+ <div class="well f" data-b="-1" id="hwell"><div class="para">Sleep, workouts, daylight and steps come in on their own.</div></div>
+ <div class="btns" style="margin-top:14px"><button class="btn fk" data-act="sync">Sync now</button></div></section>
+ <section class="sec"><div class="sech"><h2>This prototype</h2></div><div class="well f" data-b="-1" style="padding:4px 16px">
+  <div class="set"><div class="sl"><b>Light follows the phone</b><small>Tilt it: shadows swing, raised things drift</small></div><button class="sw fk" style="--h:-1" data-act="sw" data-k="tilt" role="switch" aria-checked="false"><span class="liq"></span><span class="bead fk"></span></button></div>
+  <div class="set"><div class="sl"><b>Haptics</b><small>iPhone, iOS 18 or later</small></div><button class="sw fk on" style="--h:-1" data-act="sw" data-k="hapt" role="switch" aria-checked="true"><span class="liq"></span><span class="bead fk"></span></button></div>
+  <div class="set"><div class="sl"><b>Reduce motion</b><small>Depth changes become instant</small></div><button class="sw fk" style="--h:-1" data-act="sw" data-k="rm" role="switch" aria-checked="false"><span class="liq"></span><span class="bead fk"></span></button></div>
+ </div></section>
+ <section class="sec"><div class="sech"><h2>Modules</h2></div><div class="well f" data-b="-1" style="padding:4px 16px">
+  <div class="set"><div class="sl"><b>Medication</b><small>Doses as quiet records</small></div><button class="sw fk on" style="--h:-1" data-act="sw" role="switch" aria-checked="true"><span class="liq"></span><span class="bead fk"></span></button></div>
+  <div class="set"><div class="sl"><b>Feel check-ins</b><small>Optional, never asked</small></div><button class="sw fk" style="--h:-1" data-act="sw" role="switch" aria-checked="false"><span class="liq"></span><span class="bead fk"></span></button></div>
+ </div></section>`}
+
+function mount(){$('#s-today').innerHTML=todayHTML();$('#s-time').innerHTML=timeHTML();$('#s-routines').innerHTML=routinesHTML();$('#s-you').innerHTML=youHTML();
+  $$('.screen').forEach(s=>s.addEventListener('scroll',onScroll,{passive:true}));refresh();req()}
+
+/* ---------- scroll: the page folds as you go ---------- */
+let lastY=0,lastT=0,dipTimer=0,pullArmed=false,syncing=false;
+function onScroll(e){const s=e.currentTarget;if(s!==cur())return;const now=performance.now(),y=s.scrollTop;
+  const v=(y-lastY)/Math.max(1,now-lastT)*1000;lastY=y;lastT=now;
+  G.dipT=Math.min(Math.abs(v)/3000,.32);clearTimeout(dipTimer);dipTimer=setTimeout(()=>{G.dipT=0;req()},90);
+  barP=ss(20,84,y);const tb=$('#topbar');tb.style.opacity=barP;tb.style.setProperty('--h',(barP*.45).toFixed(3));
+  const h1=$('.head h1',s);if(h1){h1.style.opacity=1-ss(10,60,y);h1.style.transform=`scale(${1-.1*ss(0,70,y)})`}
+  if(s.id==='s-today')pullUpdate(y);
+  req()}
+function pullUpdate(y){const p=$('#pull');if(syncing)return;const d=Math.max(0,-y);p.style.opacity=ss(4,30,d);p.style.setProperty('--h',(-clamp(d/80)).toFixed(3));
+  if(d>80&&!pullArmed){pullArmed=true;tick();$('#pullt').textContent='Release to sync'}else if(d<=80&&pullArmed){pullArmed=false;$('#pullt').textContent='Pull to sync from Health'}}
+app.addEventListener('touchend',()=>{if(pullArmed&&!syncing){pullArmed=false;doSync(true)}},{passive:true});
+async function doSync(fromPull){const p=$('#pull');syncing=true;p.style.opacity=1;p.style.transition='--h .4s var(--ease)';p.style.setProperty('--h','-1');p.classList.add('sync');$('#pullt').textContent='Syncing';
+  await wait(1300);p.classList.remove('sync');$('#pullt').textContent='Up to date, 08:40';tick();await wait(900);p.style.setProperty('--h','0');p.style.opacity=0;await wait(400);p.style.transition='';$('#pullt').textContent='Pull to sync from Health';syncing=false}
+
+/* ---------- toast: swells out of the surface, drains, sinks back ---------- */
+let toastEl=null,toastTimer=0;
+async function toast(html,undo){
+  if(toastEl){const o=toastEl;toastEl=null;closeToast(o,true)}
+  const W=app.clientWidth,tw=W-32;const t=document.createElement('div');t.className='toast f';
+  t.style.bottom=(TABH+14+(liveCtl?76:0))+'px';t.style.width='58px';t.style.setProperty('--h','0');
+  t.innerHTML=`<div class="tin" style="width:${tw}px"><span class="tx">${html}</span>${undo?'<button class="undo fk">Undo</button>':''}<span class="tg"><i></i></span></div>`;
+  app.appendChild(t);toastEl=t;
+  spring(0,1,sp(.5,.74),x=>{t.style.width=lerp(58,tw,clamp(x,0,1.06))+'px';t.style.setProperty('--h',(x*1.35).toFixed(3))});
+  setTimeout(()=>{$('.tin',t).style.opacity=1},RM?0:140);
+  const g=$('.tg i',t);g.animate([{width:'100%'},{width:'0%'}],{duration:4200,easing:'linear',fill:'forwards'});
+  if(undo)$('.undo',t).addEventListener('click',e=>{e.stopPropagation();tick();clearTimeout(toastTimer);closeToast(t);undo()});
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>closeToast(t),4300);
+}
+function closeToast(t,fast){if(!t.isConnected)return;if(toastEl===t)toastEl=null;$('.tin',t).style.opacity=0;const w0=t.offsetWidth;
+  spring(1,0,sp(fast?.22:.36,1),x=>{t.style.width=lerp(58,w0,x)+'px';t.style.setProperty('--h',(x*1.35).toFixed(3));if(fast)t.style.opacity=x},()=>t.remove())}
+
+/* ---------- morph: a sheet, page, bar or field grows out of what you touched ---------- */
+let sheetCtl=null,liveCtl=null,pageCtl=null;
+function morph(o){
+  const ar=app.getBoundingClientRect(),sr=o.src.getBoundingClientRect(),W=ar.width,H=ar.height;
+  const S={x:sr.left-ar.left,y:sr.top-ar.top,w:sr.width,h:sr.height,r:o.srcR??(parseFloat(getComputedStyle(o.src).borderTopLeftRadius)||20)};
+  const mo=document.createElement('div');mo.className='mo f '+o.kind;if(o.style)mo.style.cssText=o.style;
+  let ghost=null;if(o.ghost!==false){ghost=o.src.cloneNode(true);ghost.removeAttribute('data-b');ghost.removeAttribute('id');ghost.classList.add('mghost');ghost.style.width=S.w+'px';ghost.style.height=S.h+'px';ghost.style.setProperty('--h','0');mo.appendChild(ghost)}
+  const inner=document.createElement('div');inner.className='inner';mo.appendChild(inner);o.build(inner);
+  let D;
+  if(o.kind==='sheet'){inner.style.width=W+'px';inner.classList.add('sheetin');app.appendChild(mo);const ch=inner.scrollHeight;const top=Math.max(H*.12,H-ch-24);D={x:0,y:top,w:W,h:H-top+40,r:34};inner.style.height=(H-top)+'px'}
+  else if(o.kind==='page'){D={x:0,y:0,w:W,h:H-TABH+2,r:0};inner.style.cssText+=`width:${W}px;height:${D.h}px`;app.appendChild(mo)}
+  else if(o.kind==='bar'){D={x:16,y:H-TABH-12-64,w:W-32,h:64,r:22};inner.style.width=D.w+'px';app.appendChild(mo)}
+  else if(o.kind==='field'){D=o.dst;inner.style.width=D.w+'px';app.appendChild(mo)}
+  const hS=o.srcH??1,hE=o.hEnd??1.25;
+  const hFn=o.kind==='page'?(t=>lerp(hS,0,clamp(t))+.55*Math.sin(Math.PI*clamp(t))):(t=>lerp(hS,hE,t));
+  if(o.lift!==false){o.src._lift=true;o.src.classList.add('lifting')}
+  if(o.srcKey)o.src.classList.add('held');
+  req();
+  let catcher=null;if(o.kind==='sheet'){catcher=document.createElement('div');catcher.className='catch';app.insertBefore(catcher,mo);catcher.addEventListener('click',()=>ctl.close())}
+  const screen=cur();let t=0,s=null;
+  function apply(x){t=x;const c=Math.max(0,x);
+    mo.style.left=lerp(S.x,D.x,c)+'px';mo.style.top=lerp(S.y,D.y,c)+'px';mo.style.width=Math.max(8,lerp(S.w,D.w,c))+'px';mo.style.height=Math.max(8,lerp(S.h,D.h,c))+'px';
+    mo.style.borderRadius=lerp(S.r,D.r,clamp(c))+'px';mo.style.setProperty('--h',hFn(c).toFixed(3));
+    if(ghost)ghost.style.opacity=1-ss(0,.32,c);inner.style.opacity=ss(.34,.8,c);
+    if(o.dim){G.E=lerp(1,o.kind==='page'?0:.22,clamp(c));screen.style.opacity=lerp(1,o.kind==='page'?.0:.5,clamp(c));req()}}
+  function go(to,cfg,done){s&&s.stop();s=spring(t,to,cfg,apply,done)}
+  apply(0);
+  const ctl={mo,inner,
+    open(){go(1,o.openCfg||sp(.5,.8),()=>{o.onOpen&&o.onOpen(ctl)})},
+    close(v=0){if(ctl.closing)return;ctl.closing=true;o.onClosing&&o.onClosing(ctl);inner.style.pointerEvents='none';catcher&&catcher.remove();
+      const done=()=>{mo.remove();o.src._lift=false;o.src.classList.remove('lifting','held');screen.style.opacity='';if(o.dim)G.E=1;req();o.onClosed&&o.onClosed()};
+      if(o.srcKey)setTimeout(()=>o.src.classList.remove('held'),RM?0:200);
+      const cfg=sp(.4,.92);cfg.v=v;go(0,cfg,done)},
+    set(x){s&&s.stop();apply(x)},spring:go};
+  /* drag: down for sheets, from the left edge for pages. The shape scrubs back toward where it came from. */
+  if(o.drag){let sy=0,sx=0,st=0,lastP=0,lastTm=0,vel=0,dragging=false;
+    mo.addEventListener('pointerdown',e=>{
+      if(o.drag==='down'&&!e.target.closest('.grab,.sh'))return;
+      if(o.drag==='edge'&&(e.clientX-ar.left)>28)return;
+      dragging=true;sy=e.clientY;sx=e.clientX;st=t;lastP=0;lastTm=performance.now();mo.setPointerCapture(e.pointerId);s&&s.stop()});
+    mo.addEventListener('pointermove',e=>{if(!dragging)return;const d=o.drag==='down'?e.clientY-sy:e.clientX-sx;const span=o.drag==='down'?D.h*.95:W;
+      const now=performance.now();vel=(d-lastP)/Math.max(1,now-lastTm)*1000;lastP=d;lastTm=now;apply(clamp(st-Math.max(0,d)/span,0,1))});
+    const up=()=>{if(!dragging)return;dragging=false;
+      if(lastP>110||vel>650){tick();ctl.close(-Math.max(0,vel)/(o.drag==='down'?D.h:W))}else{const c=sp(.4,.75);go(1,c)}};
+    mo.addEventListener('pointerup',up);mo.addEventListener('pointercancel',up)}
+  return ctl}
+
+function sheet(src,build,opt={}){
+  if(sheetCtl)return;
+  const ctl=morph(Object.assign({src,kind:'sheet',dim:true,drag:'down',build:inner=>{inner.innerHTML=`<div class="grab"><i></i></div>`;const b=document.createElement('div');b.className='body';inner.appendChild(b);build(b,inner)},onClosed(){sheetCtl=null;opt.onClosed&&opt.onClosed()}},opt));
+  sheetCtl=ctl;inner_bind(ctl.inner,ctl);ctl.open();return ctl}
+function inner_bind(inner,ctl){$$('[data-close]',inner).forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();tick();ctl.close()}))}
+const shHead=(title,sub,hue)=>`<div class="sh"><div><h3>${hue?`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:10px;vertical-align:4px;background:${HUE[hue][0]};box-shadow:0 0 8px ${HUE[hue][0]}"></span>`:''}${title}</h3>${sub?`<div class="s2">${sub}</div>`:''}</div><button class="close fk" data-close="1" aria-label="Close">${ICON.x}</button></div>`;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(sheetCtl)sheetCtl.close();else if(pageCtl)pageCtl.close()}});
+
+/* ---------- presses and holds on keys ---------- */
+let holdT=0,holdKey=null,holdStart=0,downXY=null;
+app.addEventListener('pointerdown',e=>{const k=e.target.closest('.fk');if(!k||k.disabled)return;
+  k.classList.add('down');downXY=[e.clientX,e.clientY];
+  if(k.dataset.hold){holdKey=k;holdStart=performance.now();clearTimeout(holdT);
+    holdT=setTimeout(()=>{if(holdKey!==k)return;k.style.transition='--h .32s linear';k.style.setProperty('--h','-1.45');
+      holdT=setTimeout(()=>{if(holdKey!==k)return;k._held=true;tick();k.style.transition='';k.style.removeProperty('--h');k.classList.remove('down');openOptions(k)},320)},230)}});
+function release(e){$$('.fk.down').forEach(k=>{k.classList.remove('down')});if(holdKey){holdKey.style.transition='';holdKey.style.removeProperty('--h')}holdKey=null;clearTimeout(holdT)}
+app.addEventListener('pointerup',release);app.addEventListener('pointercancel',release);
+app.addEventListener('pointermove',e=>{if(downXY&&Math.hypot(e.clientX-downXY[0],e.clientY-downXY[1])>10){release();downXY=null}});
+
+/* ---------- actions ---------- */
+const ACT={
+  tap(k){const row=k.closest('.row');if(!row||row._locked)return;const id=row.dataset.id,d=R[id];tick();k.classList.add('done');row._locked=true;
+    if(d.kind==='tap'){d.wk++;updRow(row)}
+    toast(`<b>${d.name}</b> logged, 08:41`,()=>undoLeave(row,id));leaveRow(row,id)},
+  count(k){const row=k.closest('.row');const id=row.dataset.id,d=R[id];if(row._locked)return;tick();d.n++;$$('i',k)[d.n-1].classList.add('on');updRow(row);
+    if(d.n>=d.of){k.classList.add('done');row._locked=true;toast(`<b>Meals</b>, 3 of 3 today`,()=>{d.n--;$$('i',k)[d.n].classList.remove('on');k.classList.remove('done');undoLeave(row,id)});leaveRow(row,id)}
+    else toast(`<b>Meal</b> logged, ${d.n} of 3 today`,()=>{d.n--;$$('i',k)[d.n].classList.remove('on');updRow(row,false)})},
+  pour(k){const row=k.closest('.row'),d=R.water,ml=+k.dataset.ml;tick();k.classList.remove('pour');k.offsetWidth;k.classList.add('pour');
+    d.ml+=ml;setTimeout(()=>updRow(row),RM?0:380);toast(`<b>+${ml} ml</b>, ${d.ml} ml today`,()=>{d.ml-=ml;updRow(row,false)})},
+  onit(k){const row=k.closest('.row');tick();const on=!k.classList.contains('on');k.classList.toggle('on',on);R.bins.onit=on;updRow(row,false)},
+  start(k){const row=k.closest('.row');if(liveCtl)return;tick();R.reading.live=true;k.classList.add('on');k.innerHTML=`<span style="width:7px;height:7px;border-radius:50%;background:var(--hf);box-shadow:0 0 8px var(--hf)"></span>Live`;updRow(row);startLive(row)},
+  tok(k){tick();const on=!k.classList.contains('on');k.classList.toggle('on',on);if(on)toast(`<b>${k.textContent}</b> logged`,()=>k.classList.remove('on'))},
+  more(k){tick();toggleMore(k)},
+  details(b){tick();const row=b.closest('.row');openDetails(row)},
+  report(b){tick();openReport(b.closest('.panel'))},
+  dismiss(k){tick();dismissPanel(k.closest('.panel'))},
+  notnow(k){tick();const s=$('#sug'),sec=$('#sugsec');melt(sec).then(()=>{});toast('Okay, not today',()=>rise(sec))},
+  sugstart(k){tick();toast('<b>Message Luka</b>, marked done',()=>{})},
+  log(k){tick();openLog(k)},
+  guide(k){tick();openGuide(k)},
+  context(k){tick();openContext(k)},
+  held(k){tick();openHeld(k)},
+  search(k){tick();openSearch(k)},
+  day(k){tick();openDay(k)},
+  push(k){tick();pushRoutine(k)},
+  filter(k){tick();filterRoutines(k)},
+  sw(k){tick();toggleSwitch(k)},
+  sync(k){tick();syncYou(k)},
+  addfirst(k){tick();toast('Here you would pick your first routine')},
+  unempty(k){tick();swapToday(false)},
+};
+app.addEventListener('click',e=>{const k=e.target.closest('[data-act]');if(!k||!app.contains(k))return;
+  if(k._held){k._held=false;return}
+  const t=e.target.closest('.tab');if(t&&!k.dataset.act)return;
+  const f=ACT[k.dataset.act];f&&f(k,e)});
+app.addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)goTab(t.dataset.tab)});
+
+/* completing a row: it holds in place, melts flat into the page, the gap flows closed, its light lands in Settled */
+const left={};
+async function leaveRow(row,id){await wait(750);if(!row._locked)return;
+  const next=row.nextElementSibling;left[id]={row,next};await melt(row);if(!row._locked)return;row.remove();
+  const st=$('#settled');const sp_=document.createElement('span');sp_.className='new';sp_.dataset.id=id;sp_.style.cssText=R[id].hue?hv(R[id].hue):'--hf:var(--t3)';sp_.innerHTML=`<i></i>${R[id].name}`;st.prepend(sp_);refresh()}
+async function undoLeave(row,id){const L_=left[id];row._locked=false;const k=$('.key.done',row);k&&k.classList.remove('done');
+  if(R[id].kind==='tap')R[id].wk--;updRow(row,false);row.classList.remove('melt');
+  const st=$(`#settled span[data-id="${id}"]`);st&&st.remove();
+  if(!row.isConnected&&L_){$('#now').insertBefore(row,L_.next&&L_.next.isConnected?L_.next:null);refresh();await rise(row)}
+  else{row._ms&&row._ms.stop();Object.assign(row.style,{height:'',minHeight:'',marginBottom:'',paddingTop:'',paddingBottom:'',opacity:'',overflow:'',transition:''});setM(row,1,sp(.46,.62))}}
+
+/* N more: the hidden rows rise out of the page one by one */
+let moreOpen=false;
+async function toggleMore(k){moreOpen=!moreOpen;k.textContent=moreOpen?'Fewer':'2 more';
+  if(moreOpen){for(const [i,id] of ['floss','spanish'].entries()){const w=document.createElement('div');w.innerHTML=rowHTML(id);const r=w.firstElementChild;r.classList.add('extra');$('#now').appendChild(r);refresh();rise(r,i*90);await wait(110)}}
+  else{for(const r of $$('#now .extra').reverse()){melt(r).then(()=>{r.remove();refresh()});await wait(80)}}}
+
+/* dismiss a result: the hollow heals flat, then the strip flows closed */
+async function dismissPanel(p){const idx=[...p.parentNode.children].indexOf(p),parent=p.parentNode;
+  $$(':scope > *',p).forEach(c=>{c.style.transition='opacity .25s';c.style.opacity=0});await setM(p,0,sp(.36,1));await collapse(p);const ph=p;p.remove();refresh();
+  toast('Hidden for now',async()=>{parent.insertBefore(ph,parent.children[idx]||null);$$(':scope > *',ph).forEach(c=>{c.style.opacity=''});refresh();ph._m=0;await expand(ph);setM(ph,1,sp(.5,.7))})}
+
+/* a new reading arrives: a hollow forms in the strip, then the reading appears in it */
+async function arrive(){const strip=$('#strip');if(!strip){return}if(cur().id!=='s-today')await goTab('today');cur().scrollTo({top:0,behavior:'smooth'});
+  const p=document.createElement('div');p.className='panel f';p.dataset.b='-1';p.dataset.x='1';p.dataset.horiz='1';p.dataset.id='walk';p.style.cssText=hv('mos');
+  p.innerHTML=`<button class="open" data-act="report" aria-label="Walk"></button><div class="k"><span style="color:var(--sun2)">Just in</span>, from your Watch</div><div class="big">3.4<small>km walk</small></div><div class="ln">41 min, mostly in daylight.</div><div class="mini">${[8,12,16,14,18].map((v,i)=>`<i class="${i==4?'hi':''}" style="height:${v}px"></i>`).join('')}</div><button class="px fk" data-act="dismiss" aria-label="Hide">${ICON.x}</button>`;
+  $$(':scope > *',p).forEach(c=>c.style.opacity=0);strip.scrollTo({left:0,behavior:'smooth'});await wait(250);strip.style.scrollSnapType='none';strip.prepend(p);strip.scrollLeft=0;refresh();p._m=0;const keep=()=>{strip.scrollLeft=0;if(p._exp)requestAnimationFrame(keep)};p._exp=1;keep();await expand(p,420);p._exp=0;strip.scrollLeft=0;strip.style.scrollSnapType='';tick();await setM(p,1,sp(.55,.7));
+  $$(':scope > *',p).forEach((c,i)=>{c.style.transition=`opacity .35s ${i*50}ms`;c.style.opacity=''})}
+
+/* live session: the bar lifts out of the row and docks above the tab bar; End sinks it back into the row */
+let liveTimer=0;
+function startLive(row){const d=R.reading;let secs=0;
+  liveCtl=morph({src:row,kind:'bar',srcH:1,hEnd:1.3,lift:false,ghost:false,style:`${hv('iri')}`,openCfg:sp(.6,.78),build(inner){inner.innerHTML=`<div class="live"><div class="ln2"><b>Reading</b><small id="lvt">0:00</small></div><button class="kw fk" data-lv="pause">Pause</button><button class="kw fk" data-lv="end" style="color:var(--ht)">End</button><span class="lp"><i id="lvp" style="width:0%"></i></span></div>`}});
+  liveCtl.open();
+  liveTimer=setInterval(()=>{secs+=1;const el=$('#lvt');if(!el)return;el.textContent=`${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}`;$('#lvp').style.width=Math.min(100,secs/(20*60)*100*20)+'%'},1000);
+  $('[data-lv="pause"]',liveCtl.inner).addEventListener('click',e=>{tick();const b=e.currentTarget;const p=!b.classList.contains('on');b.classList.toggle('on',p);b.textContent=p?'Resume':'Pause'});
+  $('[data-lv="end"]',liveCtl.inner).addEventListener('click',async()=>{tick();clearInterval(liveTimer);const c=liveCtl;
+    const ar=app.getBoundingClientRect(),rr=row.getBoundingClientRect();
+    c.close();await wait(420);liveCtl=null;d.live=false;row._locked=true;const k=$('.kp',row);k.classList.remove('on');k.classList.add('done');k.innerHTML='18 min';updRow(row);
+    toast('<b>Reading</b>, 18 min',()=>{d.live=false;k.classList.remove('done');k.innerHTML=`${ICON.play}Start`;undoLeave(row,'reading')});leaveRow(row,'reading')})}
+
+/* ---------- sheets ---------- */
+function openDetails(row){const id=row.dataset.id,d=R[id];
+  sheet(row,b=>{b.innerHTML=shHead(d.name,d.kind==='amount'?'2 L a day':d.kind==='count'?'3 a day':'',d.hue)+
+    `<div class="lab">Today</div><div class="well f" data-b="-1" style="--h:-1;padding:2px 16px" id="ents">${(d.kind==='amount'?[['07:40','250 ml'],['08:05','330 ml']]:d.kind==='count'?[['08:20','Breakfast']]:[['Yesterday','Logged at 18:10']]).map(x=>`<div class="li"><span class="tm">${x[0]}</span><span class="v">${x[1]}</span><button class="rm fk" data-rm="1">Remove</button></div>`).join('')}</div>
+    <div class="lab">This week</div><div class="well f" style="--h:-1;${d.hue?hv(d.hue):''}"><div class="bars">${['M','T','W','T','F','S','S'].map((w,i)=>`<div class="c"><b><i data-h="${[70,90,40,100,60,0,20][i]}"></i></b>${w}</div>`).join('')}</div></div>
+    <div class="btns" style="margin-top:18px"><button class="btn fk">Edit routine</button><button class="btn fk lo">Pause</button></div>`;
+    $$('[data-rm]',b).forEach(r=>r.addEventListener('click',async e=>{tick();const li=e.currentTarget.closest('.li');li.style.transition='opacity .25s';li.style.opacity=.3;await collapse(li,300);li.remove()}))},
+  {srcH:1,style:d.hue?hv(d.hue):'',onOpen(c){$$('.bars i',c.inner).forEach((i,n)=>setTimeout(()=>i.style.height=i.dataset.h+'%',n*45))}})}
+function openOptions(k){const row=k.closest('.row'),id=row.dataset.id,d=R[id];
+  sheet(k,b=>{b.innerHTML=shHead(d.name,'Every way to log it',d.hue)+`<div class="btns"><button class="btn primary fk" data-o="now">Log now</button></div>
+    <div class="lab">Earlier today</div><div class="chips">${['07:00','07:30','08:00','08:20'].map(t=>`<button class="chip fk" data-chip="1">${t}</button>`).join('')}</div>
+    <div class="btns" style="margin-top:18px"><button class="btn ghost fk" data-o="no">Didn’t do it today</button><button class="btn fk lo" data-o="det">Details</button></div>`;
+    $$('[data-chip]',b).forEach(c=>c.addEventListener('click',()=>{tick();$$('[data-chip]',b).forEach(x=>x.classList.toggle('on',x===c))}));
+    $('[data-o="now"]',b).addEventListener('click',()=>{tick();sheetCtl.close();setTimeout(()=>ACT[d.kind==='count'?'count':'tap'](k),RM?0:380)});
+    $('[data-o="no"]',b).addEventListener('click',()=>{tick();sheetCtl.close();toast(`Noted. <b>${d.name}</b> rests today`)});
+    $('[data-o="det"]',b).addEventListener('click',()=>{tick();sheetCtl.close();setTimeout(()=>openDetails(row),RM?0:420)})},
+  {srcH:-1,srcKey:true,lift:false,ghost:false,style:d.hue?hv(d.hue):''})}
+function openReport(p){const id=p.dataset.id;const T={sleep:['Last night','7 h 04 asleep, 23:41 to 07:12','nig'],run:['Run, yesterday','6.2 km in 33:36','mos'],week:['Last week','23 things done','jad'],walk:['Walk','3.4 km, 41 min','mos']}[id]||['Result','','emb'];
+  sheet(p,b=>{b.innerHTML=shHead(T[0],T[1],T[2])+`<div class="lab">${id==='run'?'Splits':'Last seven'}</div><div class="well f" style="--h:-1;${hv(T[2])}"><div class="bars">${[62,70,74,80,68,90,77].map((v,i)=>`<div class="c"><b><i data-h="${v}"></i></b>${id==='run'?'km '+(i+1):['W','T','F','S','S','M','T'][i]}</div>`).join('')}</div></div>
+    <div class="lab">What it says</div><div class="para">${id==='sleep'?'Within your usual range. You fell asleep <b>12 min</b> later than your usual. A hint, not proof.':id==='run'?'<b>Second fastest</b> of 39 runs at this distance. Your last kilometre was your quickest.':'A steady week. Nothing is owed from it.'}</div>`},
+  {srcH:-1,style:hv(T[2]),onOpen(c){$$('.bars i',c.inner).forEach((i,n)=>setTimeout(()=>i.style.height=i.dataset.h+'%',n*45))}})}
+function openLog(k){sheet(k,b=>{b.innerHTML=shHead('Log','Anything, any time')+`<div style="padding:0 var(--gut)"><div class="search f" style="--h:-1;border-radius:24px">${ICON.search}<input placeholder="Find a routine or record" aria-label="Find"></div></div>
+  <div class="lab">Recent</div><div class="chips" id="recent">${[['Espresso','emb'],['Vitamin D','saf'],['Ibuprofen 200 mg',null],['Walk','mos'],['Push-ups','mos'],['Journal','iri']].map(([n,h])=>`<button class="chip fk" style="${h?hv(h):''}" data-n="${n}">${n}</button>`).join('')}</div>
+  <div class="lab">Records</div><div class="para">Coffee, alcohol and doses are noted plainly, never rewarded.</div>`;
+  const inp=$('input',b);inp.addEventListener('input',()=>{const q=inp.value.toLowerCase();$$('#recent .chip',b).forEach(c=>{const m=c.dataset.n.toLowerCase().includes(q);if(m&&c.style.display==='none'){c.style.display='';c.style.setProperty('--h','0');requestAnimationFrame(()=>c.style.removeProperty('--h'))}else if(!m)c.style.display='none'})});
+  $$('#recent .chip',b).forEach(c=>c.addEventListener('click',()=>{tick();c.classList.add('on');setTimeout(()=>{sheetCtl&&sheetCtl.close();setTimeout(()=>toast(`<b>${c.dataset.n}</b> noted, 08:41`,()=>{}),RM?0:300)},RM?0:260)}))},
+  {srcH:1.25,srcKey:true,lift:false,ghost:false,srcR:30})}
+function openContext(k){sheet(k,b=>{b.innerHTML=shHead('Something going on?','Routines ease off while it lasts')+`<div class="chips">${['Sick','Travelling','Holiday','Busy week','Period','Hard days'].map(t=>`<button class="chip fk" data-c="1">${t}</button>`).join('')}</div><div class="lab">Until</div><div class="seg f" style="--h:.7" id="useg"><span class="sw2 f" style="--h:-1"></span>${['Today','Tomorrow','Thursday','I say so'].map((t,i)=>`<button class="${i==0?'on':''}" data-u="1">${t}</button>`).join('')}</div><div class="btns" style="margin-top:20px"><button class="btn primary fk" data-close="1">Set</button></div>`;
+  $$('[data-c]',b).forEach(c=>c.addEventListener('click',()=>{tick();$$('[data-c]',b).forEach(x=>x.classList.toggle('on',x===c))}));
+  const seg=$('#useg',b);$$('[data-u]',b).forEach(u=>u.addEventListener('click',()=>{tick();segTo(seg,u)}));requestAnimationFrame(()=>segTo(seg,$('[data-u]',b),true))},{srcH:.6,srcKey:true,lift:false,ghost:false,srcR:21})}
+function openHeld(k){sheet(k,b=>{b.innerHTML=shHead('Held for later','Nothing here is overdue')+`<div class="well f" style="--h:-1;padding:2px 16px"><div class="li"><span class="v">Book the dentist</span><button class="rm fk" data-back="1">Bring back</button></div></div><div class="para" style="margin-top:14px">Bring back puts it in Now. Let go removes it without a trace.</div>`;
+  $('[data-back]',b).addEventListener('click',async e=>{tick();const li=e.currentTarget.closest('.li');await collapse(li);sheetCtl.close();const n=$('#heldn');n.textContent='0';n.classList.remove('pop');n.offsetWidth;n.classList.add('pop');setTimeout(()=>{n.style.transition='opacity .3s';n.style.opacity=0},300)})},{srcH:.6,srcKey:true,lift:false,ghost:false,srcR:21})}
+function openDay(k){const d=k.dataset.d;sheet(k,b=>{b.innerHTML=shHead(`${d} October`,+d>27?'Not here yet':'What happened that day')+(+d>27?'<div class="para">Future days stay empty. Nothing is planned for you here.</div>':`<div class="well f" style="--h:-1;padding:2px 16px">${[['07:30','Stretch','mos'],['08:10','Water, 250 ml','lag'],['12:40','Meals, 2 of 3','saf'],['18:20','Run, 5.1 km','mos'],['21:00','Reading, 24 min','iri']].map(x=>`<div class="li" style="${hv(x[2])}"><span class="tm">${x[0]}</span><span class="v">${x[1]}</span><i style="width:8px;height:8px;border-radius:50%;background:var(--hf);box-shadow:0 0 6px var(--hf)"></i></div>`).join('')}</div>`)},{srcH:-.75})}
+
+/* search: the key sinks and spreads into the field; the page melts and results rise */
+let searchCtl=null;
+function openSearch(k){if(searchCtl)return;const ar=app.getBoundingClientRect(),W=ar.width;
+  const head=$('.head',cur());const hr=head.getBoundingClientRect();
+  const dst={x:16,y:54,w:W-32,h:50,r:25};
+  const res=document.createElement('div');res.className='sres';res.style.cssText=`background:var(--surf);padding-top:6px;position:absolute;left:0;right:0;top:118px;bottom:${TABH}px;z-index:36;overflow-y:auto;opacity:0;transition:opacity .25s`;
+  res.innerHTML=['Stretch','Spanish','Sleep report','Settings: reminders','Held: Book the dentist'].map((n,i)=>`<button class="rrow f" style="--h:0;transition:--h .5s ${80+i*45}ms var(--spr)"><div><div class="nm">${n}</div></div>${ICON.chev}</button>`).join('');
+  searchCtl=morph({src:k,kind:'field',dst,srcH:.6,hEnd:-1,lift:false,ghost:false,srcKey:true,srcR:21,dim:true,
+    build(inner){inner.innerHTML=`<div class="search" style="height:50px">${ICON.search}<input placeholder="Search everything" aria-label="Search"><button class="kw fk" style="height:36px;--h:.5" data-x="1">Cancel</button></div>`},
+    onClosing(){res.style.opacity=0;setTimeout(()=>res.remove(),250);head.style.transition='opacity .2s';head.style.opacity=''},
+    onClosed(){searchCtl=null}});
+  app.appendChild(res);head.style.transition='opacity .15s';head.style.opacity=0;
+  const inp=$('input',searchCtl.inner);try{inp.focus({preventScroll:true})}catch(e){}
+  searchCtl.open();setTimeout(()=>{res.style.opacity=1;$$('.rrow',res).forEach(r=>r.style.setProperty('--h','1'))},RM?0:160);
+  $('[data-x]',searchCtl.inner).addEventListener('click',()=>{tick();inp.blur();searchCtl.close()})}
+
+/* ---------- tabs: the well flows; the old screen melts flat, the new one rises ---------- */
+let curTab='today',tabBusy=false,twL=0,twR=0,twSL=null,twSR=null;
+function placeWell(name,instant){const t=$(`.tab[data-tab="${name}"]`),bar=$('#tabbar'),tw=$('#tw');const br=bar.getBoundingClientRect(),r=t.getBoundingClientRect();
+  const L_=r.left-br.left+4,R_=r.right-br.left-4;
+  if(instant||RM){twL=L_;twR=R_;tw.style.left=L_+'px';tw.style.width=(R_-L_)+'px';return}
+  const right=L_>twL;const fast=sp(.26,.8),slow=sp(.46,.74);
+  twSL&&twSL.stop();twSR&&twSR.stop();
+  const draw=()=>{tw.style.left=twL+'px';tw.style.width=Math.max(20,twR-twL)+'px'};
+  twSL=spring(twL,L_,right?slow:fast,x=>{twL=x;draw()});twSR=spring(twR,R_,right?fast:slow,x=>{twR=x;draw()})}
+async function goTab(name){if(name===curTab||tabBusy)return;if(sheetCtl)sheetCtl.close();if(searchCtl)searchCtl.close();if(pageCtl){pageCtl.close();}
+  tabBusy=true;tick();$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===name));placeWell(name);
+  const old=cur();springE(0,sp(.22,1));old.classList.add('out');await wait(170);
+  old.classList.remove('on','out');const nw=$('#s-'+name);nw.classList.add('on','in');setTimeout(()=>nw.classList.remove('in'),400);curTab=name;
+  refresh();managed.forEach(e=>{e._m=0});G.E=1;barP=ss(20,84,nw.scrollTop);$('#topbar').style.opacity=barP;$('#toptitle').textContent=nw.dataset.title;
+  const ar=app.getBoundingClientRect();const vis=managed.filter(e=>{const r=e.getBoundingClientRect();return r.top<ar.bottom&&r.bottom>ar.top}).sort((a,b)=>a.getBoundingClientRect().top-b.getBoundingClientRect().top);
+  managed.forEach(e=>{if(!vis.includes(e))e._m=1});
+  vis.forEach((e,i)=>setM(e,1,sp(.5,.66),Math.min(i,10)*32));req();
+  if(name==='routines')requestAnimationFrame(()=>segTo($('#rseg'),$('#rseg button.on'),true));
+  await wait(120);tabBusy=false}
+
+/* segmented: the chosen well flows to its new place, leading edge first */
+function segTo(seg,btn,instant){const w=$('.sw2',seg),sr=seg.getBoundingClientRect(),br=btn.getBoundingClientRect();
+  $$('button',seg).forEach(b=>b.classList.toggle('on',b===btn));const L_=br.left-sr.left,R_=br.right-sr.left;
+  if(instant||RM||seg._l==null){seg._l=L_;seg._r=R_;w.style.left=L_+'px';w.style.width=(R_-L_)+'px';return}
+  const right=L_>seg._l;const draw=()=>{w.style.left=seg._l+'px';w.style.width=Math.max(16,seg._r-seg._l)+'px'};
+  seg._s1&&seg._s1.stop();seg._s2&&seg._s2.stop();
+  seg._s1=spring(seg._l,L_,right?sp(.44,.74):sp(.26,.8),x=>{seg._l=x;draw()});seg._s2=spring(seg._r,R_,right?sp(.26,.8):sp(.44,.74),x=>{seg._r=x;draw()})}
+async function filterRoutines(btn){const seg=$('#rseg');segTo(seg,btn);const f=btn.dataset.f;
+  const rows=$$('#rlist .rrow');const out=rows.filter(r=>f!=='All'&&r.dataset.area!==f&&r.style.display!=='none'&&!r._gone),inn=rows.filter(r=>(f==='All'||r.dataset.area===f)&&r._gone);
+  out.forEach(r=>{r._gone=true;melt(r).then(()=>{if(r._gone){r.style.display='none'}})});
+  await wait(out.length?200:0);inn.forEach((r,i)=>{r._gone=false;r.classList.remove('melt');rise(r,i*50)})}
+
+/* push / pop: the row grows into the page; Back (or a swipe from the left edge) shrinks it home */
+function pushRoutine(row){if(pageCtl)return;const id=row.dataset.id;const info=RL.find(r=>r[0]===id);const hue=info[2];
+  pageCtl=morph({src:row,kind:'page',srcH:1,dim:true,drag:'edge',style:hv(hue),openCfg:sp(.52,.86),
+    build(inner){inner.innerHTML=`<div class="pagein"><div class="pagehead"><button class="back fk" data-back="1" aria-label="Back">${ICON.back}</button><h2>${info[1]}</h2></div>
+    <div class="para" style="margin-top:2px">${info[4]}. <b>3 of 5</b> this week.</div>
+    <div class="lab">How often</div><div class="seg f" style="--h:.7" data-pseg="1"><span class="sw2 f" style="--h:-1"></span>${['Daily','Weekly','Monthly','Every N'].map((t,i)=>`<button class="${i==1?'on':''}">${t}</button>`).join('')}</div>
+    <div class="lab">Aim</div><div style="padding:0 var(--gut);display:flex;align-items:center;gap:14px"><div class="stepper f" style="--h:-1"><button class="fk" data-st="-1" aria-label="Less">−</button><span class="num"><span>5</span></span><button class="fk" data-st="1" aria-label="More">+</button></div><span style="color:var(--t2);font-size:15px">a week</span></div>
+    <div class="lab">Reminder</div><div class="well f" style="--h:-1;padding:4px 16px"><div class="set"><div class="sl"><b>Remind me</b><small>A nudge, never a nag</small></div><button class="sw fk" style="--h:-1" data-psw="1" role="switch" aria-checked="false"><span class="liq"></span><span class="bead fk"></span></button></div></div>
+    <div class="revealw" style="display:none"><div class="lab">At</div><div class="wheel f" style="--h:.6"><span class="band f" style="--h:-1"></span><div class="wl">${Array.from({length:24},(_,h)=>`<div class="wi">${String(h).padStart(2,'0')}:00</div>`).join('')}</div></div></div>
+    <div class="lab">Colour</div><div class="swatches">${['saf','lag','mos','jad','iri','ros'].map(h=>`<button class="sw8 fk${h===hue?' on':''}" style="--c:${HUE[h][0]}" data-hue="${h}" aria-label="${h}"><i></i></button>`).join('')}</div>
+    <div class="btns" style="margin-top:22px"><button class="btn fk lo" data-pause="1">Pause</button><button class="btn ghost fk">Retire</button></div></div>`},
+    onOpen(c){wirePage(c,info)},onClosed(){pageCtl=null}});
+  pageCtl.open()}
+function wirePage(c,info){const p=c.inner;
+  $('[data-back]',p).addEventListener('click',()=>{tick();c.close()});
+  const seg=$('[data-pseg]',p);segTo(seg,$('button.on',seg),true);$$('button',seg).forEach(b=>b.addEventListener('click',()=>{tick();segTo(seg,b)}));
+  let n=5;$$('[data-st]',p).forEach(b=>b.addEventListener('click',()=>{const d=+b.dataset.st;if(n+d<1||n+d>14)return;tick();n+=d;const box=$('.num',p);const old=box.firstElementChild;old.className=d>0?'up-out':'dn-out';const s=document.createElement('span');s.textContent=n;s.className=d>0?'up-in':'dn-in';box.appendChild(s);setTimeout(()=>old.remove(),300)}));
+  const sw=$('[data-psw]',p),rv=$('.revealw',p);sw.addEventListener('click',async()=>{tick();const on=await toggleSwitch(sw);if(on){rv._m=1;await expand(rv);initWheel($('.wheel',rv))}else{await collapse(rv);rv.style.display='none'}});
+  $$('[data-hue]',p).forEach(b=>b.addEventListener('click',()=>{tick();$$('[data-hue]',p).forEach(x=>x.classList.toggle('on',x===b));c.mo.style.cssText+=';'+hv(b.dataset.hue)}));
+  $('[data-pause]',p).addEventListener('click',()=>{tick();toast(`<b>${info[1]}</b> paused. It rests until you’re back`,()=>{})})}
+function initWheel(w){const wl=$('.wl',w);const items=$$('.wi',wl);let lastI=-1;
+  const upd=()=>{const c=wl.scrollTop+wl.clientHeight/2;items.forEach((it,i)=>{const d=(it.offsetTop+22-c)/44;const a=Math.abs(d);it.style.opacity=(1-Math.min(a,2.4)*.3).toFixed(2);it.style.transform=`translateY(${(d*-2).toFixed(1)}px) scale(${(1-Math.min(a,2)*.08).toFixed(3)})`;it.style.textShadow=a<.5?'var(--deb)':'var(--emb)'});
+    const i=Math.round((wl.scrollTop)/44);if(i!==lastI){if(lastI>=0)tick();lastI=i}};
+  wl.addEventListener('scroll',upd,{passive:true});wl.scrollTop=8*44;upd()}
+
+/* switch: the bead stretches as it flows, the hue fills in behind it */
+async function toggleSwitch(k){const on=!k.classList.contains('on');k.classList.add('mv');k.classList.toggle('on',on);k.setAttribute('aria-checked',on);setTimeout(()=>k.classList.remove('mv'),RM?0:170);
+  const key=k.dataset.k;
+  if(key==='hapt')HAPT=on;
+  if(key==='rm'){RM=on;app.classList.toggle('rm-on',on)}
+  if(key==='tilt'){if(on){const ok=await enableTilt();L.mouse=true;if(!ok){toast('Tilt needs motion access. Moving the pointer works too.')}}else{disableTilt();L.mouse=false}}
+  return on}
+
+/* loading: the surface breathes while it waits, then settles into the real lines */
+async function syncYou(k){const w=$('#hwell');k.disabled=true;w.innerHTML='<div class="skel f"></div><div class="skel f"></div><div class="skel f"></div>';
+  await wait(1800);const sk=$$('.skel',w);sk.forEach(s=>{s.style.animation='none';s.style.transition='--h .4s var(--ease),opacity .3s';s.style.setProperty('--h','0');s.style.opacity=0});await wait(320);
+  w.innerHTML=`<div class="li" style="animation:txin .4s both"><span class="v">Sleep, last night</span><span class="tm" style="width:auto">7 h 04</span></div><div class="li" style="animation:txin .4s .08s both"><span class="v">Walk, just now</span><span class="tm" style="width:auto">3.4 km</span></div><div class="li" style="animation:txin .4s .16s both"><span class="v">Daylight</span><span class="tm" style="width:auto">22 min</span></div>`;
+  $('#syncd').textContent='Last sync 08:41';tick();k.disabled=false}
+
+/* empty state (day one): the whole page melts flat, then one invitation rises */
+async function swapToday(empty){if(curTab!=='today')await goTab('today');const s=$('#s-today');await springE(0,sp(.25,1));s.classList.add('out');await wait(170);
+  s.innerHTML=empty?todayEmptyHTML():todayHTML();s.classList.remove('out');s.scrollTop=0;moreOpen=false;Object.assign(R.meals,{n:1});Object.assign(R.water,{ml:580});refresh();managed.forEach(e=>e._m=0);G.E=1;
+  managed.forEach((e,i)=>setM(e,1,sp(.55,.66),i*40))}
+
+/* ---------- guide ---------- */
+function openGuide(k){sheet(k,b=>{
+  const groups=[...new Set(GUIDE.map(g=>g.group))];
+  b.innerHTML=shHead('Morph lab','One surface that rises, flattens, sinks and flows. Tap any line.')+
+  `<div class="dl"><button class="btn fk" id="dlmd">Download notes (.md)</button></div>`+
+  groups.map(gp=>`<div class="lab">${gp}</div>`+GUIDE.filter(g=>g.group===gp).map(g=>`<div class="gi f"><button data-gi="${g.id}"><span class="gn">${g.name}</span><span class="gs${g.status==='Built'?' b':''}">${g.status==='Built'?'TRY IT':'SPEC'}</span></button><div class="gd2"><div><p>${g.how}</p>${g.feel?`<p style="margin-top:6px"><b style="color:var(--cream);font-weight:550">Feel:</b> ${g.feel}</p>`:''}<code>SwiftUI: ${g.native}</code>${g.try?`<button class="btn primary fk" data-try="${g.id}">Try it</button>`:''}</div></div></div>`).join('')).join('');
+  $$('[data-gi]',b).forEach(bt=>bt.addEventListener('click',()=>{tick();const gi=bt.parentNode,d=$('.gd2',gi);const open=!gi.classList.contains('open');
+    gi.style.transition='--h .45s var(--spr)';gi.classList.toggle('open',open);d.style.height=open?d.scrollHeight+'px':'0px'}));
+  $$('[data-try]',b).forEach(bt=>bt.addEventListener('click',()=>{tick();const g=GUIDE.find(x=>x.id===bt.dataset.try);sheetCtl.close();setTimeout(()=>TRY[g.try]&&TRY[g.try](),RM?0:460)}));
+  $('#dlmd',b).addEventListener('click',()=>{tick();const blob=new Blob([MORPH_MD],{type:'text/markdown'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='MORPH.md';document.body.appendChild(a);a.click();a.remove()})},
+  {srcH:.55,srcKey:true,lift:false,ghost:false,srcR:20})}
+/* each "Try it" sets the scene and points at the thing (a gentle rise, nothing is triggered for you unless it can't be touched) */
+async function point(el){if(!el)return;el.scrollIntoView({block:'center',behavior:RM?'auto':'smooth'});await wait(450);const wasM=el._m??1;
+  if(el.dataset.b!=null){await setM(el,1.9,sp(.3,.6));setM(el,wasM,sp(.5,.6))}else{el.style.transition='--h .3s var(--spr)';el.style.setProperty('--h','2');await wait(320);el.style.removeProperty('--h');await wait(300);el.style.transition=''}}
+const inToday=async()=>{if(curTab!=='today')await goTab('today')};
+const TRY={
+  scroll:async()=>{await inToday();const s=cur();s.scrollTo({top:520,behavior:'smooth'});await wait(1200);s.scrollTo({top:0,behavior:'smooth'})},
+  key:async()=>{await inToday();point($('.row[data-id="stretch"] .kr'))},
+  count:async()=>{await inToday();point($('.row[data-id="meals"] .ks'))},
+  pour:async()=>{await inToday();point($('.row[data-id="water"] .amt .tile:nth-child(2)'))},
+  hold:async()=>{await inToday();point($('.row[data-id="stretch"] .kr'));setTimeout(()=>toast('Press and hold the key'),700)},
+  details:async()=>{await inToday();const r=$('.row[data-id="water"]');await point(r);openDetails(r)},
+  report:async()=>{await inToday();cur().scrollTo({top:0,behavior:'smooth'});await wait(300);openReport($('#strip .panel'))},
+  dismiss:async()=>{await inToday();cur().scrollTo({top:0,behavior:'smooth'});await wait(300);point($('#strip .panel .px'))},
+  arrive:()=>arrive(),
+  more:async()=>{await inToday();point($('.more'))},
+  notnow:async()=>{await inToday();point($('#sug [data-act="notnow"]'))},
+  live:async()=>{await inToday();point($('.row[data-id="reading"] .kp'))},
+  tabs:async()=>{await goTab('time');await wait(900);await goTab('routines');await wait(900);await goTab('today')},
+  log:()=>openLog($('.logkey')),
+  search:async()=>{await inToday();cur().scrollTo({top:0});await wait(100);openSearch($('[data-act="search"]',cur()))},
+  push:async()=>{await goTab('routines');await wait(500);point($('#rlist .rrow'))},
+  filter:async()=>{await goTab('routines');await wait(500);point($('#rseg'))},
+  sw:async()=>{await goTab('you');await wait(400);point($$('#s-you .sw')[3])},
+  stepper:async()=>{await goTab('routines');await wait(500);pushRoutine($('#rlist .rrow'));await wait(900);pageCtl&&point($('.stepper',pageCtl.inner))},
+  wheel:async()=>{await goTab('routines');await wait(500);pushRoutine($('#rlist .rrow'));await wait(900);if(pageCtl){const sw=$('[data-psw]',pageCtl.inner);sw.scrollIntoView({block:'center'});await wait(300);sw.click()}},
+  swatch:async()=>{await goTab('routines');await wait(500);pushRoutine($('#rlist .rrow'));await wait(900);pageCtl&&point($('.swatches',pageCtl.inner))},
+  day:async()=>{await goTab('time');await wait(500);point($('.dc.today'))},
+  loading:async()=>{await goTab('you');await wait(400);syncYou($('#s-you [data-act="sync"]'))},
+  empty:()=>swapToday(true),
+  pull:async()=>{await inToday();cur().scrollTo({top:0});doSync()},
+  tilt:async()=>{await goTab('you');await wait(400);point($('#s-you [data-k="tilt"]'))},
+  context:async()=>{await inToday();cur().scrollTo({top:0});await wait(200);openContext($('[data-act="context"]',cur()))},
+  held:async()=>{await inToday();cur().scrollTo({top:0});await wait(200);openHeld($('[data-act="held"]',cur()))},
+  toast:async()=>{await inToday();toast('<b>Water</b>, +250 ml. 830 ml today',()=>{})},
+  tok:async()=>{await inToday();point($('.later .tok'))},
+  onit:async()=>{await inToday();point($('.row[data-id="bins"] .kw'))},
+};
+
+/* ---------- boot ---------- */
+function boot(){
+  TABH=$('#tabbar').offsetHeight;mount();$('#guidebtn').innerHTML=`<b>Guide</b>, ${GUIDE.length} interactions`;placeWell('today',true);
+  const q=new URLSearchParams(location.search);
+  if(q.has('still'))RM=true;
+  if(q.get('tab'))goTab(q.get('tab'));
+  window.addEventListener('resize',()=>{placeWell(curTab,true);req()});
+  if(document.fonts)document.fonts.ready.then(()=>{placeWell(curTab,true);req()});
+  req();
+}
+boot();
+window.__lab={goTab,toast,openLog,openDetails,openReport,openSearch,pushRoutine,arrive,swapToday,TRY,lightTo,R};
+
+</script>
+</body>
+</html>
