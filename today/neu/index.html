@@ -68,7 +68,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .arc .halo.pulse{animation:halo .9s var(--ease)}
 @keyframes halo{0%{transform:scale(1);opacity:.16}35%{transform:scale(1.9);opacity:.3}100%{transform:scale(1);opacity:.16}}
 .arc.is3d svg > :not(text){display:none}
-.arc .arc3d{position:absolute;left:0;top:-64px;display:block;pointer-events:none;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 40px,#000 calc(100% - 20px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 40px,#000 calc(100% - 20px),transparent 100%)}
+.arc .arc3d{position:absolute;left:0;top:-64px;display:block;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 40px,#000 calc(100% - 20px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 40px,#000 calc(100% - 20px),transparent 100%)}
 .l3{position:absolute;left:0;top:0;pointer-events:none;white-space:nowrap;font:500 11.5px var(--ui);color:var(--t3);will-change:transform}
 .l3.now{color:var(--sun2);font-weight:600}
 .l3.nt{color:var(--night)}
@@ -340,7 +340,7 @@ textarea.field,input.field{display:block;width:calc(100% - 40px);margin:0 var(--
   --p1:inset 2px 2px 5px var(--dk),inset -2px -2px 5px var(--lt);
   --p2:inset 4px 4px 10px var(--dk),inset -3px -3px 9px var(--lt);
   --zero:0 0 0 transparent,0 0 0 transparent;
-  --zeroi:inset 0 0 0 transparent,inset 0 0 0 transparent;
+  --zeroi:inset 0 0 0 transparent;
   --press:cubic-bezier(.3,.7,.4,1); --back:cubic-bezier(.34,1.45,.55,1);
 }
 html,body{background:#1C1916}
@@ -531,6 +531,156 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .stepper button.down{box-shadow:var(--p1);transform:scale(.95)}
 .scrub button.down{box-shadow:var(--p2)}
 .k-round.down,.k-seg.down,.k-pill.down{transform:scale(.955)}
+
+/* =====================================================================
+   v2: ONE SURFACE, AND COLOUR WITH MEANING
+   Everything is formed from the one page: nothing is a card laid on it.
+     plateau  a broad, low rise with a soft fillet: something to act on now (Now rows, the suggestion, a date)
+     well     a broad, shallow hollow: something to read or browse (results, Later)
+     key      a small, crisp rise: the thing you press. Pressed in = chosen or done (with a check or fill too)
+     engraved type and grooves: labels and divisions, never controls
+   Colour is light inside the surface: a routine's hue fills its groove, its key when done, its bumps on the arc.
+   ===================================================================== */
+:root{
+  --night:#98A2FC; --nightT:#B3BDFF;
+  /* plateau: a wide soft rise plus a tight fillet where it leaves the page */
+  --pl:12px 12px 28px rgba(12,9,6,.46),-9px -9px 22px rgba(255,238,220,.052),2px 2px 5px rgba(12,9,6,.20),-1px -1px 3px rgba(255,238,220,.035);
+  --pl0:6px 6px 16px rgba(12,9,6,.40),-5px -5px 13px rgba(255,238,220,.045),1px 1px 3px rgba(12,9,6,.18),-1px -1px 2px rgba(255,238,220,.03);
+  /* well: a shallow hollow with soft walls */
+  --wl:inset 7px 7px 16px rgba(12,9,6,.46),inset -6px -6px 14px rgba(255,238,220,.045),inset 1px 1px 2px rgba(12,9,6,.2);
+  /* keys: tighter and crisper than plateaus, so a key never reads as a region */
+  --r1:3px 3px 7px rgba(12,9,6,.50),-2px -2px 6px rgba(255,238,220,.06);
+  --r2:5px 5px 12px rgba(12,9,6,.58),-4px -4px 10px rgba(255,238,220,.075);
+  --deb:-1px -1px 0 rgba(0,0,0,.45),1px 1px 0 rgba(255,238,220,.06);
+  --emb:2px 2px 5px rgba(12,9,6,.55),-1px -1px 1px rgba(255,238,220,.07);
+  --groove:linear-gradient(rgba(12,9,6,.5) 0 1px,rgba(255,238,220,.06) 1px 2px);
+}
+.sky{opacity:.32}
+
+/* header: the day is embossed out of the page, the date engraved into it */
+.head h1{font-size:34px;text-shadow:var(--emb)}
+.head .sub{text-shadow:var(--deb);color:var(--t2)}
+.ib{box-shadow:var(--pl0)}
+.ib svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.07))}
+.ib .n{box-shadow:var(--pl0);color:var(--cream)}
+.sbar .ddata{box-shadow:var(--pl0);text-shadow:var(--deb);padding:8px 12px}
+.topbar{box-shadow:none}
+.topbar:after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--groove)}
+
+/* section labels: engraved, small capitals. They name a group; they are never content or controls */
+.sec{margin-top:14px}
+.sech{margin-bottom:8px;align-items:center}
+.sech h2{font:650 12px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--t2);text-shadow:var(--deb)}
+.sech .aside{font:500 13px var(--ui);color:var(--t2);text-shadow:var(--deb)}
+
+/* results: wells you read, formed into the page; the hue of what they're about lights their kicker */
+.strip{gap:12px;padding:4px var(--gut) 2px}
+.panel .ln{font-size:13.5px;line-height:1.32}
+.panel .mini{padding-top:6px}
+.nights i,.splits i{max-height:24px}
+.panel .ttl{font-size:20px}
+.panel{background:var(--surf);box-shadow:var(--wl);border-radius:26px;padding:11px 16px 11px;transition:box-shadow .3s var(--back)}
+.panel:active{box-shadow:inset 9px 9px 20px rgba(12,9,6,.55),inset -6px -6px 14px rgba(255,238,220,.04)}
+.panel .k{color:var(--ht,var(--t2));font-weight:600}
+.panel .k .just{color:var(--sun2)}
+.panel .k:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hf,var(--t3));box-shadow:0 0 6px var(--hf,transparent);flex:none}
+.panel .big{font-weight:300}
+.panel .x{box-shadow:var(--pl0)}
+.nights,.splits,.weekd{box-shadow:none;padding:0}
+.nights i.on{background:var(--night);box-shadow:0 0 8px rgba(152,162,252,.45)}
+.splits i.best{background:var(--hf,var(--cream));box-shadow:0 0 8px var(--hf,transparent)}
+.prange .t:before{box-shadow:inset 1px 1px 2px rgba(12,9,6,.6),inset -1px -1px 1px rgba(255,238,220,.06)}
+.prange .t .m{background:var(--cream)}
+.prange .r.b .t .m{background:var(--night)}
+
+/* Now: each row a plateau risen out of the page, its routine's groove on the left */
+.rows{display:grid;gap:10px;padding:0 var(--gut) 8px}
+.row{padding:11px 12px 11px 32px;border-radius:24px;background:var(--surf);box-shadow:var(--pl)}
+.row+.row:before{display:none}
+.row .open{inset:0 84px 0 0;border-radius:24px}
+.row.full .open{right:0;bottom:62px}
+.row.full .amt{margin-top:12px}
+.row .nm{font-size:21px;font-weight:550}
+.row.lead .nm{font-size:26px}
+.row .st{color:var(--t2)}
+.row .st b{color:var(--cream);font-weight:550}
+.inl{position:absolute;left:13px;top:15px;bottom:15px;width:7px;border-radius:4px;background:color-mix(in oklab,var(--hd,#1d1a17) 80%,var(--surf));box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07);overflow:hidden;pointer-events:none}
+.inl i{position:absolute;left:0;right:0;bottom:0;border-radius:4px;background:var(--hf);box-shadow:inset 1px 1px 2px rgba(0,0,0,.35),0 0 10px var(--hf);transition:height .7s var(--ease)}
+.row.task .inl{background:var(--surf)}
+.row.leaving{box-shadow:none}
+@keyframes leave{0%{max-height:200px;opacity:1}100%{max-height:0;opacity:0;padding-top:0;padding-bottom:0;margin-top:-12px}}
+
+/* keys take their routine's light when done or chosen; the check stays dark on it */
+.k-round.done .fill{background:var(--hf,var(--sun));box-shadow:inset 3px 3px 7px rgba(0,0,0,.32),inset -2px -2px 6px rgba(255,255,255,.16),0 0 0 transparent}
+.k-round.done .ck{stroke:#17130F}
+.k-round.done{box-shadow:var(--p2),0 0 18px -4px var(--hf,transparent)}
+.k-seg i.on:after{background:var(--hf,var(--sun));box-shadow:inset 1px 1px 2px rgba(0,0,0,.35),0 0 6px var(--hf,transparent)}
+.k-pill{color:var(--cream)}
+.k-pill svg{color:var(--ht,var(--cream))}
+.k-pill.on{color:var(--ht,var(--sun2))}
+.k-pill.on .livedot{background:var(--hf,var(--sun));box-shadow:0 0 8px var(--hf,var(--sun))}
+/* every key wears its routine's hue on its glyph, so a key says whose it is before it's pressed (glyph only: not lit, not done) */
+.k-round .pl{stroke:var(--ht,var(--cream))}
+.k-round .ck.ghost{stroke:color-mix(in oklab,var(--ht,var(--cream)) 60%,transparent)}
+.k-seg i{background:color-mix(in oklab,var(--hd,var(--surf)) 40%,var(--surf))}
+.tok .tk{color:var(--ht,var(--cream))}
+/* secondary keys: lower, quieter text */
+.k-word{box-shadow:var(--r1);color:var(--t2);height:42px}
+.amt .key .fill{background:var(--hf,var(--sun))}
+.amt .key.last span:after{background:var(--hf,var(--t3))}
+.level{height:7px;border-radius:4px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.level i{background:var(--hf,var(--sun));box-shadow:0 0 10px var(--hf,transparent);top:1px;bottom:1px}
+@keyframes pourtx{0%,45%{color:#17130F}100%{color:var(--cream)}}
+
+/* a date: a low plateau, neutral (dated tasks have no hue) */
+.dateline{background:var(--surf);box-shadow:var(--pl0);margin:14px var(--gut) 0;width:calc(100% - 2 * var(--gut));padding:0 16px;border-radius:20px;min-height:52px}
+.dateline:active{box-shadow:var(--p1)}
+
+/* Later: one well; each routine marked by a small lit pit in its hue, lit only once there's something this period */
+.later{margin:0 var(--gut);padding:6px 16px 10px;border-radius:26px;box-shadow:var(--wl)}
+.lg .h{text-shadow:var(--deb);font-size:12.5px;color:var(--t3)}
+.tok{gap:6px}
+.tok .hp{width:9px;height:9px;border-radius:50%;flex:none;background:color-mix(in oklab,var(--hd,#1d1a17) 90%,var(--surf));box-shadow:inset 1px 1px 2px rgba(0,0,0,.6),inset -1px -1px 1px rgba(255,238,220,.08)}
+.tok .hp.some,.tok.done .hp{background:var(--hf);box-shadow:inset 1px 1px 1px rgba(0,0,0,.3),0 0 7px var(--hf)}
+.tok .tn{color:var(--cream)}
+.tok.done .tn{color:var(--ht,var(--sun2))}
+.tok.done .tk{color:var(--ht,var(--sun2))}
+
+/* Settled: no form at all. Done things recede into the page; the lit pit says it's done */
+.settled button{color:var(--t2);text-shadow:var(--deb)}
+.settled button i{background:var(--hf,var(--sun));box-shadow:0 0 6px var(--hf,transparent)}
+
+/* suggestion: a plateau; the primary key carries the routine's hue, the others don't */
+.sug{box-shadow:var(--pl);border-radius:26px}
+.sug .sn{display:flex;align-items:center;gap:9px}
+.sug .sn:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--hf,var(--t3));box-shadow:0 0 7px var(--hf,transparent)}
+.sug .sb .primary{color:var(--ht,var(--cream))}
+.sug .sb .primary:before{content:"";display:inline-block;width:6px;height:6px;margin-right:8px;border-radius:50%;background:var(--hf,var(--sun2));vertical-align:1px}
+.sug .sb .sec2,.sug .sb .dots{box-shadow:var(--r1);color:var(--t2)}
+
+/* tab bar: the same page, divided by one groove; the current tab pressed in */
+.tabbar{box-shadow:none}
+.tabbar:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
+.tab svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.06))}
+.tab.on{box-shadow:var(--p1)}
+.tab.on svg{color:var(--sun2);filter:none}
+.logkey{margin-top:-16px;box-shadow:var(--pl),0 0 0 6px var(--surf)}
+.livebar{box-shadow:var(--pl)}
+.livebar .lp i{background:var(--hf,var(--sun));box-shadow:0 0 8px var(--hf,transparent)}
+.livebar button.end{color:var(--ht,var(--cream))}
+
+/* sheets: colour where it identifies; a routine's sheet gives its primary key the routine's hue */
+.sheet .btn.primary{color:var(--ht,var(--cream))}
+.sheet .btn.primary:before{background:var(--hf,var(--sun2))}
+.sheet .scrub button.on{color:var(--ht,var(--sun2))}
+.hdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:10px;vertical-align:4px;box-shadow:0 0 8px currentColor}
+.swatches{display:flex;gap:12px;padding:4px var(--gut) 2px;flex-wrap:wrap}
+.sw8{width:44px;height:44px;border-radius:50%;background:var(--surf);box-shadow:var(--r1);display:grid;place-items:center;transition:box-shadow .3s var(--back)}
+.sw8 i{width:20px;height:20px;border-radius:50%;background:var(--hf);box-shadow:inset 1px 1px 2px rgba(0,0,0,.35)}
+.sw8.on{box-shadow:var(--p2)}
+.sw8.on i{box-shadow:0 0 0 3px var(--surf),0 0 0 5px var(--hf),0 0 10px var(--hf)}
+.sw8:active{box-shadow:var(--p1)}
+
 @media (prefers-reduced-motion: reduce){.nm-r,.key,.btn,.chip{transition:none!important}}
 
 @media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -769,6 +919,23 @@ const byId = id => S.items.find(x => x.id === id);
 const intent = id => S.intents.find(x => x.id === id);
 const haptic = (ms = 8) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 let uid = 1;
+// ---------- colour: one hue per life area, the user can change any routine's ----------
+// oklch(.74 .13 h) as the light/fill, oklch(.82 .11 h) as text (>= 8:1 on the surface), oklch(.42 .08 h) as the deep of a lit well.
+// Sleep and "now" each have their own hue, never given to a routine. Records, observations and dated tasks have none.
+const HUES = {
+  saffron: { name: 'Saffron', f: '#D3A23B', t: '#E8BD6D', d: '#63480D', rgb: [.829, .635, .233] },
+  moss:    { name: 'Moss',    f: '#81BE6B', t: '#A1D58F', d: '#36572B', rgb: [.505, .745, .421] },
+  jade:    { name: 'Jade',    f: '#24C5AB', t: '#6ADCC4', d: '#005B4D', rgb: [.14, .773, .67] },
+  lagoon:  { name: 'Lagoon',  f: '#40B8EE', t: '#74D1FF', d: '#0E5471', rgb: [.25, .723, .935] },
+  iris:    { name: 'Iris',    f: '#B897F0', t: '#CFB4FF', d: '#544272', rgb: [.72, .592, .943] },
+  rose:    { name: 'Rose',    f: '#EF869B', t: '#FFA6B6', d: '#713945', rgb: [.939, .526, .608] },
+};
+const AREA = { meals: 'saffron', vitd: 'saffron', day: 'saffron', water: 'lagoon', floss: 'lagoon', stretch: 'moss', push: 'moss', run: 'moss', walk: 'moss', sketch: 'jade', guitar: 'jade', reading: 'iris', spanish: 'iris', journal: 'iris', date: 'rose', friends: 'rose' };
+const USERHUE = {}; // a routine's own choice survives sample changes, like a setting would
+const hueOf = id => { const k = USERHUE[id] || AREA[id]; return k ? HUES[k] : null; };
+const hs = id => { const h = hueOf(id); return h ? ` style="--hf:${h.f};--ht:${h.t};--hd:${h.d}"` : ''; };
+// how far into its period a routine is, 0..1, from its real count; nothing expected is ever lit
+const progOf = x => { if (!x || !x.v) return 0; if (x.m === 'tap' || (x.m === 'dur' && x.per !== 'week')) return 1; if (x.m === 'passive') return 0; return Math.min(1, x.v / (x.aim || 1)); };
 
 function load(i) {
   si = (i + SAMPLES.length) % SAMPLES.length;
@@ -882,6 +1049,10 @@ function arcSvg() {
   else g += `<path d="${tr}" stroke="rgba(243,237,228,.28)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
   // the day: lived part solid, the rest dashed
   const nowC = Math.max(A.start, Math.min(A.end, now));
+  // flat fallback: the same groove, drawn as a dark wall above and a lit lip below, the light inside it
+  const groove = d => `<path d="${d}" transform="translate(-.9 -.9)" stroke="rgba(12,9,6,.75)" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="${d}" transform="translate(.9 .9)" stroke="rgba(255,238,220,.10)" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#2B2723" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  if (nowC > A.wake) g += groove(pathOf(A, A.wake, Math.min(nowC, A.bed)));
+  if (!noData) g = groove(tr) + g;
   if (nowC > A.wake) g += `<path d="${pathOf(A, A.wake, Math.min(nowC, A.bed))}" stroke="rgba(243,237,228,.58)" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
   g += `<path d="${pathOf(A, Math.max(A.wake, nowC), A.bed)}" stroke="rgba(243,237,228,.24)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
   g += `<path d="${pathOf(A, A.bed, A.end)}" stroke="rgba(243,237,228,.16)" stroke-width="1.3" fill="none" stroke-dasharray="2 5"/>`;
@@ -900,8 +1071,8 @@ function arcSvg() {
     const size = !x ? .6 : x.m === 'amount' ? Math.min(1, e.v / 600) : x.m === 'reps' ? .5 : x.m === 'event' ? 1 : e.dur ? .5 : .6;
     const L = 5 + 12 * size; const base = col[b] != null ? col[b] : A.Y(bt) - (e.dur ? 7 : 5);
     const y0 = base, y1 = base - L; col[b] = y1 - 3.5; cnt[b] = (cnt[b] || 0) + 1;
-    const nw = U.fx.ray === e.id; marks.push({ x: bx, y0, y1, isNew: nw, n: cnt[b] - 1, t: e.t, size, dur: e.dur || 0, id: e.id });
-    g += `<line class="ray${nw ? ' new' : ''}" x1="${bx}" y1="${y0.toFixed(1)}" x2="${bx}" y2="${y1.toFixed(1)}" style="--L:${L.toFixed(1)};stroke-dasharray:${L.toFixed(1)}"/>`;
+    const nw = U.fx.ray === e.id; const hu = hueOf(e.item); marks.push({ x: bx, y0, y1, isNew: nw, n: cnt[b] - 1, t: e.t, size, dur: e.dur || 0, id: e.id, rgb: hu ? hu.rgb : null });
+    g += `<line class="ray${nw ? ' new' : ''}"${hu ? ` style="--L:${L.toFixed(1)};stroke-dasharray:${L.toFixed(1)};stroke:${hu.f}"` : ''} x1="${bx}" y1="${y0.toFixed(1)}" x2="${bx}" y2="${y1.toFixed(1)}" style="--L:${L.toFixed(1)};stroke-dasharray:${L.toFixed(1)}"/>`;
   });
   // records (doses, observations): quiet marks on the horizon, never rays
   S.entries.filter(e => e.k !== 'b').forEach(e => { g += `<circle class="rec" cx="${A.X(e.t).toFixed(1)}" cy="${A.hz + 9}" r="2.6" opacity="${U.fx.ray === e.id ? 1 : .85}"/>`; });
@@ -932,13 +1103,13 @@ function panels() {
   S.moments.filter(m => !U.dismissed.has(m.id)).forEach(m => {
     const x = `<span class="x" role="button" tabindex="0" data-act="dismiss" data-id="${m.id}" aria-label="Hide for now"><svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.6"><path d="M2 2l8 8M10 2l-8 8"/></svg></span>`;
     if (m.kind === 'night') { const sl = S.sleep; const mx = Math.max(480, ...sl.nights.filter(Boolean));
-      out.push(`<button class="panel" data-act="sheet" data-s="sleep" aria-label="Last night, ${dur(sl.asleep)} asleep. Open the night">${x}<span class="k">Last night, ${dur(sl.asleep)}</span><span class="ttl">${esc(sl.head)}</span><span class="ln">${esc(sl.line)}</span><span class="mini"><span class="nights">${sl.nights.map((v, i) => `<i class="${v == null ? 'gap' : i === sl.nights.length - 1 ? 'on' : ''}" style="height:${v ? Math.max(8, 30 * v / mx) : 6}px"></i>`).join('')}</span></span></button>`); }
+      out.push(`<button class="panel" style="--hf:var(--night);--ht:var(--nightT)" data-act="sheet" data-s="sleep" aria-label="Last night, ${dur(sl.asleep)} asleep. Open the night">${x}<span class="k">Last night, ${dur(sl.asleep)}</span><span class="ttl">${esc(sl.head)}</span><span class="ln">${esc(sl.line)}</span><span class="mini"><span class="nights">${sl.nights.map((v, i) => `<i class="${v == null ? 'gap' : i === sl.nights.length - 1 ? 'on' : ''}" style="height:${v ? Math.max(8, 30 * v / mx) : 6}px"></i>`).join('')}</span></span></button>`); }
     if (m.kind === 'nightmiss') out.push(`<div class="panel solo"><span class="k">Last night</span><span class="ttl" style="color:var(--t2)">Not in yet</span><span class="ln">It arrives from your Watch once you’re up. Nothing is counted until it does.</span></div>`);
     if (m.kind === 'run') { const mx = Math.max(...m.splits), mn = Math.min(...m.splits);
-      out.push(`<button class="panel" data-act="sheet" data-s="run" data-id="${m.id}" aria-label="${esc(m.kick)}: ${m.dist} km run. Open the report">${x}<span class="k">${m.just ? `<span class="just">${esc(m.kick)}</span>` : esc(m.kick)}</span><span class="big tnum">${m.dist}<small>km run</small></span><span class="ln"><b>${m.pace} /km</b>. ${esc(m.fact)}.</span><span class="mini"><span class="splits">${m.splits.map(s => `<i class="${s === mn ? 'best' : ''}" style="height:${10 + 24 * (mx - s) / Math.max(1, mx - mn)}px"></i>`).join('')}</span></span></button>`); }
+      out.push(`<button class="panel"${hs('run')} data-act="sheet" data-s="run" data-id="${m.id}" aria-label="${esc(m.kick)}: ${m.dist} km run. Open the report">${x}<span class="k">${m.just ? `<span class="just">${esc(m.kick)}</span>` : esc(m.kick)}</span><span class="big tnum">${m.dist}<small>km run</small></span><span class="ln"><b>${m.pace} /km</b>. ${esc(m.fact)}.</span><span class="mini"><span class="splits">${m.splits.map(s => `<i class="${s === mn ? 'best' : ''}" style="height:${10 + 24 * (mx - s) / Math.max(1, mx - mn)}px"></i>`).join('')}</span></span></button>`); }
     if (m.kind === 'pattern') { const lo = Math.min(m.a[2], m.b[2]) - 10, hi = Math.max(m.a[3], m.b[3]) + 10, p = v => (v - lo) / (hi - lo) * 100;
       const r = (q, c) => `<span class="r ${c}"><span>${q[0]}</span><span class="t"><i class="s" style="left:${p(q[2])}%;width:${p(q[3]) - p(q[2])}%"></i><i class="m" style="left:${p(q[1])}%"></i></span><span class="v tnum">${dur(q[1])}</span></span>`;
-      out.push(`<button class="panel" data-act="sheet" data-s="pattern" aria-label="Observation about sleep. Open">${x}<span class="k">An observation, ${m.to.toLowerCase()}</span><span class="ttl">${esc(m.title)}</span><span class="mini"><span class="prange">${r(m.a, 'b')}${r(m.b, 'a')}</span><span class="ln" style="margin-top:8px">From ${m.n} days on record. A hint, not proof.</span></span></button>`); }
+      out.push(`<button class="panel" style="--hf:var(--night);--ht:var(--nightT)" data-act="sheet" data-s="pattern" aria-label="Observation about sleep. Open">${x}<span class="k">An observation, ${m.to.toLowerCase()}</span><span class="ttl">${esc(m.title)}</span><span class="mini"><span class="prange">${r(m.a, 'b')}${r(m.b, 'a')}</span><span class="ln" style="margin-top:8px">From ${m.n} days on record. A hint, not proof.</span></span></button>`); }
     if (m.kind === 'week') { out.push(`<button class="panel" data-act="sheet" data-s="week" aria-label="Play this week back">${x}<span class="k">${m.range}, so far</span><span class="ttl">${esc(m.title)}</span><span class="mini"><span class="weekd">${m.days.map((d, i) => `<span class="c${i === 6 ? ' now' : ''}">${'<i></i>'.repeat(Math.round(d[1] / 1.5))}<span>${d[0]}</span></span>`).join('')}</span></span></button>`); }
     if (m.kind === 'sick') out.push(`<div class="panel"><span class="k">Sick, since yesterday</span><span class="ttl">Routines rest. Nothing is expected of you.</span><span class="ln">Dates you set still show. Everything else waits, and nothing counts against you.</span></div>`);
     if (m.kind === 'day1') out.push(`<div class="panel solo"><span class="k">Day one</span><span class="ttl">Start with one thing</span><span class="ln">Log anything below and it gathers on the arc above. Last night appears here once sleep is connected.</span></div>`);
@@ -954,7 +1125,7 @@ function rowHtml(id, i, leadId, firstId) {
   const n = intent(id);
   if (n) {
     const done = U.fx.key === n.id ? ' done anim' : '';
-    return `<div class="row" data-row="${n.id}"><button class="open" data-act="sheet" data-s="intent" data-id="${n.id}" aria-label="${esc(n.title)}: done, start or a new date"></button><div><div class="nm">${esc(n.title)}</div><div class="st"><b>${esc(n.when)}</b>${n.repeat ? `, ${esc(n.repeat)}` : ''}${n.started ? ', started' : ''}</div></div>
+    return `<div class="row task" data-row="${n.id}"><span class="inl" aria-hidden="true"></span><button class="open" data-act="sheet" data-s="intent" data-id="${n.id}" aria-label="${esc(n.title)}: done, start or a new date"></button><div><div class="nm">${esc(n.title)}</div><div class="st"><b>${esc(n.when)}</b>${n.repeat ? `, ${esc(n.repeat)}` : ''}${n.started ? ', started' : ''}</div></div>
       <div class="keyw"><button class="key k-word" data-act="onit" data-id="${n.id}">${n.est ? `${n.est} min` : 'On it'}</button><button class="key k-round${done}" data-act="idone" data-id="${n.id}" aria-label="Mark done: ${esc(n.title)}"><span class="fill"></span>${done ? CK : CK.replace('class="ck"', 'class="ck ghost"')}</button></div></div>`;
   }
   const x = byId(id); if (!x) return '';
@@ -964,7 +1135,7 @@ function rowHtml(id, i, leadId, firstId) {
   if (firstId === x.id && x.first) body += `<div class="first"><em>First step:</em> ${esc(x.first)}</div>`;
   body += '</div>';
   let tail = x.m === 'amount' ? `<div class="amt" role="group" aria-label="Log a familiar amount of water">${x.presets.map(p => `<button class="key${p === x.lastAmt ? ' last' : ''}${U.fx.pour === x.id + p ? ' pour' : ''}" data-key="${x.id}" data-amt="${p}" aria-label="Log ${p} ml of water"><span class="fill"></span><span>${p}</span></button>`).join('')}</div>` : keyHtml(x);
-  return `<div class="${cls}" data-row="${x.id}"><button class="open" data-act="sheet" data-s="item" data-id="${x.id}" aria-label="Open ${esc(x.name)}"></button>${body}${tail}</div>`;
+  return `<div class="${cls}" data-row="${x.id}"${hs(x.id)}><span class="inl" aria-hidden="true"><i style="height:${(100 * progOf(x)).toFixed(0)}%"></i></span><button class="open" data-act="sheet" data-s="item" data-id="${x.id}" aria-label="Open ${esc(x.name)}"></button>${body}${tail}</div>`;
 }
 function nowList() {
   const ids = S.order.filter(id => { const n = intent(id); if (n) return n.place === 'now' && !n.done; const x = byId(id); return x && (x.group === 'now' || U.completing === id || U.leaving === id); });
@@ -985,7 +1156,7 @@ function laterHtml() {
   const L = S.items.filter(x => x.group === 'later' && !(U.sugState === 'show' && S.sug && S.sug.id === x.id));
   if (!L.length) return '';
   const groups = WHEN.map(([k, h]) => [h, L.filter(x => (S.calm ? 'any' : x.when || 'any') === k)]).filter(g => g[1].length);
-  return `<section class="sec" data-later><div class="sech"><h2>${S.calm ? 'Whenever you like' : 'Later'}</h2></div><div class="later">${groups.map(([h, l]) => `<div class="lg">${S.calm ? '' : `<div class="h">${h}</div>`}<div class="para">${l.map(x => `<span class="tok${U.fx.tok === x.id ? ' done' : ''}" data-row="${x.id}"><button class="tn" data-act="sheet" data-s="item" data-id="${x.id}">${esc(x.name)}</button><span class="tf">${esc(shortFig(x))}</span>${tokKey(x)}</span>`).join('')}</div></div>`).join('')}</div></section>`;
+  return `<section class="sec" data-later><div class="sech"><h2>${S.calm ? 'Whenever you like' : 'Later'}</h2></div><div class="later">${groups.map(([h, l]) => `<div class="lg">${S.calm ? '' : `<div class="h">${h}</div>`}<div class="para">${l.map(x => `<span class="tok${U.fx.tok === x.id ? ' done' : ''}" data-row="${x.id}"${hs(x.id)}><i class="hp${x.v ? ' some' : ''}" aria-hidden="true"></i><button class="tn" data-act="sheet" data-s="item" data-id="${x.id}">${esc(x.name)}</button><span class="tf">${esc(shortFig(x))}</span>${tokKey(x)}</span>`).join('')}</div></div>`).join('')}</div></section>`;
 }
 
 // ---------- render ----------
@@ -1020,7 +1191,7 @@ function render() {
   if (S.tonight) h += `<section class="sec" style="margin-top:22px"><div class="sech"><h2>Tonight</h2></div><div class="chips">${S.tonight.map(t => `<button class="chip${U.tonight[t.id] ? ' on' : ''}" data-act="tonight" data-id="${t.id}" aria-pressed="${!!U.tonight[t.id]}">${U.tonight[t.id] ? 'Noted: ' + t.label.toLowerCase() : t.label}</button>`).join('')}</div></section>`;
   h += laterHtml();
   h += sugHtml();
-  if (settled.length) h += `<section class="sec"><div class="sech"><h2>Settled</h2></div><div class="settled">${settled.map(x => `<button data-act="sheet" data-s="item" data-id="${x.id}" class="${U.fx.settled === x.id ? 'pop' : ''}"><i></i>${esc(x.name)}</button>`).join('')}</div></section>`;
+  if (settled.length) h += `<section class="sec"><div class="sech"><h2>Settled</h2></div><div class="settled">${settled.map(x => `<button data-act="sheet" data-s="item" data-id="${x.id}" class="${U.fx.settled === x.id ? 'pop' : ''}"${hs(x.id)}><i></i>${esc(x.name)}</button>`).join('')}</div></section>`;
   if (S.dayOne) h += `<button class="addbtn" data-act="toast-add"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>Add a routine</button>`;
   h += `<div class="foot"><button data-act="next-sample">Different data, ${si + 1} of ${SAMPLES.length}: ${esc(S.label)}</button></div>`;
   scrollEl.innerHTML = h;
@@ -1036,7 +1207,7 @@ function sugHtml() {
   if (S.noSug || (!S.sug && !S.sugEmpty)) return '';
   let body;
   const c = U.mins && S.sugAlt ? S.sugAlt : S.sug;
-  if (U.sugState === 'show' && c) body = `<div class="sug" data-suggest><button class="sn" data-act="sheet" data-s="item" data-id="${c.id || ''}">${esc(c.name)}</button><div class="sr">${esc(c.reason)}</div><div class="sb"><button class="primary" data-act="sug-do">${esc(c.verb)}</button><button class="sec2" data-act="sug-not">Not now</button><button class="dots" data-act="sheet" data-s="sugmore" aria-label="More choices"><svg width="18" height="4" viewBox="0 0 18 4" fill="currentColor"><circle cx="2" cy="2" r="1.7"/><circle cx="9" cy="2" r="1.7"/><circle cx="16" cy="2" r="1.7"/></svg></button></div></div>`;
+  if (U.sugState === 'show' && c) body = `<div class="sug" data-suggest${hs(c.id)}><button class="sn" data-act="sheet" data-s="item" data-id="${c.id || ''}">${esc(c.name)}</button><div class="sr">${esc(c.reason)}</div><div class="sb"><button class="primary" data-act="sug-do">${esc(c.verb)}</button><button class="sec2" data-act="sug-not">Not now</button><button class="dots" data-act="sheet" data-s="sugmore" aria-label="More choices"><svg width="18" height="4" viewBox="0 0 18 4" fill="currentColor"><circle cx="2" cy="2" r="1.7"/><circle cx="9" cy="2" r="1.7"/><circle cx="16" cy="2" r="1.7"/></svg></button></div></div>`;
   else body = `<p class="sughold">${U.sugState === 'took' ? `Today’s idea: ${esc(S.sug.name)}.` : 'Nothing else right now.'}</p>${U.sugState === 'took' ? '' : `<div class="chips"><span style="align-self:center;font:400 13px var(--ui);color:var(--t3);margin-right:2px">I have</span>${[15, 30, 60].map(m => `<button class="chip sm${U.mins === m ? ' on' : ''}" data-act="mins" data-m="${m}" aria-pressed="${U.mins === m}">${m === 60 ? '1 h' : m + ' min'}</button>`).join('')}</div>`}`;
   return `<section class="sec"><div class="sech"><h2>If you have a moment</h2><button class="aside" data-act="sheet" data-s="sugwhy" aria-label="How suggestions are chosen">Why these</button></div>${body}</section>`;
 }
@@ -1046,7 +1217,7 @@ function renderLive() {
   if (!S.live) { liveEl.classList.remove('on'); return; }
   const x = byId(S.live.id) || { name: S.live.name, usual: S.live.plan };
   const plan = S.live.plan || x.usual;
-  liveEl.innerHTML = `<div class="lt"><div class="a">${esc(x.name || x.title)}</div><div class="b tnum"><span data-liveclock>${liveClock()}</span>${S.live.pausedAt ? ', paused' : plan ? `, usually ${plan} min` : ''}</div></div><button data-act="live-pause">${S.live.pausedAt ? 'Resume' : 'Pause'}</button><button class="end" data-act="live-end">End</button><div class="lp"><i data-liveprog style="width:${liveProg(plan)}%"></i></div>`;
+  liveEl.setAttribute('style', (hs(S.live.id).match(/"(.*)"/) || [, ''])[1]); liveEl.innerHTML = `<div class="lt"><div class="a">${esc(x.name || x.title)}</div><div class="b tnum"><span data-liveclock>${liveClock()}</span>${S.live.pausedAt ? ', paused' : plan ? `, usually ${plan} min` : ''}</div></div><button data-act="live-pause">${S.live.pausedAt ? 'Resume' : 'Pause'}</button><button class="end" data-act="live-end">End</button><div class="lp"><i data-liveprog style="width:${liveProg(plan)}%"></i></div>`;
   liveEl.classList.add('on');
 }
 const liveProg = plan => plan ? Math.min(100, 100 * ((S.live.pausedAt || Date.now()) - S.live.start) / 60000 / plan) : 0;
@@ -1127,7 +1298,7 @@ const X = '<button class="close" data-act="close" aria-label="Close"><svg width=
 const head = (k, t) => `<div class="grab"></div><div class="sh"><div>${k ? `<div class="k">${k}</div>` : ''}<h3>${t}</h3></div>${X}</div>`;
 function openSheet(kind, id) {
   const f = SHEETS[kind]; if (!f) return;
-  sheetEl.innerHTML = f(id); sheetEl.scrollTop = 0; sheetEl.dataset.kind = kind; sheetEl.dataset.id = id || '';
+  sheetEl.innerHTML = f(id); sheetEl.setAttribute('style', (['item', 'options'].includes(kind) && id ? (hs(id).match(/"(.*)"/) || [, ''])[1] : '')); sheetEl.scrollTop = 0; sheetEl.dataset.kind = kind; sheetEl.dataset.id = id || '';
   scrimEl.classList.add('on'); sheetEl.classList.add('on'); hideToast();
 }
 function closeSheet(now) { sheetEl.classList.remove('on'); scrimEl.classList.remove('on'); }
@@ -1137,10 +1308,10 @@ const SHEETS = {
     const x = byId(id); if (!x) return head('', 'Not found');
     const es = S.entries.filter(e => e.item === id).sort((a, b) => b.t - a.t);
     const ctl = x.m === 'amount' ? `<div class="scrub">${x.presets.map(p => `<button data-act="slog" data-id="${id}" data-amt="${p}">${p}<small>ml</small></button>`).join('')}</div>` : x.m === 'passive' ? `<p class="note">Filled by your Watch. Nothing to log here.</p>` : `<div class="btns"><button class="btn primary" data-act="slog" data-id="${id}">${x.m === 'dur' ? (S.live && S.live.id === id ? 'End and save' : 'Start') : x.m === 'reps' ? `Log ${x.step}` : x.m === 'watch' ? 'Log a run' : 'Log one'}</button></div>`;
-    return head(x.group === 'settled' ? 'Settled for this period' : '', esc(x.name)) +
+    return head(x.group === 'settled' ? 'Settled for this period' : '', `${hueOf(id) ? `<i class="hdot" style="background:${hueOf(id).f}"></i>` : ''}${esc(x.name)}`) +
       `<div class="sp"><p class="sline" style="margin-top:6px">${stateLine(x)}</p></div><div style="height:16px"></div>${ctl}` +
       `<div class="slab">Today</div><div class="slist">${es.length ? es.map(e => `<div class="li"><span class="tm">${hm(e.t)}</span><span class="tx">${esc(entryTxt(e))}</span><button class="rm" data-act="remove" data-e="${e.id}">Remove</button></div>`).join('') : `<div class="li"><span class="tx" style="color:var(--t3)">Nothing logged today</span></div>`}</div>` +
-      `<div class="slab">More</div><div class="btns"><button class="btn" data-act="none" data-id="${id}">Didn’t do it today</button><button class="btn ghost">Results and history</button><button class="btn ghost">Settings for ${esc(x.name)}</button></div>`;
+      (hueOf(id) ? `<div class="slab">Colour</div><div class="swatches" role="radiogroup" aria-label="Colour for ${esc(x.name)}">${Object.entries(HUES).map(([k, h]) => `<button class="sw8${hueOf(id) === h ? ' on' : ''}" role="radio" aria-checked="${hueOf(id) === h}" data-act="hue" data-id="${id}" data-h="${k}" style="--hf:${h.f};--hd:${h.d}" aria-label="${h.name}"><i></i></button>`).join('')}</div>` : '') + `<div class="slab">More</div><div class="btns"><button class="btn" data-act="none" data-id="${id}">Didn’t do it today</button><button class="btn ghost">Results and history</button><button class="btn ghost">Settings for ${esc(x.name)}</button></div>`;
   },
   options(id) {
     const x = byId(id); if (!x) return '';
@@ -1181,7 +1352,7 @@ const SHEETS = {
   back() { return head('Back after 3 weeks', 'Set aside, not missed') + `<div class="sp"><p style="margin-top:8px">1 to 21 Nov is marked as away. Those weeks are left out of every aim and comparison. Everything you built before is still there, and nothing is waiting for you to catch up.</p></div>`; },
   day() {
     const es = [...S.entries].sort((a, b) => a.t - b.t);
-    return head(S.dow, `${es.length ? es.length + ' entries so far' : 'Nothing logged yet'}`) + `<div class="sp"><p style="margin-top:6px">Each thing you did sits on the arc at its time. Doses and observations sit on the horizon as quiet dots. Corrections live here.</p></div><div class="slab">Today</div><div class="slist">${S.sleep.missing || S.sleep.none ? `<div class="li"><span class="tm">—</span><span class="tx" style="color:var(--t3)">${S.sleep.none ? 'No sleep record' : 'Last night not in yet'}</span></div>` : `<div class="li"><span class="tm">${hm(S.sleep.wake)}</span><span class="dot" style="background:var(--night)"></span><span class="tx">Woke, ${dur(S.sleep.asleep)} asleep</span></div>`}${es.map(e => `<div class="li"><span class="tm">${hm(e.t)}</span><span class="dot${e.k !== 'b' ? ' q' : ''}"></span><span class="tx">${esc(entryTxt(e))}${e.k === 'dose' ? '<small>Medication, a record</small>' : e.k === 'obs' ? '<small>Observation, a record</small>' : ''}</span><button class="rm" data-act="remove" data-e="${e.id}">Remove</button></div>`).join('')}</div>`;
+    return head(S.dow, `${es.length ? es.length + ' entries so far' : 'Nothing logged yet'}`) + `<div class="sp"><p style="margin-top:6px">Each thing you did sits on the arc at its time. Doses and observations sit on the horizon as quiet dots. Corrections live here.</p></div><div class="slab">Today</div><div class="slist">${S.sleep.missing || S.sleep.none ? `<div class="li"><span class="tm">—</span><span class="tx" style="color:var(--t3)">${S.sleep.none ? 'No sleep record' : 'Last night not in yet'}</span></div>` : `<div class="li"><span class="tm">${hm(S.sleep.wake)}</span><span class="dot" style="background:var(--night)"></span><span class="tx">Woke, ${dur(S.sleep.asleep)} asleep</span></div>`}${es.map(e => `<div class="li"><span class="tm">${hm(e.t)}</span><span class="dot${e.k !== 'b' ? ' q' : ''}"${e.k === 'b' && hueOf(e.item) ? ` style="background:${hueOf(e.item).f}"` : ''}></span><span class="tx">${esc(entryTxt(e))}${e.k === 'dose' ? '<small>Medication, a record</small>' : e.k === 'obs' ? '<small>Observation, a record</small>' : ''}</span><button class="rm" data-act="remove" data-e="${e.id}">Remove</button></div>`).join('')}</div>`;
   },
   context() {
     const on = S.ctx && S.ctx.label;
@@ -1246,6 +1417,7 @@ document.addEventListener('click', e => {
     case 'iletgo': { closeSheet(); const n = intent(id); n.done = true; render(); toast('Let go', n.title, () => { n.done = false; render(); }, true); break; }
     case 'live-pause': if (S.live.pausedAt) { S.live.start += Date.now() - S.live.pausedAt; S.live.pausedAt = null; } else S.live.pausedAt = Date.now(); render(); break;
     case 'live-end': if (String(S.live.id).startsWith('int:')) { const n = intent(S.live.id.slice(4)); const m = Math.max(1, Math.round((Date.now() - S.live.start) / 60000)); S.live = null; render(); toast(`${n.title}, ${m} min`, 'Done, or keep it for later?', null, true); openSheet('intent', n.id); } else endLive(); break;
+    case 'hue': USERHUE[id] = t.dataset.h; render(); openSheet('item', id); break;
     case 'tonight': { const was = U.tonight[id]; U.tonight[id] = !was; render(); if (!was) toast(S.tonight.find(q => q.id === id).label + ' tonight', 'Noted. That fills in the record, nothing more.', () => { U.tonight[id] = false; render(); }, true); break; }
     case 'sug-do': { const c = U.mins && S.sugAlt ? S.sugAlt : S.sug; U.sugState = 'took'; if (c.mins) { const x = byId(c.id) || { id: c.id, name: c.name.split(',')[0], m: 'dur', usual: c.mins }; if (!byId(c.id)) S.items.push(Object.assign(x, { group: 'later', when: 'any', v: 0, per: 'week', aim: 2 })); startLive(byId(c.id), c.mins); } else { render(); toast(c.name, 'Logged. Enjoy it.', () => { U.sugState = 'show'; render(); }); } break; }
     case 'sug-not': closeSheet(); U.sugState = 'rest'; render(); toast('Not now', 'It may come back once, later today', () => { U.sugState = 'show'; render(); }, true); break;
@@ -1269,7 +1441,8 @@ load(si);
 
 </script>
 <script type="module">
-// Meridian Today v3: the day arc as light (3D round 3).
+// Meridian Today, soft v2: the day carved into the surface. A height field (grooves, a well, domes, bumps, pits)
+// lit by the page's one top-left light, with warm light pooled only in the lived part of the groove and in the sun.
 // One full-hero fragment shader over the flat arc's exact composition (app.js arcModel/arcSvg -> data).
 // Front-on, no geometry: the arc is computed per pixel from the same X(t)/Y(t) the SVG uses, so every
 // position, count and label matches the flat arc. The SVG keeps its text labels; no WebGL -> the flat SVG stays whole.
@@ -1289,7 +1462,7 @@ uniform vec4 uS[${MAXS}]; uniform int uNS;   // sessions: x0, x1
 uniform float uPulse, uFlow, uShim;
 
 float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
-// the same curve as app.js arcModel: t(x) piecewise linear, y(t) a trough under the horizon, then the sun path
+// the same curve as app.js arcModel
 float tOf(float x){ float pad=uA.x,NW=uA.y,DW=uA.z; return x<=pad+NW ? uB.x+(x-pad)/NW*(uB.y-uB.x) : uB.y+(x-pad-NW)/DW*(uB.z-uB.y); }
 float yOf(float t){ float hz=uA.w, st=uB.x, wk=uB.y, en=uB.z, bd=uB.w, PI=3.14159265;
   t=clamp(t,st,en);
@@ -1299,105 +1472,116 @@ float yOf(float t){ float hz=uA.w, st=uB.x, wk=uB.y, en=uB.z, bd=uB.w, PI=3.1415
 float fx(float x){ return yOf(tOf(x)); }
 float X(float t){ float pad=uA.x,NW=uA.y,DW=uA.z; t=clamp(t,uB.x,uB.z); return t<=uB.y ? pad+(t-uB.x)/(uB.y-uB.x)*NW : pad+NW+(t-uB.y)/(uB.z-uB.y)*DW; }
 float slope(float x){ return (fx(x+.75)-fx(x-.75))/1.5; }
-// distance from a pixel to the curve (graph distance, corrected for slope)
 float dist(vec2 p){ float s=slope(p.x); return abs(p.y-fx(p.x))/sqrt(1.+s*s); }
-// distance to one stretch of the curve: past its ends, the distance to the end point, so light fades round the tips instead of stopping in a column
 float seg(vec2 p,float x0,float x1){ float xc=clamp(p.x,x0,x1); return xc==p.x ? dist(p) : length(p-vec2(xc,fx(xc))); }
-vec3 seg3(vec2 p,float x0,float x1,vec3 o){ return vec3(seg(p+vec2(0.,o.x),x0,x1),seg(p+vec2(0.,o.y),x0,x1),seg(p+vec2(0.,o.z),x0,x1)); }
+
+// profiles, all smooth at their rims so nothing has an edge line: the surface bends, it is never cut
+float bowl(float d,float w){ return d<w ? .5+.5*cos(3.14159265*d/w) : 0.; }      // a groove or pit cross-section
+float dome(float r,float R){ float k=max(0.,1.-r*r/(R*R)); return k*k*(3.-2.*k); } // a moulded bump
+float dots(vec2 p,float x0,float x1,float gap,float R){ // a row of small pits along the curve
+  if(p.x<x0-R||p.x>x1+R) return 0.;
+  float sl=sqrt(1.+pow(slope(p.x),2.)), ph=fract((p.x-x0)/gap);
+  return bowl(length(vec2((ph-.5)*gap*sl,dist(p))),R);
+}
+
+// the height of the surface at p, in px. 0 is the page; negative is carved in, positive is moulded up
+float H(vec2 p, bool near, out float fill){
+  float hz=uA.w, xw=X(uB.y), xn=X(uC.z), xb=X(uB.w), xs=X(uB.x), xe=X(uB.z);
+  bool noData=uC.w>.5;
+  float h=0.; fill=0.;
+  // the horizon: one fine groove across
+  h-=.6*bowl(abs(p.y-hz),2.2);
+  // last night: a well under the horizon, deepest along the night's own line
+  if(!noData){
+    if(p.x>xs-8. && p.x<xw+8.){
+      float y=fx(clamp(p.x,xs,xw));
+      float inside=smoothstep(0.,4.,p.y-hz)*smoothstep(-1.,4.,y-p.y)*smoothstep(xs-2.,xs+8.,p.x)*smoothstep(xw+2.,xw-8.,p.x);
+      h-=3.*inside;
+      float d=seg(p,xs,xw);
+      h-=2.4*bowl(d,4.6);
+    }
+  } else h-=.9*dots(p,xs,xw,6.,1.7);
+  // the lived day: a groove carved from waking to now, wider where a session ran
+  if(uC.z>uB.y){
+    float xl=min(xn,xb), d=seg(p,xw,xl), w=6.2, dp=3.3;
+    for(int i=0;i<${MAXS};i++){ if(i>=uNS)break; float ds=seg(p,uS[i].x,uS[i].y); float k=1.-smoothstep(4.,7.,ds); w=mix(w,7.,k*(1.-smoothstep(5.,7.,ds))); dp=mix(dp,4.,k); }
+    float g=bowl(d,w); h-=dp*g; fill=max(fill,g);
+  }
+  // the rest of the day: not carved yet, only marked with shallow pits; after bedtime fainter still
+  if(p.x>xn+5.){ h-=1.3*dots(p,xn+8.,min(xb,xe-4.),7.,2.); if(p.x>xb) h-=.7*dots(p,xb,xe-4.,7.,1.7); }
+  // the meridian: a plumb line of tiny pits
+  float xm=X((uB.y+uB.w)*.5), ym=yOf((uB.y+uB.w)*.5);
+  if(p.y>ym+10. && p.y<hz-2.) h-=.4*bowl(length(vec2(p.x-xm,(fract(p.y/5.)-.5)*5.)),1.);
+  // logs: each a small moulded bump beside the groove, at its own time; a busy moment stacks outward
+  if(near) for(int i=0;i<${MAXL};i++){ if(i>=uNL)break; vec4 L=uL[i]; float r=length(p-L.xy); if(r<L.z+1.5) h+=2.2*dome(r,L.z+1.1); }
+  // records: small pits just under the horizon, never on the groove
+  if(abs(p.y-hz-9.)<5.) for(int i=0;i<${MAXR};i++){ if(i>=uNR)break; vec4 R=uR[i]; float r=length(p-R.xy); h-=1.1*bowl(r,R.z+.6); }
+  // the sun: a moulded dome at now
+  float yn=yOf(uC.z), r=length(p-vec2(xn,yn));
+  h+=5.5*dome(r,10.);
+  return h;
+}
 
 void main(){
-  vec2 p=vec2(gl_FragCoord.x, uRes.y*uDpr-gl_FragCoord.y)/uDpr; p.y-=uTop; // arc coordinates, same as the SVG
-  float hz=uA.w, xw=X(uB.y), xn=X(uC.z), xb=X(uB.w), xs=X(uB.x), xe=X(uB.z);
+  vec2 p=vec2(gl_FragCoord.x, uRes.y*uDpr-gl_FragCoord.y)/uDpr; p.y-=uTop;
+  float hz=uA.w, xw=X(uB.y), xn=X(uC.z), xb=X(uB.w), xs=X(uB.x);
   float yn=yOf(uC.z); vec2 sun=vec2(xn,yn);
   bool noData=uC.w>.5;
-  vec3 WARM=vec3(1.,.42,.17), CREAM=vec3(1.,.9,.78), COOL=vec3(.56,.58,.98), SUNC=vec3(1.,.55,.3);
-  vec3 c=vec3(0.);
+  vec3 WARM=vec3(1.,.42,.17), CREAM=vec3(1.,.9,.78), COOL=vec3(.56,.58,.98), SUNC=vec3(1.,.55,.3), LT=vec3(1.,.93,.86);
 
-  // dispersion: each channel reads the curve a hair apart, so glow edges split warm/cool like light through glass
-  float sh=uShim*sin(p.x*.06-uTime*.9)*.25;
-  vec3 off=vec3(-.55+sh,sh*.5,.55+sh);
-  float dG=dist(p);
+  // the surface: normal from the height field, lit by the page's one light, from the top left
+  float f0,f1,f2,f3,f4,f5;
+  bool near=dist(p)<42. && p.x>X(uB.y)-12. && p.x<X(uC.z)+12.;
+  float e=.5, h0=H(p,near,f0);
+  float hx=(H(p+vec2(e,0.),near,f1)-H(p-vec2(e,0.),near,f2))/(2.*e);
+  float hy=(H(p+vec2(0.,e),near,f3)-H(p-vec2(0.,e),near,f4))/(2.*e);
+  vec3 n=normalize(vec3(-hx,-hy,1.));
+  vec3 Ld=normalize(vec3(-.62,-.62,.48));
+  float diff=dot(n,Ld)-Ld.z;               // 0 on the flat page, so the page shows through untouched
+  // a soft cast shadow: anything higher toward the light shades this point (domes throw down-right, grooves shade their top-left wall)
+  vec2 tl=normalize(Ld.xy);
+  float s1=H(p+tl*3.,near,f5)-h0-3.*.85;
+  float shad=smoothstep(0.,1.8,s1);
+  float cav=clamp(-h0*.05,0.,.16);          // the bottom of a groove gathers less light
 
-  // last night: a cool glow under the horizon, its hollow filled with faint light that pools toward the line
-  {
-    float m=1.;
-    if(!noData){
-      vec3 d3=seg3(p,xs,xw,off);
-      vec3 core=1.-smoothstep(vec3(.45),vec3(1.45),d3);
-      vec3 glow=exp(-d3/3.)*.4+exp(-d3*d3/(2.*144.))*.1;
-      c+=COOL*(core*.95+glow)*m;
-      float y=fx(p.x); float inside=step(hz,p.y)*step(p.y,y)*step(xs,p.x)*step(p.x,xw);
-      c+=COOL*inside*m*(.07+.12*pow(clamp((p.y-hz)/max(1.,y-hz),0.,1.),1.6));
-    } else {
-      // missing night: a dotted grey trace, never filled, never "none"
-      float ph=fract(p.x/6.), dt=1.-smoothstep(.55,1.2,length(vec2((ph-.5)*6.*sqrt(1.+pow(slope(p.x),2.)),dG)));
-      c+=vec3(.42,.40,.37)*dt*.7*step(xs,p.x)*step(p.x,xw);
-    }
-  }
+  float lift=max(diff,0.)*.36;              // warm light on faces turned to the light: the same tint as the page's light shadows
+  float dark=clamp(max(-diff,0.)*.78+shad*.26+cav,0.,.62);
 
-  // the lived day: a luminous ribbon, cream at waking, warming and brightening toward now
+  // emitted light. Only the lived part of the day and the sun give light; the rest is shape
+  vec3 E=vec3(0.);
   if(uC.z>uB.y){
-    float xl=min(xn,xb);
-    vec3 d3=seg3(p,xw,xl,off);
-    float m=1.;
-    float k=clamp((p.x-xw)/max(1.,xl-xw),0.,1.);
-    float heat=pow(k,2.2);
-    vec3 col=mix(CREAM*.82,mix(CREAM,WARM*1.25,.75),heat);
-    float w=1., sess=0.; // sessions (timed things) thicken the ribbon over their span, measured as their own stretch so the light never leaks into columns
-    for(int i=0;i<${MAXS};i++){ if(i>=uNS)break; float ds=seg(p,uS[i].x,uS[i].y); sess=max(sess,(1.-smoothstep(1.5,2.6,ds))*.9+exp(-ds/2.6)*.25); }
-    vec3 core=1.-smoothstep(vec3(.55),vec3(1.65),d3);
-    vec3 glow=exp(-d3/2.2)*.45+exp(-d3*d3/(2.*81.))*(.06+.22*heat)+exp(-d3*d3/(2.*900.))*.07*heat;
-    c+=col*sess*.85;
-    // a slow pulse of light travels the day toward now
-    float flow=uFlow<0. ? 0. : exp(-pow((k-uFlow)/.06,2.))*.9*smoothstep(0.,.15,uFlow)*(1.-smoothstep(.9,1.,uFlow));
-    c+=col*(core*(.85+.4*heat)+glow*(1.+flow)+flow*core*.6)*m;
+    float xl=min(xn,xb), d=seg(p,xw,xl);
+    float k=clamp((p.x-xw)/max(1.,xl-xw),0.,1.), heat=pow(k,2.2);
+    vec3 col=mix(CREAM*.75,mix(CREAM,WARM*1.2,.75),heat);
+    float flow=uFlow<0. ? 0. : exp(-pow((k-uFlow)/.05,2.))*smoothstep(0.,.15,uFlow)*(1.-smoothstep(.9,1.,uFlow));
+    float pool=smoothstep(.62,.97,f0);      // light lies in the bottom of the groove, not on the page
+    E+=col*(pool*(.42+.5*heat)*(1.+.8*flow)+smoothstep(.2,.9,f0)*.07*(.5+heat)+exp(-d/3.)*.05*heat);
   }
+  if(!noData){ float d=seg(p,xs,xw); E+=COOL*(smoothstep(.6,.97,bowl(d,4.6))*.55+smoothstep(.2,.9,bowl(d,4.6))*.05);
+    float y=fx(clamp(p.x,xs,xw)); float inside=step(hz,p.y)*step(p.y,y)*step(xs,p.x)*step(p.x,xw);
+    E+=COOL*inside*.06*pow(clamp((p.y-hz)/max(1.,y-hz),0.,1.),1.4); }
+  // logs: the tops of the bumps are a lighter, warmer material near now; a new one flashes
+  if(near) for(int i=0;i<${MAXL};i++){ if(i>=uNL)break; vec4 L=uL[i]; float r=length(p-L.xy), fl=uLW[i].x;
+    float m=dome(r,L.z+1.1);
+    vec3 hc=uLW[i].yzw; bool hued=dot(hc,hc)>.001;
+    vec3 tint=hued ? hc : mix(CREAM*.8,WARM+CREAM*.2,L.w*.6);          // each log glows in its routine's own hue
+    E+=tint*smoothstep(.0,.6,m)*(.5+.15*L.w)*(1.+2.*fl) + tint*exp(-r/2.4)*.05 + CREAM*exp(-r/2.)*.6*fl; }
+  for(int i=0;i<${MAXR};i++){ if(i>=uNR)break; vec4 R=uR[i]; float r=length(p-R.xy); E+=vec3(.5,.47,.43)*bowl(r,R.z+.2)*(.16+.5*R.w); }
+  // the sun: the dome glows from within, hottest at its crown; its light falls on the page around it
+  float r=length(p-sun), dim=(noData && uC.z<uB.y) ? .55 : 1., pul=1.+.6*uPulse;
+  float sd=dome(r,10.);
+  vec3 sunL=mix(SUNC*.6,vec3(1.,.8,.62)*.95,smoothstep(.3,1.,sd))*smoothstep(0.,.1,sd)
+    + SUNC*(exp(-r/4.)*.16+exp(-r*r/(2.*256.))*.14*pul+exp(-r*r/(2.*2500.))*.05*pul);
+  E+=sunL*dim;
+  // the sun's light along the horizon groove
+  E+=SUNC*.10*bowl(abs(p.y-hz),1.6)*exp(-pow((p.x-xn)/70.,2.))*dim;
 
-  // the rest of the day: a faint dotted trace of light; after bedtime fainter still
-  if(p.x>xn+4.){
-    float sl=sqrt(1.+pow(slope(p.x),2.)), gap=6.;
-    float ph=fract((p.x-xn)/gap);
-    float dt=1.-smoothstep(.45,1.15,length(vec2((ph-.5)*gap*sl,dG)));
-    float fade=p.x>xb ? .45 : 1.;
-    c+=CREAM*dt*.34*fade*smoothstep(xn+5.,xn+12.,p.x)*(1.-smoothstep(xe-6.,xe,p.x));
-  }
-
-  // the horizon: a hairline of light, brightest where the sun is
-  float dh=abs(p.y-hz);
-  c+=vec3(.8,.76,.7)*(1.-smoothstep(.25,.9,dh))*(.09+.3*exp(-pow((p.x-xn)/80.,2.)));
-
-  // the meridian: the middle of the waking day, a dotted plumb line of very faint light
-  float xm=X((uB.y+uB.w)*.5), ym=yOf((uB.y+uB.w)*.5);
-  if(p.y>ym+10. && p.y<hz){ float ph=fract(p.y/5.); c+=CREAM*.07*(1.-smoothstep(.35,.9,abs(p.x-xm)))*(1.-smoothstep(.2,.5,abs(ph-.5))); }
-
-  // logs: one point of light each, at its own time on the ribbon; a busy moment stacks outward, so each can be counted
-  for(int i=0;i<${MAXL};i++){ if(i>=uNL)break; vec4 L=uL[i]; float fl=uLW[i].x;
-    float r=length(p-L.xy), rr=L.z*(1.+.35*fl);
-    float core=1.-smoothstep(rr-.5,rr+.6,r);
-    float glow=exp(-r/1.9)*.55+exp(-r/7.)*.10*(.4+L.w);
-    vec3 col=mix(CREAM,mix(CREAM,WARM*1.3,.8),L.w);
-    c+=col*(core*1.25+glow)*(1.+2.2*fl);
-  }
-  // records (doses, observations): quiet grey points just under the horizon, never on the ribbon
-  for(int i=0;i<${MAXR};i++){ if(i>=uNR)break; vec4 R=uR[i]; float r=length(p-R.xy);
-    c+=vec3(.56,.53,.49)*((1.-smoothstep(R.z-.5,R.z+.6,r))*.85+exp(-r/2.)*.15)*(1.+R.w); }
-
-  // the sun: a hot white core, a warm volumetric glow, and a long horizontal flare through it, like light in a lens
-  vec2 q=p-sun; float r=length(q);
-  float dim=(noData && uC.z<uB.y) ? .55 : 1.;
-  float pul=1.+.5*uPulse;
-  vec3 sunL=mix(vec3(1.,.36,.16)*1.5,vec3(1.,.9,.8)*1.9,1.-smoothstep(.5,3.6,r))*(1.-smoothstep(7.,8.2,r))
-    + SUNC*(exp(-r/3.)*.5 + exp(-r*r/(2.*196.))*.32*pul + exp(-r*r/(2.*1600.))*.16*pul + exp(-r*r/(2.*6400.))*.05)
-    + WARM*exp(-abs(q.y)/.9)*exp(-q.x*q.x/(2.*3600.))*.22*pul;
-  c+=sunL*dim;
-  // the ground under the sun catches a little of its light
-  c+=SUNC*.05*dim*step(hz,p.y)*exp(-(p.y-hz)/12.)*exp(-pow((p.x-xn)/60.,2.));
-
-  // tone: filmic shoulder, gamma, then grain/dither so the long gradients never band
-  c=1.-exp(-c*1.3); // display-space light: no gamma lift on the tails, so the dark stays dark
+  vec3 em=1.-exp(-E*1.25);
   float g=hash(gl_FragCoord.xy+fract(uTime*7.31)*91.7);
-  c+=(g-.5)*(1.5/255.)*step(.004,dot(c,vec3(.33)))+(g-.5)*.02*smoothstep(.03,.4,dot(c,vec3(.33)));
-  gl_FragColor=vec4(max(c,0.),1.);
+  vec3 add=LT*lift+em+(g-.5)*(1.2/255.);
+  float a=dark*(1.-.55*dot(em,vec3(.33)));  // where it glows, the glow wins over the shade
+  // premultiplied: page * (1 - a) + add
+  gl_FragColor=vec4(max(add,0.),clamp(a,0.,1.));
 }`;
 
 function probe() { try { const c = document.createElement('canvas'); return !!c.getContext('webgl'); } catch (e) { return false; } }
@@ -1405,7 +1589,7 @@ function probe() { try { const c = document.createElement('canvas'); return !!c.
 class ArcLight {
   constructor() {
     const cv = this.canvas = document.createElement('canvas'); cv.className = 'arc3d'; cv.setAttribute('aria-hidden', 'true');
-    const gl = this.gl = cv.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
+    const gl = this.gl = cv.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'low-power' });
     if (!gl) throw new Error('no webgl');
     const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
     const pr = this.pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
@@ -1421,16 +1605,17 @@ class ArcLight {
   attach(el, d, still) {
     if (!el) return;
     this.el = el; this.d = d; this.still = !!(still || RM);
-    const W = d.W, H = d.A.H + TOPX + BOTX, dpr = this.dpr = Math.min(devicePixelRatio || 1, 3);
+    const W = d.W, H = d.A.H + TOPX + BOTX, dpr = this.dpr = Math.min(devicePixelRatio || 1, 2); // soft shading needs no more than 2x; the type and the page stay at full resolution
     if (W !== this.W || H !== this.H) { this.W = W; this.H = H; this.canvas.width = Math.round(W * dpr); this.canvas.height = Math.round(H * dpr); this.canvas.style.width = W + 'px'; this.canvas.style.height = H + 'px'; this.gl.viewport(0, 0, this.canvas.width, this.canvas.height); }
     const A = d.A, now = performance.now();
     // logs as points of light: the flat arc's slices (6 px, up to 4 a slice), each stacked out along the curve's normal
-    const L = new Float32Array(MAXL * 4); this.LW = new Float32Array(MAXL * 4); this.fx = [];
+    const L = new Float32Array(MAXL * 4); this.LW = new Float32Array(MAXL * 4); this.HC = new Float32Array(MAXL * 4); this.fx = [];
     const marks = d.marks.slice(0, MAXL);
     marks.forEach((m, i) => {
       const t = A.T(m.x), y = A.Y(t), [nx, ny] = A.N(t), off = 4.6 + m.n * 6.4;
       L[i * 4] = m.x + nx * off; L[i * 4 + 1] = y + ny * off; L[i * 4 + 2] = 1.55 + .75 * m.size;
       L[i * 4 + 3] = Math.exp(-Math.max(0, d.now - m.t) / 70); // logs nearest now hold the sun's warmth
+      if (m.rgb) { this.HC[i * 4 + 1] = m.rgb[0]; this.HC[i * 4 + 2] = m.rgb[1]; this.HC[i * 4 + 3] = m.rgb[2]; }
       if (m.isNew && !this.still) this.fx.push({ i, s: now, dur: 1600 });
     });
     this.L = L; this.nl = marks.length;
@@ -1449,7 +1634,7 @@ class ArcLight {
     const gl = this.gl, U = this.U, d = this.d, A = d.A, live = !this.still;
     const tm = live ? (ts - this.t0) / 1000 : 0;
     let busy = false;
-    this.LW.fill(0);
+    this.LW.set(this.HC);
     this.fx = this.fx.filter(f => { const k = Math.min(1, (ts - f.s) / f.dur); this.LW[f.i * 4] = Math.pow(1 - k, 2.2) * Math.min(1, k / .12); if (k < 1) busy = true; return k < 1; });
     let pul = 0; if (this.pulse) { const k = (ts - this.pulse) / 1100; if (k < 1) { pul = Math.sin(Math.PI * k); busy = true; } else this.pulse = 0; }
     const fl = live ? (tm % 7) / 3.2 : -1; // every 7 s a pulse of light takes 3.2 s to travel from waking to now
@@ -1461,7 +1646,7 @@ class ArcLight {
     gl.uniform4fv(U.uL, this.L); gl.uniform4fv(U.uLW, this.LW); gl.uniform1i(U.uNL, this.nl);
     gl.uniform4fv(U.uR, this.R); gl.uniform1i(U.uNR, this.nr); gl.uniform4fv(U.uS, this.S); gl.uniform1i(U.uNS, this.ns);
     gl.uniform1f(U.uPulse, pul); gl.uniform1f(U.uFlow, fl > 1 ? -1 : fl); gl.uniform1f(U.uShim, live ? 1 : 0);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLES, 0, 3);
     this.last = ts;
     const r = this.el.getBoundingClientRect(), vis = r.bottom > 0 && r.top < innerHeight && !document.hidden;
     if (busy) this.raf = requestAnimationFrame(t => this.frame(t));
