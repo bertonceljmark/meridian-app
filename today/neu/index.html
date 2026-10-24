@@ -681,6 +681,205 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .sw8.on i{box-shadow:0 0 0 3px var(--surf),0 0 0 5px var(--hf),0 0 10px var(--hf)}
 .sw8:active{box-shadow:var(--p1)}
 
+
+/* =====================================================================
+   v3: hero variants and the dock
+   ===================================================================== */
+/* the hero switcher: a tiny pressed track with raised keys, only for this prototype */
+.hsw{pointer-events:auto;display:flex;gap:3px;padding:3px;border-radius:12px;box-shadow:var(--p1);margin-left:auto;margin-right:8px}
+.hsw button{height:24px;min-width:26px;padding:0 6px;border-radius:9px;font:600 11px/1 var(--ui);color:var(--t3)}
+.hsw button.on{background:var(--surf);box-shadow:var(--r1);color:var(--cream)}
+.arc.hero{height:160px}
+.arc.hero > div{position:absolute;inset:0}
+
+/* Hero 1, the dial */
+.hero-dial{display:flex;align-items:center;gap:18px;padding:0 var(--gut)}
+.dl-disc{position:relative;flex:none;width:150px;height:150px;border-radius:50%;background:var(--surf);box-shadow:var(--pl)}
+.dl-disc svg{position:absolute;left:0;top:0;width:150px;height:150px;overflow:visible}
+.dl-well{position:absolute;left:41px;top:41px;width:68px;height:68px;border-radius:50%;box-shadow:var(--p2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.dl-well b{font:500 17px/1 var(--disp);color:var(--sun2);letter-spacing:-.01em}
+.dl-well span{font:500 10.5px/1 var(--ui);color:var(--t2)}
+.dl-h{position:absolute;transform:translate(-50%,-50%);font:600 8.5px/1 var(--ui);color:var(--t3);text-shadow:var(--deb)}
+.dl-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.dl-night{font:500 13px/1.25 var(--ui);color:var(--nightT);display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.dl-night span{color:var(--t2);margin-left:-7px}
+.dl-night i{width:7px;height:7px;border-radius:50%;background:var(--night);box-shadow:0 0 7px var(--night);flex:none;align-self:center}
+.dl-night.miss{color:var(--t2)}
+.dl-night.miss i{background:none;border:1.5px dashed var(--t3);box-shadow:none;width:8px;height:8px}
+.dl-list{display:grid;gap:6px}
+.dl-r{display:grid;grid-template-columns:9px 1fr auto;align-items:center;gap:8px;font:400 13.5px/1.1 var(--ui);color:var(--cream)}
+.dl-r i{width:8px;height:8px;border-radius:50%;box-shadow:0 0 6px currentColor}
+.dl-r .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-r .v{color:var(--t2);font-size:13px}
+.dl-more,.dl-empty{font:400 12.5px/1.35 var(--ui);color:var(--t3)}
+
+/* Hero 2, the hours */
+.hero-hours > *{position:absolute}
+.hr-night{border-radius:12px;box-shadow:var(--p2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(rgba(152,162,252,.16),rgba(152,162,252,.30));overflow:hidden}
+.hr-night:after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 3px 3px 7px rgba(12,9,6,.6),inset -2px -2px 5px rgba(255,238,220,.05)}
+.hr-night b{font:500 17px/1 var(--disp);color:var(--nightT)}
+.hr-night b small{font:500 11px var(--ui);margin-left:1px}
+.hr-night.miss{background:none;box-shadow:inset 0 0 0 1.5px rgba(243,237,228,.18)}
+.hr-night.miss:after{display:none}
+.hr-night.miss b{color:var(--t3)}
+.hr-c{border-radius:7px;overflow:hidden}
+.hr-c.past,.hr-c.cur{box-shadow:inset 2.5px 2.5px 5px rgba(12,9,6,.7),inset -2px -2px 4px rgba(255,238,220,.06)}
+.hr-c.fut{box-shadow:inset 1px 1px 2px rgba(12,9,6,.45),inset -1px -1px 1px rgba(255,238,220,.04);opacity:.75}
+.hr-c.cur{box-shadow:inset 2.5px 2.5px 5px rgba(12,9,6,.7),inset -2px -2px 4px rgba(255,238,220,.06),inset 0 0 0 1.5px rgba(255,143,94,.65)}
+.hr-elapsed{position:absolute;left:0;right:0;top:0;background:rgba(255,143,94,.10)}
+.hr-s{position:absolute;left:3px;right:3px;border-radius:3px;box-shadow:inset 1px 1px 1px rgba(255,255,255,.18),inset -1px -1px 1px rgba(0,0,0,.25),0 0 6px currentColor}
+.hr-rec{width:4px;height:4px;border-radius:50%;background:var(--rec)}
+.hr-lb{font:500 11px/1 var(--ui);color:var(--t3);text-shadow:var(--deb);white-space:nowrap}
+.hr-lb.nt{color:var(--nightT)}
+.hr-sun{width:14px;height:14px;border-radius:50%;background:var(--sun);box-shadow:2px 2px 4px rgba(12,9,6,.7),0 0 12px rgba(255,107,61,.6),inset -2px -2px 3px rgba(120,30,5,.35),inset 2px 2px 3px rgba(255,210,180,.35)}
+.hr-now{font:600 12px/1 var(--ui);color:var(--sun2);white-space:nowrap;margin-top:1px}
+
+/* Hero 3, the lanes */
+.hero-lanes > *{position:absolute}
+.ln-night{height:10px;border-radius:5px;background:var(--night);box-shadow:0 0 9px rgba(152,162,252,.55),inset 1px 1px 1px rgba(255,255,255,.2),inset -1px -1px 1px rgba(0,0,0,.25)}
+.ln-night.miss{height:2px;background:none;border-top:2px dotted rgba(243,237,228,.3);box-shadow:none}
+.ln-nt{font:500 12px/1 var(--ui);color:var(--nightT);white-space:nowrap}
+.ln-nt.miss{color:var(--t2)}
+.ln-g{height:8px;border-radius:4px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.ln-g.fut{box-shadow:inset 1px 1px 1.5px rgba(12,9,6,.45),inset -1px -1px 1px rgba(255,238,220,.04);border-radius:0 4px 4px 0;opacity:.7}
+.ln-name{font:500 12px/16px var(--ui);white-space:nowrap;max-width:64px;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.ln-b,.ln-cap{height:10px;border-radius:5px;box-shadow:1.5px 1.5px 3px rgba(12,9,6,.7),0 0 7px currentColor,inset 1px 1px 1px rgba(255,255,255,.25),inset -1px -1px 1px rgba(0,0,0,.25)}
+.ln-b{width:10px}
+.ln-rec{width:5px;height:5px;border-radius:50%;background:var(--rec)}
+.ln-lb{font:500 11px/1 var(--ui);color:var(--t3);transform:translateX(-50%);text-shadow:var(--deb)}
+.ln-needle{width:2px;border-radius:1px;background:linear-gradient(rgba(255,143,94,.9),rgba(255,143,94,.35));box-shadow:0 0 6px rgba(255,107,61,.5)}
+.ln-sun{width:13px;height:13px;border-radius:50%;background:var(--sun);box-shadow:2px 2px 4px rgba(12,9,6,.7),0 0 12px rgba(255,107,61,.6),inset -2px -2px 3px rgba(120,30,5,.35),inset 2px 2px 3px rgba(255,210,180,.35)}
+.ln-now{font:600 12px/1 var(--ui);color:var(--sun2);white-space:nowrap}
+.ln-empty{font:400 13px/1.35 var(--ui);color:var(--t3);max-width:240px;white-space:normal}
+
+/* the dock: a plateau formed from the page, holding engraved tabs; the current tab pressed in and lit; + the one primary key, risen from a carved collar */
+.tabfade{position:absolute;left:0;right:0;bottom:0;height:118px;z-index:24;pointer-events:none;background:linear-gradient(rgba(43,39,35,0),var(--surf) 52%)}
+.tabbar{left:12px;right:12px;bottom:14px;height:68px;border-radius:26px;background:var(--surf);box-shadow:var(--pl);padding:7px 6px;grid-template-columns:1fr 1fr 78px 1fr 1fr;align-items:center}
+.tabbar:before{display:none}
+.tab{height:54px;margin:0 3px;padding-top:8px;gap:5px;border-radius:19px;color:var(--t3);font:550 10.5px/1 var(--ui);text-shadow:var(--deb);transition:box-shadow .3s var(--back),color .2s}
+.tab svg{filter:drop-shadow(-.7px -.7px 0 rgba(0,0,0,.55)) drop-shadow(.7px .7px 0 rgba(255,238,220,.07))}
+.tab:active,.tab.down{box-shadow:var(--p1)}
+.tab.on{box-shadow:inset 3px 3px 7px rgba(12,9,6,.62),inset -3px -3px 6px rgba(255,238,220,.055);color:var(--cream);text-shadow:none}
+.tab.on svg{color:var(--sun2);filter:drop-shadow(0 0 5px rgba(255,107,61,.45))}
+.logkey{position:relative;width:58px;height:58px;margin-top:-30px;box-shadow:6px 6px 14px rgba(12,9,6,.6),-4px -4px 11px rgba(255,238,220,.075),1px 1px 3px rgba(12,9,6,.3)}
+.logkey:before{content:"";position:absolute;inset:-8px;border-radius:50%;background:var(--surf);box-shadow:inset 3px 3px 7px rgba(12,9,6,.6),inset -3px -3px 6px rgba(255,238,220,.05);z-index:-1}
+.logkey svg{filter:drop-shadow(0 0 6px rgba(255,107,61,.5))}
+.logkey:active,.logkey.down{box-shadow:var(--p2)}
+.livebar{bottom:96px}
+
+/* Bins out: the keys give the status room, so a task's status stays on one line at 390 */
+.row{column-gap:10px;padding-right:10px;padding-left:28px}
+.inl{left:11px}
+.k-word{padding:0 12px;margin-right:6px}
+
+
+/* =====================================================================
+   ELEVATION: every layer has one height, and its shadow is computed from it
+   and from the light. The light is two variables, --lx and --ly (the direction
+   shadows fall, unit-ish; default from the top left). Move them with device
+   tilt and every shadow on the page follows. Heights, in px of imagined lift:
+     well -5 (results, Later)   page 0   plateau 6   secondary key 5   key 9
+     dock 14   live bar 18   + key 20   sheet 28   toast 34
+   Each raised shadow is: a tight contact shadow (the AO where it meets the surface),
+   a long key-light shadow that lengthens with height, a soft ambient, a faint bounce
+   of light on the lit side, and a rim: light on the edge facing the light, dark on the other.
+   Higher layers are a touch lighter (closer to the light); wells a touch darker.
+   ===================================================================== */
+:root{--lx:.6;--ly:.8;
+  --s-w:#28241F; --s0:#2B2723; --s5:#2D2925; --s6:#2E2A25; --s9:#302C27; --s14:#322E29; --s18:#332F2A; --s20:#34302A; --s28:#36312C; --s34:#37332D}
+*{--pl0:calc(var(--lx) * 0.6px) calc(var(--ly) * 0.6px) 2.25px rgba(8,6,4,.46), calc(var(--lx) * 4.25px) calc(var(--ly) * 4.25px) 7.5px rgba(8,6,4,.36), 0 1.5px 12px rgba(8,6,4,.14), calc(var(--lx) * -2.25px) calc(var(--ly) * -2.25px) 6px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.05), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --pl:calc(var(--lx) * 0.72px) calc(var(--ly) * 0.72px) 2.5px rgba(8,6,4,.46), calc(var(--lx) * 5.1px) calc(var(--ly) * 5.1px) 9px rgba(8,6,4,.36), 0 1.8px 14.4px rgba(8,6,4,.14), calc(var(--lx) * -2.7px) calc(var(--ly) * -2.7px) 7.2px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.06), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --r1:calc(var(--lx) * 0.6px) calc(var(--ly) * 0.6px) 2.25px rgba(8,6,4,.46), calc(var(--lx) * 4.25px) calc(var(--ly) * 4.25px) 7.5px rgba(8,6,4,.36), 0 1.5px 12px rgba(8,6,4,.14), calc(var(--lx) * -2.25px) calc(var(--ly) * -2.25px) 6px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.05), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --r2:calc(var(--lx) * 1.08px) calc(var(--ly) * 1.08px) 3.25px rgba(8,6,4,.46), calc(var(--lx) * 7.65px) calc(var(--ly) * 7.65px) 13.5px rgba(8,6,4,.36), 0 2.7px 21.6px rgba(8,6,4,.14), calc(var(--lx) * -4.05px) calc(var(--ly) * -4.05px) 10.8px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.07), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --r3:calc(var(--lx) * 2.4px) calc(var(--ly) * 2.4px) 6px rgba(8,6,4,.46), calc(var(--lx) * 17px) calc(var(--ly) * 17px) 30px rgba(8,6,4,.36), 0 6px 48px rgba(8,6,4,.14), calc(var(--lx) * -9px) calc(var(--ly) * -9px) 24px rgba(255,238,220,0.07), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.12), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --e14:calc(var(--lx) * 1.68px) calc(var(--ly) * 1.68px) 4.5px rgba(8,6,4,.46), calc(var(--lx) * 11.9px) calc(var(--ly) * 11.9px) 21px rgba(8,6,4,.36), 0 4.2px 33.6px rgba(8,6,4,.14), calc(var(--lx) * -6.3px) calc(var(--ly) * -6.3px) 16.8px rgba(255,238,220,0.05), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.09), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --e18:calc(var(--lx) * 2.16px) calc(var(--ly) * 2.16px) 5.5px rgba(8,6,4,.46), calc(var(--lx) * 15.3px) calc(var(--ly) * 15.3px) 27px rgba(8,6,4,.36), 0 5.4px 43.2px rgba(8,6,4,.14), calc(var(--lx) * -8.1px) calc(var(--ly) * -8.1px) 21.6px rgba(255,238,220,0.06), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.11), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --e34:calc(var(--lx) * 4.08px) calc(var(--ly) * 4.08px) 9.5px rgba(8,6,4,.46), calc(var(--lx) * 28.9px) calc(var(--ly) * 28.9px) 51px rgba(8,6,4,.36), 0 10.2px 81.6px rgba(8,6,4,.14), calc(var(--lx) * -15.3px) calc(var(--ly) * -15.3px) 40.8px rgba(255,238,220,0.1), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.18), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
+  --p1:inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 4.5px rgba(8,6,4,.62), inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 3.75px rgba(255,238,220,.055), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.28);
+  --p2:inset calc(var(--lx) * 3.6px) calc(var(--ly) * 3.6px) 8.1px rgba(8,6,4,.62), inset calc(var(--lx) * -2.7px) calc(var(--ly) * -2.7px) 6.75px rgba(255,238,220,.055), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.28);
+  --wl:inset calc(var(--lx) * 5.6px) calc(var(--ly) * 5.6px) 12.6px rgba(8,6,4,.62), inset calc(var(--lx) * -4.2px) calc(var(--ly) * -4.2px) 10.5px rgba(255,238,220,.055), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.28)}
+/* which layer each form sits on */
+.row,.sug,.dateline,.dl-disc{background:var(--s6)}
+.panel,.later{background:var(--s-w)}
+.k-round,.k-seg,.k-pill,.amt .key,.btn,.stepper button,.scrub button,.livebar button.end,.sug .sb .primary,.logkey,.sw8,.addbtn{background:var(--s9)}
+.k-word,.tok .tk,.ib,.sbar .ddata,.panel .x,.chip,.sug .sb .sec2,.sug .sb .dots,.sh .close,.slist .li .rm,.toast .undo,.livebar button,.foot button{background:var(--s5)}
+.tabbar{box-shadow:var(--e14);background:var(--s14)}
+.livebar{box-shadow:var(--e18);background:var(--s18)}
+.logkey{box-shadow:var(--r3);background:var(--s20)}
+.logkey:before{background:var(--s14)}
+.sheet{background:var(--s28);box-shadow:0 -12px 44px rgba(8,6,4,.55),0 -2px 8px rgba(8,6,4,.35),inset 0 1px 0 rgba(255,238,220,.12)}
+.toast{box-shadow:var(--e34);background:var(--s34)}
+.tab.on{background:var(--s14)}
+/* pressed, chosen and done things sink back to the page's own tone */
+.key.down,.k-round.done,.k-pill.on,.amt .key.pour,.btn:active,.btn.down,.chip.on,.chip:active,.ib.on,.ib:active,.tab.on,.tab:active,.scrub button.on,.scrub button:active,.stepper button:active,.stepper button.down,.sw8.on,.logkey:active,.logkey.down,.tok.done .tk,.tok .tk.down,.livebar button:active,.livebar button.down,.sh .close:active,.slist .li .rm:active,.toast .undo:active{background:var(--s0)}
+.sbar .ddata{box-shadow:var(--pl0)}
+
+
+/* =====================================================================
+   ELEVATION AS A FUNCTION. Each form has one number, --h (registered, so it animates):
+   +1 plateau, 0 page, -1 well; keys, the dock, sheets and toasts higher. Its shadow,
+   rim and tone are computed from --h and the light direction --lx/--ly (on the root).
+   1 unit of --h = 6 px of imagined lift. Raised parts scale with max(h,0), carved
+   parts with max(-h,0), so animating --h through 0 turns a rise into a hollow smoothly.
+   ===================================================================== */
+@property --h { syntax: '<number>'; inherits: false; initial-value: 0; }
+@property --lx { syntax: '<number>'; inherits: true; initial-value: .6; }
+@property --ly { syntax: '<number>'; inherits: true; initial-value: .8; }
+.app{--lx:.6;--ly:.8}
+*{
+  --eR:max(var(--h),0); --eD:max(calc(var(--h) * -1),0); --eR1:min(var(--eR),1); --eD1:min(var(--eD),1);
+  --elev:
+    calc(var(--lx) * var(--eR) * .72px) calc(var(--ly) * var(--eR) * .72px) calc(var(--eR) * 1.5px + var(--eR1) * 1px) rgba(8,6,4,.46),
+    calc(var(--lx) * var(--eR) * 5.1px) calc(var(--ly) * var(--eR) * 5.1px) calc(var(--eR) * 9px) rgba(8,6,4,.36),
+    0 calc(var(--eR) * 1.8px) calc(var(--eR) * 14.4px) rgba(8,6,4,.14),
+    calc(var(--lx) * var(--eR) * -2.7px) calc(var(--ly) * var(--eR) * -2.7px) calc(var(--eR) * 7.2px) rgba(255,238,220,.042),
+    inset calc(var(--lx) * var(--eR1) * -1px) calc(var(--ly) * var(--eR1) * -1px) 0 rgba(255,238,220,.06),
+    inset calc(var(--lx) * var(--eR1) * 1px) calc(var(--ly) * var(--eR1) * 1px) calc(var(--eR1) * 1px) rgba(0,0,0,.16),
+    inset calc(var(--lx) * var(--eD) * 5.6px) calc(var(--ly) * var(--eD) * 5.6px) calc(var(--eD) * 12.6px) rgba(8,6,4,.62),
+    inset calc(var(--lx) * var(--eD) * -4.2px) calc(var(--ly) * var(--eD) * -4.2px) calc(var(--eD) * 10.5px) rgba(255,238,220,.055),
+    inset calc(var(--lx) * var(--eD1) * 1px) calc(var(--ly) * var(--eD1) * 1px) calc(var(--eD1) * 1px) rgba(0,0,0,.28);
+  /* closer to the light is a touch lighter; deeper is a touch darker */
+  --tone:color-mix(in oklab,color-mix(in oklab,#2B2723,#FFF2E4 calc(var(--eR) * 1.1%)),#000 calc(var(--eD) * 4%));
+}
+/* every form: its height, and the one recipe */
+.row,.sug,.dateline,.dl-disc,.panel,.later,.hsw,.hsw button,
+.k-word,.tok .tk,.ib,.ib .n,.sbar .ddata,.panel .x,.chip,.sug .sb .primary,.sug .sb .sec2,.sug .sb .dots,.sh .close,.slist .li .rm,.toast .undo,.livebar button,.foot button,
+.k-round,.k-seg,.k-pill,.amt .key,.btn,.stepper,.stepper button,.scrub button,.sw8,.addbtn,.search,textarea.field,input.field,.grab,
+.tabbar,.tab,.logkey,.logkey:before,.livebar,.toast,
+.f,.fk,.tabbar .tw{box-shadow:var(--elev);background-color:var(--tone)}
+/* morph-lab hooks: .f regions and .fk keys take the same recipe; the engine sets --h per frame (never a CSS transition on --h);
+   .tw is the dock's pressed well the engine places under the current tab; .held is the + while the Log sheet is open */
+.tabbar .tw{position:absolute;border-radius:19px;--h:-.55;pointer-events:none}
+.logkey.held{--h:-.64}
+.row,.sug,.dateline,.dl-disc{--h:1}
+.panel,.later{--h:-1}
+.panel:active{--h:-1.3}
+.k-word,.tok .tk,.ib,.ib .n,.sbar .ddata,.panel .x,.chip,.sug .sb .sec2,.sug .sb .dots,.sh .close,.slist .li .rm,.toast .undo,.livebar button,.foot button,.hsw button.on{--h:.85}
+.hsw button{--h:0}
+.hsw button.on{--h:.85}
+.k-round,.k-seg,.k-pill,.amt .key,.amt .key.last,.btn,.btn.primary,.stepper button,.scrub button,.livebar button.end,.sug .sb .primary,.sw8,.addbtn{--h:1.5}
+.btn.ghost,.btn:disabled,.chip:disabled,.key[disabled]{--h:0}
+.tabbar{--h:2.3}
+.tab{--h:0}
+.livebar{--h:3}
+.logkey{--h:3.3}
+.logkey:before{--h:-.55}
+.toast{--h:5.7}
+/* carved: tracks, fields, the grab, the switcher */
+.hsw,.grab{--h:-.36}
+.stepper,.search,textarea.field,input.field{--h:-.64}
+/* pressed in: chosen, done, or held down */
+.k-seg.down,.k-word:active,.k-word.down,.chip.on,.chip:active,.chip.down,.ib.on,.ib:active,.ib.down,.tab.on,.tab:active,.tab.down,.tok .tk.down,.tok.done .tk,.sh .close:active,.sh .close.down,.slist .li .rm:active,.slist .li .rm.down,.toast .undo:active,.toast .undo.down,.livebar button:active,.livebar button.down,.stepper button:active,.stepper button.down,.panel .x:active,.sbar .ddata:active,.sug .sb .sec2:active,.sug .sb .dots:active,.btn.ghost:active,.foot button:active,.sw8:active{--h:-.36}
+.k-round.down,.k-round.done,.k-pill.down,.k-pill.on,.amt .key.down,.amt .key.pour,.btn:active,.btn.down,.scrub button:active,.scrub button.on,.scrub button.down,.logkey:active,.logkey.down,.sw8.on,.addbtn:active,.sug .sb .primary:active,.dateline:active{--h:-.64}
+.tab.on{--h:-.55}
+.row.leaving{--h:0}
+/* tabs and switcher keys share their bar's tone; only the shadow says pressed */
+.tab,.tab.on,.hsw button{background-color:transparent}
+.hsw button.on{background-color:var(--tone)}
+/* a done key keeps its routine's light glowing out of its hollow */
+.k-round.done{box-shadow:var(--elev),0 0 18px -4px var(--hf,transparent)}
+.sw8.on i{box-shadow:0 0 0 3px var(--tone),0 0 0 5px var(--hf),0 0 10px var(--hf)}
+
 @media (prefers-reduced-motion: reduce){.nm-r,.key,.btn,.chip{transition:none!important}}
 
 @media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -692,9 +891,10 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
   <div class="sky" id="sky"></div>
   <div class="scroll" id="scroll"></div>
   <div class="topbar" id="topbar"></div>
-  <div class="sbar"><span class="clk tnum" id="clk">08:40</span><button class="ddata" id="ddata" data-act="next-sample" aria-label="Show different data">Different data <b id="dnum">1/7</b></button></div>
+  <div class="sbar"><span class="clk tnum" id="clk">08:40</span><div class="hsw" id="hsw" role="group" aria-label="Hero variant"></div><button class="ddata" id="ddata" data-act="next-sample" aria-label="Show different data">Different data <b id="dnum">1/7</b></button></div>
   <div class="livebar" id="livebar"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="tabfade" aria-hidden="true"></div>
   <nav class="tabbar" aria-label="Tabs">
     <button class="tab on" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15.5h18"/><path d="M5.5 15.5a6.5 6.5 0 0 1 13 0"/><circle cx="15.6" cy="10.4" r="1.6" fill="currentColor" stroke="none"/></svg>Today</button>
     <button class="tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18V9M9 18V5M14 18v-7M19 18V8"/></svg>Time</button>
@@ -947,7 +1147,8 @@ function load(i) {
   render(); scrollEl.scrollTop = 0;
   $('#dnum').textContent = `${si + 1}/${SAMPLES.length}`;
   $('#clk').textContent = hm(S.now);
-  try { history.replaceState(null, '', `?sample=${si}${STILL ? '&still' : ''}`); } catch (e) {}
+  try { history.replaceState(null, '', `?sample=${si}${HERO ? '&hero=' + HERO : ''}${STILL ? '&still' : ''}`); } catch (e) {}
+  heroSwitch();
 }
 
 // ---------- states in words ----------
@@ -1091,7 +1292,120 @@ function arcSvg() {
     labels: { now: hm(now), night: noData ? (sl.none ? 'No sleep record' : 'Last night not in yet') : `${dur(sl.asleep)} asleep`, woke: !noData && Math.abs(A.X(A.wake) - sx) > 70 ? `woke ${hm(A.wake)}` : '' } };
   return { svg: `<svg viewBox="0 0 ${W} ${A.H}" aria-hidden="true">${g}${lbl.join('')}</svg>`, A, sx, sy, W, data };
 }
+// ---------- heroes: four ways to show the same day (?hero=0 the carved arc, 1 the dial, 2 the hours, 3 the lanes) ----------
+let HERO = Math.max(0, Math.min(3, +(params.get('hero') || 0)));
+// one summary of the day, shared by every hero: the same records the arc reads
+function dayData() {
+  const sl = S.sleep, noNight = !!(sl.missing || sl.none), now = S.now, wake = sl.wake, bed = Math.max(wake + 600, S.bed);
+  const logs = S.entries.filter(e => e.k === 'b').map(e => ({ e, t: e.t, t0: e.dur ? e.t - e.dur : e.t, x: byId(e.item), h: hueOf(e.item) })).sort((a, b) => a.t - b.t);
+  const recs = S.entries.filter(e => e.k !== 'b').sort((a, b) => a.t - b.t);
+  // per routine, in order of its first log today, with a total in the routine's own measure
+  const by = []; logs.forEach(l => { let r = by.find(q => q.id === l.e.item); if (!r) by.push(r = { id: l.e.item, x: l.x, h: l.h, logs: [] }); r.logs.push(l); });
+  by.forEach(r => { const x = r.x, L = r.logs; r.fig = !x ? `${L.length}` : x.m === 'amount' ? amt(L.reduce((s, l) => s + l.e.v, 0)) : x.m === 'reps' ? `${L.reduce((s, l) => s + l.e.v, 0)}` : x.m === 'dur' || x.m === 'watch' ? (L.some(l => l.e.dur) ? dur(L.reduce((s, l) => s + (l.e.dur || 0), 0)) : `${L.length}`) : `${L.length}`; r.name = x ? (x.short || x.name) : r.id; });
+  return { sl, noNight, now, wake, bed, logs, recs, by };
+}
+const nightTxt = D => D.noNight ? (D.sl.none ? 'No sleep record' : 'Last night not in yet') : `${dur(D.sl.asleep)} asleep`;
+const hueC = h => h ? h.f : '#E9E2D8';
+
+// Hero 1, the dial: the whole 24 hours as one moulded ring, read at a glance, with the day so far listed beside it
+function heroDial(W) {
+  const D = dayData(), R = 150, c = R / 2, rg = 55;
+  const ang = t => ((t % 1440) + 1440) % 1440 / 1440 * Math.PI * 2;
+  const pt = (t, r) => { const a = ang(t); return [c + r * Math.sin(a), c - r * Math.cos(a)]; };
+  const arcP = (t0, t1, r) => { if (t1 <= t0) return ''; const [x0, y0] = pt(t0, r), [x1, y1] = pt(t1, r); const big = (t1 - t0) % 1440 > 720 ? 1 : 0; return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${big} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  let g = `<defs>${SVGF}</defs>`;
+  // the ring: a groove carved round the dial
+  g += `<circle cx="${c}" cy="${c}" r="${rg}" fill="none" stroke="#2B2723" stroke-width="15" filter="url(#ins)"/>`;
+  // hour marks: four engraved numerals, and a fine pit every hour
+  for (let hh = 0; hh < 24; hh++) { const [x, y] = pt(hh * 60, 67.5); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${hh % 6 ? .9 : 1.5}" fill="rgba(12,9,6,.7)"/>`; }
+  // last night, as cool light in the groove; a missing night is a dotted trace only
+  if (!D.noNight) g += `<path d="${arcP(D.sl.onset, D.wake, rg)}" stroke="var(--night)" stroke-width="6" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
+  else g += `<path d="${arcP(D.sl.onset, D.wake, rg)}" stroke="rgba(243,237,228,.3)" stroke-width="1.6" stroke-dasharray="1.5 4" stroke-linecap="round" fill="none"/>`;
+  // the day lived: warm light from waking to now
+  if (D.now > D.wake) g += `<path d="${arcP(D.wake, Math.min(D.now, D.bed), rg)}" stroke="url(#lived)" stroke-width="4" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
+  // the rest of the day, to bedtime: shallow pits, never lit
+  for (let t = Math.max(D.now, D.wake) + 20; t < D.bed; t += 20) { const [x, y] = pt(t, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.1" fill="rgba(12,9,6,.75)"/>`; }
+  { const [x, y] = pt(D.bed, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="none" stroke="rgba(243,237,228,.35)" stroke-width="1"/>`; }
+  // logs: a bead each in its routine's hue, at its own time; beads that share a moment stack inward
+  const slot = {}; D.logs.forEach(l => { const k = Math.round(ang(l.t) / (Math.PI * 2) * 96); const n = slot[k] = (slot[k] || 0) + 1; const [x, y] = pt(l.t, rg - (n - 1) * 7.5); g += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.1" fill="${hueC(l.h)}" filter="url(#bead)"/>`; });
+  // records: small grey pits just outside the groove
+  D.recs.forEach(e => { const [x, y] = pt(e.t, 67.5); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.1" fill="var(--rec)"/>`; });
+  // now: a raised ember knob on the ring
+  { const [x, y] = pt(D.now, rg); g += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="7.5" fill="var(--sun)" filter="url(#knob)"/>`; }
+  const list = D.by.slice(0, D.by.length > 5 ? 4 : 5), more = D.by.length - list.length;
+  const side = `<div class="dl-side">
+    <div class="dl-night${D.noNight ? ' miss' : ''}"><i></i>${nightTxt(D)}${!D.noNight ? `<span>, woke ${hm(D.wake)}</span>` : ''}</div>
+    ${D.by.length ? `<div class="dl-list">${list.map(r => `<div class="dl-r"><i style="background:${hueC(r.h)};color:${hueC(r.h)}"></i><span class="n">${esc(r.name)}</span><span class="v tnum">${esc(r.fig)}</span></div>`).join('')}${more ? `<div class="dl-more">and ${more} more</div>` : ''}${D.recs.length ? `<div class="dl-more">${D.recs.length} record${D.recs.length > 1 ? 's' : ''}</div>` : ''}</div>` : `<div class="dl-empty">Nothing logged yet. What you log gathers on the ring.</div>`}
+  </div>`;
+  return `<div class="hero-dial"><div class="dl-disc"><svg viewBox="0 0 ${R} ${R}" width="${R}" height="${R}">${g}</svg><div class="dl-well"><b class="tnum">${hm(D.now)}</b><span>${D.logs.length ? `${D.logs.length} logged` : 'now'}</span></div>
+    <span class="dl-h" style="left:${c}px;top:2px">0</span><span class="dl-h" style="left:${R - 5}px;top:${c}px">6</span><span class="dl-h" style="left:${c}px;top:${R - 3}px">12</span><span class="dl-h" style="left:5px;top:${c}px">18</span></div>${side}</div>`;
+}
+
+// Hero 2, the hours: one moulded cell per waking hour, each filling with a segment of light per log in its routine's hue
+function heroHours(W) {
+  const D = dayData(), gut = 20, sw = 42, gap = 3;
+  const h0 = Math.floor(D.wake / 60), h1 = Math.ceil(D.bed / 60), N = h1 - h0;
+  const x0 = gut + sw + 8, cw = (W - gut - x0 - gap * (N - 1)) / N, top = 30, ch = 92;
+  const nowH = Math.floor(D.now / 60);
+  let h = `<div class="hr-night${D.noNight ? ' miss' : ''}" style="left:${gut}px;top:${top}px;width:${sw}px;height:${ch}px">${D.noNight ? '<b>—</b>' : `<b class="tnum">${Math.floor(D.sl.asleep / 60)}<small>h</small></b><b class="tnum">${String(D.sl.asleep % 60).padStart(2, '0')}</b>`}</div>`;
+  h += `<span class="hr-lb nt" style="left:${gut}px;top:${top + ch + 8}px">${D.noNight ? (D.sl.none ? 'no record' : 'not in yet') : 'asleep'}</span>${D.noNight ? '' : `<span class="hr-lb" style="left:${gut}px;top:${top + ch + 22}px">woke ${hm(D.wake)}</span>`}`;
+  for (let i = 0; i < N; i++) {
+    const hr = h0 + i, x = x0 + i * (cw + gap), past = hr < nowH, cur = hr === nowH && D.now >= D.wake;
+    const L = D.logs.filter(l => Math.floor(Math.min(l.t, 1439) / 60) === hr && l.t >= D.wake - 60);
+    const R = D.recs.filter(e => Math.floor(e.t / 60) === hr);
+    const segH = Math.max(3, Math.min(9, (ch - 8 - 2 * (L.length - 1)) / Math.max(1, L.length)));
+    h += `<div class="hr-c${past ? ' past' : cur ? ' cur' : ' fut'}" style="left:${x.toFixed(1)}px;top:${top}px;width:${cw.toFixed(1)}px;height:${ch}px">${cur ? `<i class="hr-elapsed" style="height:${((D.now % 60) / 60 * 100).toFixed(0)}%"></i>` : ''}${L.map((l, k) => `<i class="hr-s" style="bottom:${(4 + k * (segH + 2)).toFixed(1)}px;height:${segH.toFixed(1)}px;background:${hueC(l.h)};color:${hueC(l.h)}"></i>`).join('')}</div>`;
+    R.slice(0, 3).forEach((e, k) => { h += `<i class="hr-rec" style="left:${(x + cw / 2 - 2 + (k - (Math.min(3, R.length) - 1) / 2) * 5).toFixed(1)}px;top:${top + ch + 4}px"></i>`; });
+    if (hr % 3 === 0 && !cur && x > x0 + 40) h += `<span class="hr-lb" style="left:${(x + cw / 2).toFixed(1)}px;top:${top + ch + 12}px;transform:translateX(-50%)">${hr % 24}</span>`;
+    if (cur) h += `<i class="hr-sun" style="left:${(x + cw / 2 - 7).toFixed(1)}px;top:${top - 19}px"></i><span class="hr-now tnum" style="left:${(x + cw / 2 + 11).toFixed(1)}px;top:${top - 20}px">${hm(D.now)}</span>`;
+  }
+  if (D.now < D.wake) h += `<i class="hr-sun" style="left:${(gut + sw / 2 - 7)}px;top:${top - 19}px"></i><span class="hr-now tnum" style="left:${gut + sw / 2 + 11}px;top:${top - 20}px">${hm(D.now)}</span>`;
+  return `<div class="hero-hours">${h}</div>`;
+}
+
+// Hero 3, the lanes: one carved lane per routine logged today, its logs raised as beads and its sessions as capsules, against one time axis
+function heroLanes(W) {
+  const D = dayData(), A = arcModel(W), MAXR = 5;
+  const rows = D.by.length > MAXR + 1 ? D.by.slice(0, MAXR).concat([{ id: '+', name: `${D.by.length - MAXR} more`, h: null, logs: D.by.slice(MAXR).flatMap(r => r.logs) }]) : D.by;
+  const top = 26, n = rows.length + 1, yb = 132, pitch = Math.min(20, (yb - top - 6) / Math.max(1, n)), xw = A.X(D.wake), xe = A.X(A.end), xn = A.X(D.now);
+  let h = '';
+  // last night: a lit capsule in the lead-in, its length in words
+  const yN = top;
+  if (!D.noNight) h += `<i class="ln-night" style="left:${A.X(D.sl.onset).toFixed(1)}px;top:${yN - 5}px;width:${(xw - A.X(D.sl.onset)).toFixed(1)}px"></i>`;
+  else h += `<i class="ln-night miss" style="left:${A.X(D.sl.onset).toFixed(1)}px;top:${yN - 1}px;width:${(xw - A.X(D.sl.onset)).toFixed(1)}px"></i>`;
+  h += `<span class="ln-nt${D.noNight ? ' miss' : ''}" style="${xn + 190 > W ? `right:${(W - xn + 10).toFixed(1)}px` : `left:${(Math.max(xw, xn) + 12).toFixed(1)}px`};top:${yN - 7}px">${nightTxt(D)}${D.noNight ? '' : `, woke ${hm(D.wake)}`}</span>`;
+  rows.forEach((r, i) => {
+    const y = top + (i + 1) * pitch;
+    h += `<i class="ln-g" style="left:${xw.toFixed(1)}px;top:${y - 4}px;width:${(Math.min(xn, xe) - xw).toFixed(1)}px"></i><i class="ln-g fut" style="left:${Math.min(xn, xe).toFixed(1)}px;top:${y - 4}px;width:${(xe - Math.min(xn, xe)).toFixed(1)}px"></i>`;
+    h += `<span class="ln-name" style="right:${(W - xw + 8).toFixed(1)}px;top:${y - 8}px;color:${r.h ? r.h.t : 'var(--t2)'}">${esc(r.name)}</span>`;
+    r.logs.forEach(l => {
+      const c = hueC(l.h);
+      if (l.e.dur) { const a = A.X(Math.max(D.wake, l.t0)), b = A.X(l.t); h += `<i class="ln-cap" style="left:${(a - 5).toFixed(1)}px;top:${y - 5}px;width:${Math.max(10, b - a + 10).toFixed(1)}px;background:${c};color:${c}"></i>`; }
+      else h += `<i class="ln-b" style="left:${(A.X(l.t) - 5).toFixed(1)}px;top:${y - 5}px;background:${c};color:${c}"></i>`;
+    });
+  });
+  // records: grey pits on the axis
+  D.recs.forEach(e => { h += `<i class="ln-rec" style="left:${(A.X(e.t) - 2.5).toFixed(1)}px;top:${yb + 2}px"></i>`; });
+  // the hour axis, engraved
+  for (let t = Math.ceil(D.wake / 180) * 180; t < A.end; t += 180) h += `<span class="ln-lb" style="left:${A.X(t).toFixed(1)}px;top:${yb + 8}px">${(t / 60) % 24}</span>`;
+  // now: an ember needle through every lane, with the knob above
+  if (!rows.length) h += `<span class="ln-empty" style="left:${(Math.max(xw, xn) + 14).toFixed(1)}px;top:${top + 22}px">Nothing logged yet. Each routine you log gets its own lane.</span>`;
+  h += `<i class="ln-needle" style="left:${(xn - 1).toFixed(1)}px;top:${top - 4}px;height:${(yb - top + 8).toFixed(1)}px"></i><i class="ln-sun" style="left:${(xn - 6.5).toFixed(1)}px;top:${top - 21}px"></i><span class="ln-now tnum" style="${xn > W - 70 ? `right:${(W - xn + 11).toFixed(1)}px` : `left:${(xn + 10).toFixed(1)}px`};top:${top - 22}px">${hm(D.now)}</span>`;
+  return `<div class="hero-lanes">${h}</div>`;
+}
+// SVG filters for the dial: an inner shadow (groove), a glow (light in the groove), a raised bead and a raised knob, all lit from the top left
+const SVGF = `<filter id="ins" x="-20%" y="-20%" width="140%" height="140%"><feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+<feGaussianBlur in="inv" stdDeviation="2.4" result="b"/><feOffset in="b" dx="2.4" dy="2.4" result="o1"/><feFlood flood-color="#0C0906" flood-opacity=".8"/><feComposite in2="o1" operator="in"/><feComposite in2="SourceAlpha" operator="in" result="dk"/>
+<feOffset in="b" dx="-1.8" dy="-1.8" result="o2"/><feFlood flood-color="#FFEEDC" flood-opacity=".09"/><feComposite in2="o2" operator="in"/><feComposite in2="SourceAlpha" operator="in" result="lt"/>
+<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="dk"/><feMergeNode in="lt"/></feMerge></filter>
+<filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="bead" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="1" result="a"/><feOffset in="a" dx="1.2" dy="1.4" result="s"/><feFlood flood-color="#0C0906" flood-opacity=".7"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".55"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="knob" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="2" result="a"/><feOffset in="a" dx="2.5" dy="2.5" result="s"/><feFlood flood-color="#0C0906" flood-opacity=".75"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".7"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<linearGradient id="lived" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#F3E3CC"/><stop offset="1" stop-color="#FF8F5E"/></linearGradient>`;
+function heroSwitch() { const el = $('#hsw'); if (el) el.innerHTML = ['Arc', '1', '2', '3'].map((l, i) => `<button data-act="hero" data-h="${i}" class="${HERO === i ? 'on' : ''}" aria-pressed="${HERO === i}" aria-label="${['Hero 0, the carved arc', 'Hero 1, the dial', 'Hero 2, the hours', 'Hero 3, the lanes'][i]}">${l}</button>`).join(''); }
+
 function skyTint() {
+  if (HERO) { $('#sky').style.background = 'none'; return; }
   const n = S.now; const c = n < 360 ? '91,104,255' : n < 600 ? '255,138,91' : n < 1020 ? '255,184,120' : n < 1200 ? '255,107,61' : '140,110,255';
   const a = arcModel(scrollEl.clientWidth || 390); const x = a.X(Math.max(a.start, Math.min(a.end, n))), y = a.Y(Math.max(a.start, Math.min(a.end, n)));
   $('#sky').style.background = `radial-gradient(260px 220px at ${x}px ${y + 100}px, rgba(${c},.17), rgba(${c},0) 70%)`;
@@ -1178,7 +1492,8 @@ function render() {
       ${heldN ? `<button class="ib" data-act="sheet" data-s="held" aria-label="Held, ${heldN}"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M5 19V3.5h11l-2.5 4 2.5 4H5"/></svg><span class="n">${heldN}</span></button>` : ''}
       <button class="ib" data-act="logsheet" aria-label="Search everything"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l4.5 4.5"/></svg></button>
     </div></header>`;
-  h += `<div class="arc" data-act="sheet" data-s="day" role="button" aria-label="Your day so far: ${S.entries.length} entries. Open the day">${a.svg}${!S.entries.length && S.dayOne ? '<div class="arcnote">What you log gathers on the day.</div>' : ''}</div>`;
+  const W0 = scrollEl.clientWidth || 390;
+  h += `<div class="arc${HERO ? ' hero h' + HERO : ''}" data-act="sheet" data-s="day" role="button" aria-label="Your day so far: ${S.entries.length} entries. Open the day">${HERO === 1 ? heroDial(W0) : HERO === 2 ? heroHours(W0) : HERO === 3 ? heroLanes(W0) : a.svg}${!S.entries.length && S.dayOne && !HERO ? '<div class="arcnote">What you log gathers on the day.</div>' : ''}</div>`;
   h += panels();
   if (S.welcome) h += `<p class="welcome">${S.welcome}</p>`;
   // Now
@@ -1195,7 +1510,7 @@ function render() {
   if (S.dayOne) h += `<button class="addbtn" data-act="toast-add"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>Add a routine</button>`;
   h += `<div class="foot"><button data-act="next-sample">Different data, ${si + 1} of ${SAMPLES.length}: ${esc(S.label)}</button></div>`;
   scrollEl.innerHTML = h;
-  if (window.Arc3D) { try { window.Arc3D.attach(scrollEl.querySelector('.arc'), a.data, STILL); } catch (err) { window.Arc3D = null; } }
+  if (window.Arc3D && !HERO) { try { window.Arc3D.attach(scrollEl.querySelector('.arc'), a.data, STILL); } catch (err) { window.Arc3D = null; } }
   scrollEl.scrollTop = sv;
   $('#topbar').textContent = S.short;
   skyTint(); renderLive();
@@ -1399,6 +1714,7 @@ document.addEventListener('click', e => {
   if (a === 'dismiss') { e.stopPropagation(); U.dismissed.add(id); render(); toast('Hidden for now', 'It’s still in Time', () => { U.dismissed.delete(id); render(); }, true); return; }
   switch (a) {
     case 'next-sample': load(si + 1); break;
+    case 'hero': HERO = +t.dataset.h; try { history.replaceState(null, '', `?sample=${si}${HERO ? '&hero=' + HERO : ''}${STILL ? '&still' : ''}`); } catch (e) {} heroSwitch(); render(); break;
     case 'sheet': openSheet(t.dataset.s, id); break;
     case 'logsheet': openSheet('logsheet'); break;
     case 'close': closeSheet(); break;
