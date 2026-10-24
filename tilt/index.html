@@ -47,24 +47,22 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
    Height is per POINT along the item: h(y) = curve(distance of y from the nearer clip edge / band).
    Nothing rotates or moves; the shape is drawn by per-point masks (vertical linear-gradients).
    raised  .sh  shadow (masked by h)        .shc contact shadow      .face lit top face
-           .lit / .drk slope shading (masked by |slope| * h)     .fl surface-colour cover (masked by 1 - 1.3h)
+           .fl surface-colour cover (masked by 1 - 1.3h). No slope shading: the slope reads through shadow + bevel only.
    wells   .ins inset depth + floor (masked by h)
-   JS writes only custom properties: --m --mc --ml --md --mf --ta (--pop only with ?pop)   */
-.clay{position:relative;border-radius:22px;--pop:0;--k:calc(1 + var(--pop) * 2.5);--ta:1;
-  --m:none;--mc:linear-gradient(transparent,transparent);--ml:linear-gradient(transparent,transparent);--md:linear-gradient(transparent,transparent);--mf:linear-gradient(transparent,transparent)}
+   JS writes only custom properties: --m --mc --mf --ta --pop   */
+.clay{position:relative;border-radius:22px;--pop:0;--k:calc(1 + var(--pop) * 2);--ta:1;
+  --m:none;--mc:linear-gradient(transparent,transparent);--mf:linear-gradient(transparent,transparent)}
 .plate{position:absolute;inset:0;border-radius:inherit;pointer-events:none}
 .plate > *{position:absolute;border-radius:inherit;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .sh{inset:-56px;-webkit-mask-image:var(--m);mask-image:var(--m)}
 .sh::before{content:"";position:absolute;inset:56px;border-radius:22px;
   box-shadow:calc(9px * var(--k)) calc(10px * var(--k)) calc(20px * var(--k)) var(--sh-dark),calc(-7px * var(--k)) calc(-7px * var(--k)) calc(16px * var(--k)) var(--sh-light),
-    calc(12px * var(--k)) calc(14px * var(--k)) 24px rgba(5,8,14,clamp(0, calc(var(--pop) * 5), .45))}
+    calc(11px * var(--k)) calc(13px * var(--k)) 24px rgba(5,8,14,clamp(0, calc(var(--pop) * 4), .3))}
 .shc{inset:-56px;-webkit-mask-image:var(--mc);mask-image:var(--mc)}
 .shc::before{content:"";position:absolute;inset:56px;border-radius:22px;
   box-shadow:2px 3px 4px rgba(7,11,18,.55),-1px -1px 2px rgba(80,98,126,.25)}
 .face{inset:0;background:linear-gradient(150deg,var(--face-hi) 0%,#1f2937 55%,var(--face-lo) 100%);
   box-shadow:inset 1px 1px 0 rgba(150,175,210,.07),inset -1px -1px 0 rgba(0,0,0,.18)}
-.lit{inset:0;background:rgba(160,186,222,.075);-webkit-mask-image:var(--ml);mask-image:var(--ml)}
-.drk{inset:0;background:rgba(4,7,12,.20);-webkit-mask-image:var(--md);mask-image:var(--md)}
 .fl{inset:-1px;background:var(--ink);-webkit-mask-image:var(--mf);mask-image:var(--mf)}
 .ins{inset:0;-webkit-mask-image:var(--m);mask-image:var(--m);background:rgba(4,7,12,.10);
   box-shadow:inset 3px 3px 6px rgba(6,10,16,.85),inset -2px -2px 5px rgba(70,88,114,.32)}
@@ -217,7 +215,7 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 (function(){
   var q = new URLSearchParams(location.search);
   var B = Math.max(10, parseFloat(q.get('band')) || 64);       // band, px: distance over which a point reaches full height
-  var POP = q.has('pop') ? parseFloat(q.get('pop')) : 0;       // overshoot off by default (?pop=0.08 to try it)
+  var POP = q.has('pop') ? parseFloat(q.get('pop')) : 0.04;    // gentle overshoot on full entry (?pop=0 off, ?pop=0.08 stronger)
   var P = 56;                                                  // shadow-layer padding (matches CSS)
   var plain = q.get('mode') === 'plain';
   var PROFILE = q.get('profile') === '1';
@@ -232,7 +230,7 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
     var plate = document.createElement('div');
     plate.className = 'plate';
     plate.innerHTML = el.classList.contains('well') ? '<div class="ins"></div>'
-      : '<div class="sh"></div><div class="shc"></div><div class="face"></div><div class="lit"></div><div class="drk"></div><div class="fl"></div>';
+      : '<div class="sh"></div><div class="shc"></div><div class="face"></div><div class="fl"></div>';
     el.insertBefore(plate, el.firstChild);
   });
 
@@ -269,9 +267,6 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
     var t = (Math.min(y - E0, E1 - y) - 1) / B;           // 1 px dead zone: exactly 0 at and next to the edge
     return t <= 0 ? 0 : RAMPS[ramp](clamp01(t));
   }
-  // signed slope of the surface at y, normalised to [-1, 1]; + means rising away from the top edge (faces up, lit)
-  var SMAX = { smooth: 1.5, late: 1.5 / .65, quick: 3 };
-  function slopeAt(y){ return Math.max(-1, Math.min(1, (hAt(y + 1) - hAt(y - 1)) / 2 * B / SMAX[ramp])); }
   function a(v){ return Math.round(v * 1000) / 1000; }
 
   // mask gradient from per-point samples (~every 6 px) plus forced stops at both clip edges and band ends
@@ -288,8 +283,6 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   var fShadow  = function(y){ return hAt(y); };
   var fContact = function(y){ var h = hAt(y); return Math.min(1, h * 2.2) * (1 - h * 0.6); };
   var fCover   = function(y){ return 1 - Math.min(1, hAt(y) * 1.3); };
-  var fLit     = function(y){ return Math.max(0, slopeAt(y)) * hAt(y); };
-  var fDark    = function(y){ return Math.max(0, -slopeAt(y)) * hAt(y); };
   var NONE = 'linear-gradient(transparent,transparent)';
 
   function set(it, k, v){ if (it.last[k] !== v){ it.last[k] = v; it.el.style.setProperty(k, v); } }
@@ -313,14 +306,12 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
       }
       if (full){
         set(it, '--m', near ? grad(y0 - P, 0, it.h + 2 * P, fShadow) : 'none');
-        set(it, '--mc', NONE); set(it, '--ml', NONE); set(it, '--md', NONE); set(it, '--mf', NONE);
+        set(it, '--mc', NONE); set(it, '--mf', NONE);
         set(it, '--ta', '1');
         continue;
       }
       set(it, '--m',  grad(y0 - P, 0, it.h + 2 * P, fShadow));
       set(it, '--mc', grad(y0 - P, 0, it.h + 2 * P, fContact));
-      set(it, '--ml', grad(y0, 0, it.h, fLit));
-      set(it, '--md', grad(y0, 0, it.h, fDark));
       set(it, '--mf', grad(y0 - 1, 0, it.h + 2, fCover));
       set(it, '--ta', String(a(.74 + .26 * Math.max(hm, (h0 + h1) / 2))));
     }
@@ -352,8 +343,8 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
     });
   }
 
-  // ---- optional overshoot (?pop=0.08): spring, response .35 s, damping .55 ----
-  var W0 = 2 * Math.PI / 0.35, Z = 0.55, WD = W0 * Math.sqrt(1 - Z * Z);
+  // ---- gentle overshoot: soft spring, response .45 s, damping .7; only deepens the shadow ----
+  var W0 = 2 * Math.PI / 0.45, Z = 0.7, WD = W0 * Math.sqrt(1 - Z * Z);
   var TPEAK = Math.atan(Math.sqrt(1 - Z * Z) / Z) / WD;
   var NORM = Math.exp(-Z * W0 * TPEAK) * Math.sin(WD * TPEAK);
   var TEND = Math.log(200) / (Z * W0);
@@ -385,7 +376,7 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 
   measure(); setRamp(ramp); setMode(plain);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measure(); frame(); });
-  window.__tilt = { frame: frame, band: B, edges: function(){ measureEdges(); return { E0: E0, E1: E1 }; }, hAt: function(y){ return hAt(y); } };
+  window.__tilt = { frame: frame, band: B, peakMs: TPEAK * 1000, edges: function(){ measureEdges(); return { E0: E0, E1: E1 }; }, hAt: function(y){ return hAt(y); } };
 })();
 </script>
 </body>
