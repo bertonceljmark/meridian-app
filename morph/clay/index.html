@@ -769,12 +769,13 @@ function hfSet(on){HF.on=on;$('#x-fold').classList.toggle('hf',on);if(on){if(!HF
 
 /* ===================== surfaces ===================== */
 /* matches the studio's today-neu surfaces (?surface=0..3) */
-const SURFS=[['bone','#E2DFDA','Clay',2],['slate','#2A2E33','Slate',0],['ink','#1D2633','Ink',1],['mineral','#22302F','Mineral',3],['graphite','#2B2723','Graphite (old)',2]];
+/* Mark picked Ink (24 Oct 15:46) */
+const SURFS=[['ink','#1D2633','Ink',1],['bone','#E2DFDA','Clay',2],['slate','#2A2E33','Slate',0],['mineral','#22302F','Mineral',3],['graphite','#2B2723','Graphite (old)',2]];
 let surfI=0;
 function setSurf(i){surfI=(i+SURFS.length)%SURFS.length;const [k]=SURFS[surfI];if(k==='graphite')delete app.dataset.surf;else app.dataset.surf=k;
   const nx=SURFS[(surfI+1)%SURFS.length];$('#surfk i').style.background=nx[1];$('#surfk').setAttribute('aria-label','Surface: '+SURFS[surfI][2]+'. Tap for '+nx[2]);
   document.querySelector('meta[name=theme-color]')&&document.querySelector('meta[name=theme-color]').setAttribute('content',SURFS[surfI][1]);
-  setTimeout(()=>{if(HF.on)hfColors()},520);const fr=$('#dialfr');if(fr)fr.src=dialSrc();try{localStorage.setItem('clay-surf',k)}catch(e){}}
+  setTimeout(()=>{if(HF.on)hfColors()},520);const fr=$('#dialfr');if(fr)fr.src=dialSrc();try{localStorage.setItem('clay-surf2',k)}catch(e){}}
 
 /* ===================== STORYBOARD ===================== */
 const BOARD=[
@@ -852,7 +853,7 @@ function boot(){e1Build();e1Init();e2Build();e2Init();e3Build();e3Init();boardBu
   $$('#modeseg button').forEach(b=>b.addEventListener('click',()=>{tick();setMode(b.dataset.m)}));
   $('#mn').addEventListener('click',()=>{tick();$('.ctlbar').classList.add('min');$('#pillmode').classList.add('on')});
   $('#pillmode').addEventListener('click',()=>{tick();$('.ctlbar').classList.remove('min');$('#pillmode').classList.remove('on')});
-  const h=location.hash.slice(1);let sv='bone';try{sv=localStorage.getItem('clay-surf')||'bone'}catch(e){}setSurf(Math.max(0,SURFS.findIndex(x=>x[0]===sv)));
+  const h=location.hash.slice(1);let sv='ink';try{sv=localStorage.getItem('clay-surf2')||'ink'}catch(e){}setSurf(Math.max(0,SURFS.findIndex(x=>x[0]===sv)));
   $('#surfk').addEventListener('click',()=>{tick();setSurf(surfI+1);const cap=$('#cap');cap.innerHTML='Surface: <b>'+SURFS[surfI][2]+'</b>';cap.classList.remove('off');clearTimeout(capT);capT=setTimeout(()=>cap.classList.add('off'),1800)});
   setMode(['board','fold','focus','reshape','clay'].includes(h)?h:'clay',true);
   window.addEventListener('resize',()=>{e1Layout();e2Layout()});
