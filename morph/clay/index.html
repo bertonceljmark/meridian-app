@@ -479,11 +479,49 @@ input:focus-visible{outline:none}
 .minisheet{position:absolute;background:var(--surf);overflow:hidden;z-index:3}
 .minisheet .ms{position:absolute;left:0;top:0;padding:14px 16px;font:500 14px var(--ui);color:var(--t2);opacity:0}
 .minisheet .ms b{display:block;font:600 19px var(--disp);color:var(--cream);margin-bottom:4px}
+
+/* ===== surfaces: one variable set, so the clay follows whichever surface Mark picks ===== */
+.app{--dkc:12,9,6;--ltc:255,238,220;--la:1;--da:1}
+.app[data-surf="slate"]{--surf:#2B3036;--dkc:6,9,14;--ltc:220,232,248;--la:1.05;--da:1.05;--cream:#EEF1F4;--t2:rgba(238,241,244,.68);--t3:rgba(238,241,244,.56);--t4:rgba(238,241,244,.3)}
+.app[data-surf="ink"]{--surf:#262D3A;--dkc:5,8,16;--ltc:210,222,255;--la:1.1;--da:1.1;--cream:#EDF0F7;--t2:rgba(237,240,247,.68);--t3:rgba(237,240,247,.56);--t4:rgba(237,240,247,.3)}
+.app[data-surf="mineral"]{--surf:#2D3331;--dkc:6,10,9;--ltc:222,240,232;--la:1.05;--da:1.05;--cream:#EEF2EF;--t2:rgba(238,242,239,.68);--t3:rgba(238,242,239,.56);--t4:rgba(238,242,239,.3)}
+.app[data-surf="bone"]{--surf:#E4DFD8;--dkc:118,104,90;--ltc:255,255,255;--la:15;--da:.95;--cream:#26221E;--t2:rgba(38,34,30,.72);--t3:rgba(38,34,30,.58);--t4:rgba(38,34,30,.32);
+  --deb:calc(var(--lx)*1px) calc(var(--ly)*1px) 0 rgba(255,255,255,.7);--emb:calc(var(--lx)*2px) calc(var(--ly)*2px) 4px rgba(118,104,90,.35),calc(var(--lx)*-1px) calc(var(--ly)*-1px) 1px rgba(255,255,255,.8);
+  --groove:linear-gradient(rgba(118,104,90,.35) 0 1px,rgba(255,255,255,.8) 1px 2px)}
+.app[data-surf="bone"] .grain{opacity:.05;mix-blend-mode:multiply}
+.app[data-surf="bone"] .kr .ck{stroke:#fff}
+.app[data-surf="bone"] .panel .k,.app[data-surf="bone"] .tok.on,.app[data-surf="bone"] .btn.primary,.app[data-surf="bone"] .kp svg{color:color-mix(in oklab,var(--hf,var(--sun)) 70%,#000)}
+.app[data-surf="bone"] .tab.on svg,.app[data-surf="bone"] .logkey{color:#D9541F}
+.app[data-surf="bone"] .inl,.app[data-surf="bone"] .ks i,.app[data-surf="bone"] .level,.app[data-surf="bone"] .grab i{box-shadow:inset 1.5px 1.5px 3px rgba(118,104,90,.45),inset -1px -1px 2px rgba(255,255,255,.9)}
+body{background:#141414}
+.f{box-shadow:
+  calc(max(var(--h),0)*12px*var(--lx)) calc(max(var(--h),0)*12px*var(--ly)) calc(max(var(--h),0)*28px) rgba(var(--dkc),calc(.46*var(--da))),
+  calc(max(var(--h),0)*-9px*var(--lx)) calc(max(var(--h),0)*-9px*var(--ly)) calc(max(var(--h),0)*22px) rgba(var(--ltc),calc(.052*var(--la))),
+  calc(max(var(--h),0)*2px*var(--lx)) calc(max(var(--h),0)*2px*var(--ly)) calc(max(var(--h),0)*5px) rgba(var(--dkc),calc(.2*var(--da))),
+  inset calc(max(calc(var(--h) * -1),0)*7px*var(--lx)) calc(max(calc(var(--h) * -1),0)*7px*var(--ly)) calc(max(calc(var(--h) * -1),0)*16px) rgba(var(--dkc),calc(.46*var(--da))),
+  inset calc(max(calc(var(--h) * -1),0)*-6px*var(--lx)) calc(max(calc(var(--h) * -1),0)*-6px*var(--ly)) calc(max(calc(var(--h) * -1),0)*14px) rgba(var(--ltc),calc(.045*var(--la))))}
+.fk{box-shadow:
+  calc(max(var(--h),0)*5px*var(--lx)) calc(max(var(--h),0)*5px*var(--ly)) calc(max(var(--h),0)*12px) rgba(var(--dkc),calc(.58*var(--da))),
+  calc(max(var(--h),0)*-4px*var(--lx)) calc(max(var(--h),0)*-4px*var(--ly)) calc(max(var(--h),0)*10px) rgba(var(--ltc),calc(.075*var(--la))),
+  inset calc(max(calc(var(--h) * -1),0)*4px*var(--lx)) calc(max(calc(var(--h) * -1),0)*4px*var(--ly)) calc(max(calc(var(--h) * -1),0)*10px) rgba(var(--dkc),calc(.62*var(--da))),
+  inset calc(max(calc(var(--h) * -1),0)*-3px*var(--lx)) calc(max(calc(var(--h) * -1),0)*-3px*var(--ly)) calc(max(calc(var(--h) * -1),0)*9px) rgba(var(--ltc),calc(.085*var(--la))))}
+.app,.ctlbar,.tabbar,.cap,.blk .shape,.fsec .shape,.mshape,.minisheet,.mtoast{transition:background-color .5s}
+.surfk{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;--h:.6}
+.surfk i{width:14px;height:14px;border-radius:50%;box-shadow:inset 1px 1px 2px rgba(0,0,0,.35),0 0 0 2px var(--t4)}
+.ctlbar .seg button{font-size:12.5px}
+
+/* ===== one heightfield ("Clay" experiment) ===== */
+.hfc{position:absolute;left:0;top:0;width:100%;height:100%;display:none;pointer-events:none}
+.exp.hf .hfc{display:block}
+.exp.hf .blk .shape,.exp.hf .ridgeline{opacity:0}
+.exp.hf .fk{box-shadow:none!important;background:transparent!important}
+.exp.hf .blk .row,.exp.hf .blk .panel,.exp.hf .blk .sug{background:transparent}
+.app{color:var(--cream)}
 </style>
 </head>
 <body>
 <div class="app" id="app">
-  <div class="ctlbar"><div class="seg f" id="modeseg" style="--h:.7"><span class="sw2 f" style="--h:-1"></span><button data-m="board">Board</button><button data-m="fold">Fold</button><button data-m="focus">Focus</button><button data-m="reshape">Reshape</button></div><button class="mn fk" id="mn" aria-label="Hide the switcher"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>
+  <div class="ctlbar"><div class="seg f" id="modeseg" style="--h:.7"><span class="sw2 f" style="--h:-1"></span><button data-m="board">Board</button><button data-m="fold">Fold</button><button data-m="focus">Focus</button><button data-m="reshape">Pages</button><button data-m="clay">Clay</button></div><button class="surfk fk" id="surfk" aria-label="Surface"><i></i></button><button class="mn fk" id="mn" aria-label="Hide the switcher"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>
   <button class="pillmode fk" id="pillmode">Fold</button>
   <section class="exp" id="x-board"><div class="board" id="board"></div></section>
   <section class="exp" id="x-fold"><div class="clay" id="e1c"></div></section>
@@ -675,6 +713,65 @@ function e3Go(dir,v=0){const to=E3.i+dir;if(to<0||to>=E3.pages.length||e3busy){r
 function e3Init(){const c=$('#e3c');let fired=false;
   dragOn(c,{start(){fired=false},move(dy,v,wheel){if(fired)return;if(Math.abs(dy)>(wheel?30:56)){fired=true;e3Go(dy<0?1:-1,v)}},end(v){fired=false}})}
 
+
+/* ===================== CLAY: one heightfield =====================
+   The Fold layout, but instead of each form drawing its own shadow, the whole screen is ONE lit height
+   map in a fragment shader: every form (blocks and keys) adds a soft rounded bump (or hollow) to a single
+   surface, which is then lit by the one light. Neighbouring forms blend like real material; a key on a row
+   stands on the row; a pressed key becomes a hollow in it. Native: SwiftUI .layerEffect with a Metal
+   [[stitchable]] function taking the same rect arrays. */
+const HF={gl:null,on:false,raf:0,N:48};
+const VS='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+const FS=`precision highp float;
+uniform vec2 R;uniform float dpr;uniform int N;uniform vec4 rc[48];uniform vec4 md[48];
+uniform vec3 surf;uniform vec3 dk;uniform vec3 lt;uniform vec2 L;uniform float kL,kD;
+float sdRB(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
+float H(vec2 p){float h=0.;for(int i=0;i<48;i++){if(i>=N)break;vec4 r=rc[i];vec4 m=md[i];
+  vec2 c=r.xy+r.zw*.5;float d=sdRB(p-c,r.zw*.5,m.y);if(d>m.z*1.2)continue;
+  float t=clamp((d+m.z)/(m.z*1.9),0.,1.);float b=1.-t*t*(3.-2.*t);h+=m.x*b;}return h;}
+void main(){vec2 p=vec2(gl_FragCoord.x,R.y*dpr-gl_FragCoord.y)/dpr;
+  float h0=H(p);float hx=H(p+vec2(1.,0.))-h0;float hy=H(p+vec2(0.,1.))-h0;
+  float K=6.5;vec3 n=normalize(vec3(-hx*K,-hy*K,1.));
+  vec3 Ld=normalize(vec3(-L.x,-L.y,1.25));float sh=dot(n,Ld)-Ld.z;
+  vec2 tl=normalize(-L);float occ=max(0.,H(p+tl*7.)-h0)*.55+max(0.,H(p+tl*15.)-h0)*.35+max(0.,H(p+tl*26.)-h0)*.1;
+  vec3 col=surf;
+  col=sh>0.?mix(col,lt,clamp(sh*kL,0.,1.)):mix(col,dk,clamp(-sh*kD,0.,1.));
+  col=mix(col,dk,clamp(occ*.26,0.,.4));
+  gl_FragColor=vec4(col,1.);}`;
+function hfInit(){const host=$('#x-fold');const c=document.createElement('canvas');c.className='hfc';host.prepend(c);
+  const gl=c.getContext('webgl',{antialias:false,premultipliedAlpha:false});if(!gl)return false;
+  const sh=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
+  const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
+  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const a=gl.getAttribLocation(pr,'a');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+  const U={};['R','dpr','N','rc','md','surf','dk','lt','L','kL','kD'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
+  Object.assign(HF,{gl,c,U});return true}
+const rgb=s=>{const m=s.match(/\d+(\.\d+)?/g)||[0,0,0];return m.slice(0,3).map(x=>+x/255)};
+function hfColors(){const cs=getComputedStyle(app);const tmp=document.createElement('i');tmp.style.color=cs.getPropertyValue('--surf');app.appendChild(tmp);const surf=rgb(getComputedStyle(tmp).color);tmp.remove();
+  const dk=cs.getPropertyValue('--dkc').split(',').map(x=>+x/255),lt=cs.getPropertyValue('--ltc').split(',').map(x=>+x/255);const light=app.dataset.surf==='bone';
+  HF.col={surf,dk,lt,gl:light?.9:.55,gd:light?1.1:1.25}}
+function hfFrame(){HF.raf=0;if(!HF.on)return;const {gl,c,U}=HF;const host=$('#x-fold'),hr=host.getBoundingClientRect();const dpr=Math.min(2,devicePixelRatio||1);
+  const W=hr.width,Hh=hr.height;if(c.width!==Math.round(W*dpr)||c.height!==Math.round(Hh*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(Hh*dpr)}
+  const rc=[],md=[];const push=(r,h,rad,fil)=>{if(rc.length>=HF.N*4||r.height<.5||r.bottom<hr.top-30||r.top>hr.bottom+30)return;rc.push(r.left-hr.left,r.top-hr.top,r.width,r.height);md.push(h,Math.min(rad,r.width/2,r.height/2),fil,0)};
+  for(const b of E1.blocks){if(b.el.style.visibility==='hidden')continue;const h=parseFloat(b.shape.style.getPropertyValue('--h'))||0;if(Math.abs(h)<.01)continue;
+    push(b.el.getBoundingClientRect(),h,parseFloat(getComputedStyle(b.el).getPropertyValue('--rad'))||20,h<0?14:12)}
+  for(const k of $$('#e1c .fk')){const r=k.getBoundingClientRect();const blk=k.closest('.blk');const op=+blk.querySelector('.cnt').style.opacity||0;if(op<.05)continue;
+    const h=parseFloat(getComputedStyle(k).getPropertyValue('--h'))||0;push(r,h*.85*op,Math.min(r.width,r.height)/2,5)}
+  const n=rc.length/4;while(rc.length<HF.N*4){rc.push(0,0,0,0);md.push(0,0,1,0)}
+  gl.viewport(0,0,c.width,c.height);gl.uniform2f(U.R,W,Hh);gl.uniform1f(U.dpr,dpr);gl.uniform1i(U.N,n);gl.uniform4fv(U.rc,rc);gl.uniform4fv(U.md,md);
+  const C=HF.col;gl.uniform3fv(U.surf,C.surf);gl.uniform3fv(U.dk,C.dk);gl.uniform3fv(U.lt,C.lt);gl.uniform1f(U.kL,C.gl);gl.uniform1f(U.kD,C.gd);
+  const cs=getComputedStyle(app);gl.uniform2f(U.L,+cs.getPropertyValue('--lx')||1,+cs.getPropertyValue('--ly')||1);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);HF.raf=requestAnimationFrame(hfFrame)}
+function hfSet(on){HF.on=on;$('#x-fold').classList.toggle('hf',on);if(on){if(!HF.gl&&!hfInit()){HF.on=false;$('#x-fold').classList.remove('hf');return}hfColors();if(!HF.raf)HF.raf=requestAnimationFrame(hfFrame)}}
+
+/* ===================== surfaces ===================== */
+const SURFS=[['slate','#2B3036','Slate'],['ink','#262D3A','Ink'],['mineral','#2D3331','Mineral'],['bone','#E4DFD8','Bone (light clay)'],['graphite','#2B2723','Graphite (old)']];
+let surfI=0;
+function setSurf(i){surfI=(i+SURFS.length)%SURFS.length;const [k]=SURFS[surfI];if(k==='graphite')delete app.dataset.surf;else app.dataset.surf=k;
+  const nx=SURFS[(surfI+1)%SURFS.length];$('#surfk i').style.background=nx[1];$('#surfk').setAttribute('aria-label','Surface: '+SURFS[surfI][2]+'. Tap for '+nx[2]);
+  document.querySelector('meta[name=theme-color]')&&document.querySelector('meta[name=theme-color]').setAttribute('content',SURFS[surfI][1]);
+  setTimeout(()=>{if(HF.on)hfColors()},520);try{localStorage.setItem('clay-surf',k)}catch(e){}}
+
 /* ===================== STORYBOARD ===================== */
 const BOARD=[
  {n:'Round key',st:'Lab',demo:`<button class="key kr fk" id="b1">${'<span class="fill" style="--hf:#81BE6B"></span>'}${IC.plus}${IC.ck()}</button>`,style:hv('mos'),
@@ -738,10 +835,10 @@ function boardBuild(){const b=$('#board');
   requestAnimationFrame(()=>{segS(0);tabS(0);foldMini()})}
 
 /* ===================== modes ===================== */
-const CAPS={board:'<b>Storyboard.</b> Every element, all its states, and what it should do in clay.',fold:'<b>Fold.</b> Drag. Nothing leaves the screen: what is past an edge is squeezed into ridges against it.',focus:'<b>Focus.</b> Drag or tap a ridge. The section you are in swells; the rest shrink to ridges.',reshape:'<b>Reshape.</b> Swipe up or down. The clay sinks flat, flows into the next arrangement and rises again.'};
+const CAPS={clay:'<b>Clay.</b> The whole screen is one lit surface: forms are bumps and hollows in it, and they blend into each other. Drag like Fold.',board:'<b>Storyboard.</b> Every element, all its states, and what it should do in clay.',fold:'<b>Fold.</b> Drag. Nothing leaves the screen: what is past an edge is squeezed into ridges against it.',focus:'<b>Focus.</b> Drag or tap a ridge. The section you are in swells; the rest shrink to ridges.',reshape:'<b>Reshape.</b> Swipe up or down. The clay sinks flat, flows into the next arrangement and rises again.'};
 let mode='fold',capT=0;
-function setMode(m,instant){mode=m;$$('.exp').forEach(e=>e.classList.toggle('on',e.id==='x-'+m));const s=$('#modeseg');const btn=$(`[data-m="${m}"]`,s);segTo(s,btn,instant);$('#pillmode').textContent=btn.textContent;
-  if(m==='fold')e1Layout();if(m==='focus')e2Layout();
+function setMode(m,instant){mode=m;const ex=m==='clay'?'fold':m;$$('.exp').forEach(e=>e.classList.toggle('on',e.id==='x-'+ex));hfSet(m==='clay');const s=$('#modeseg');const btn=$(`[data-m="${m}"]`,s);segTo(s,btn,instant);$('#pillmode').textContent=btn.textContent;
+  if(ex==='fold')e1Layout();if(m==='focus')e2Layout();
   const cap=$('#cap');cap.innerHTML=CAPS[m];cap.classList.remove('off');clearTimeout(capT);capT=setTimeout(()=>cap.classList.add('off'),4200);try{history.replaceState(null,'','#'+m)}catch(e){}}
 function segTo(seg,btn,instant){const w=$('.sw2',seg),sr=seg.getBoundingClientRect(),br=btn.getBoundingClientRect();$$('button',seg).forEach(b=>b.classList.toggle('on',b===btn));const L=br.left-sr.left,R=br.right-sr.left;
   if(instant||seg._l==null){seg._l=L;seg._r=R;w.style.left=L+'px';w.style.width=(R-L)+'px';return}const right=L>seg._l;const draw=()=>{w.style.left=seg._l+'px';w.style.width=(seg._r-seg._l)+'px'};
@@ -750,11 +847,13 @@ function boot(){e1Build();e1Init();e2Build();e2Init();e3Build();e3Init();boardBu
   $$('#modeseg button').forEach(b=>b.addEventListener('click',()=>{tick();setMode(b.dataset.m)}));
   $('#mn').addEventListener('click',()=>{tick();$('.ctlbar').classList.add('min');$('#pillmode').classList.add('on')});
   $('#pillmode').addEventListener('click',()=>{tick();$('.ctlbar').classList.remove('min');$('#pillmode').classList.remove('on')});
-  const h=location.hash.slice(1);setMode(['board','fold','focus','reshape'].includes(h)?h:'fold',true);
+  const h=location.hash.slice(1);let sv='slate';try{sv=localStorage.getItem('clay-surf')||'slate'}catch(e){}setSurf(Math.max(0,SURFS.findIndex(x=>x[0]===sv)));
+  $('#surfk').addEventListener('click',()=>{tick();setSurf(surfI+1);const cap=$('#cap');cap.innerHTML='Surface: <b>'+SURFS[surfI][2]+'</b>';cap.classList.remove('off');clearTimeout(capT);capT=setTimeout(()=>cap.classList.add('off'),1800)});
+  setMode(['board','fold','focus','reshape','clay'].includes(h)?h:'clay',true);
   window.addEventListener('resize',()=>{e1Layout();e2Layout()});
   if(document.fonts)document.fonts.ready.then(()=>{e1Build();e2Build();setMode(mode,true)})}
 boot();
-window.__clay={E1,E2,E3,e1Layout,e2To,e3Go,setMode};
+window.__clay={E1,E2,E3,e1Layout,e2To,e3Go,setMode,setSurf,HF};
 
 </script>
 </body>
