@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Scroll Sketches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--surf:#1D2633;--tx:232,239,248;--page:#151C26}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page);color:rgb(var(--tx));font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding:28px 16px 40px}
+header.top{max-width:1120px;margin:0 auto 22px}
+header.top h1{font-size:20px;font-weight:600;letter-spacing:-.01em}
+header.top p{font-size:14px;color:rgba(var(--tx),.70);margin-top:6px;max-width:640px;line-height:1.45}
+.sw{display:none;gap:8px;margin:16px 0 0}
+.sw button{font:600 15px Inter,sans-serif;color:rgba(var(--tx),.70);background:var(--surf);border:0;border-radius:14px;padding:10px 0;width:64px;
+ box-shadow:2px 4px 9px rgba(0,3,9,.5),-1px -2px 5px rgba(196,220,255,.06),inset 0 1px 0 rgba(196,220,255,.08)}
+.sw button[aria-pressed=true]{color:rgb(var(--tx));box-shadow:inset 2px 4px 9px rgba(0,3,9,.6),inset -1px -2px 5px rgba(196,220,255,.05)}
+.row{display:flex;gap:36px;justify-content:center;flex-wrap:nowrap;max-width:1120px;margin:0 auto}
+.cell{display:flex;flex-direction:column;align-items:center;gap:14px}
+.cap{max-width:var(--pw);font-size:14px;line-height:1.4;color:rgba(var(--tx),.70)}
+.cap b{color:rgb(var(--tx));font-weight:600;margin-right:6px}
+.tools{display:flex;gap:10px;align-items:center;font-size:12px;color:rgba(var(--tx),.58)}
+.tools button{font:500 12px Inter,sans-serif;color:rgba(var(--tx),.70);background:transparent;border:1px solid rgba(var(--tx),.16);border-radius:10px;padding:5px 10px}
+/* the phone */
+.phone{width:var(--pw);height:var(--ph);border-radius:46px;padding:7px;background:#0A0E14;box-shadow:0 30px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.05),inset 0 0 0 1px rgba(255,255,255,.04)}
+.pane{position:relative;width:100%;height:100%;border-radius:39px;overflow:hidden;background:var(--surf);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;isolation:isolate}
+.pane:active{cursor:grabbing}
+.status{position:absolute;left:0;right:0;top:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:4px 28px 0;font:600 14px Inter,sans-serif;z-index:20;pointer-events:none;color:rgb(var(--tx))}
+.status i{width:96px;height:26px;border-radius:14px;background:#06090D;position:absolute;left:50%;top:9px;transform:translateX(-50%)}
+.grain{position:absolute;inset:0;pointer-events:none;z-index:15;opacity:.32;mix-blend-mode:overlay}
+.content{position:absolute;left:0;top:0;width:100%;will-change:transform}
+/* forms */
+.f{position:absolute;background:var(--surf)}
+.t{position:absolute;white-space:nowrap;color:rgb(var(--tx))}
+.t.h1{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.t.d{font-size:14px;color:rgba(var(--tx),.70)}
+.t.n{font-size:17px;font-weight:600}
+.t.s{font-size:13px;color:rgba(var(--tx),.70)}
+.t.c{font-size:34px;font-weight:600;color:#FF8F5E;letter-spacing:-.02em}
+.t.k{font-size:20px;font-weight:500;color:rgba(var(--tx),.85)}
+.bead{position:absolute;width:12px;height:12px;border-radius:50%}
+.bar{position:absolute;border-radius:3px}
+.edgefade{position:absolute;left:0;right:0;height:70px;pointer-events:none;z-index:10}
+.wave{position:absolute;left:0;right:0;height:140px;pointer-events:none;z-index:11;opacity:0}
+/* rolled sheet */
+.strip{position:absolute;left:0;width:100%;overflow:hidden;backface-visibility:hidden}
+.strip .shade{position:absolute;inset:0;z-index:5;pointer-events:none}
+.drum{position:absolute;left:0;right:0;pointer-events:none;z-index:12}
+.dots{position:absolute;right:9px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:9px;z-index:12;pointer-events:none}
+.dots i{width:7px;height:7px;border-radius:50%;background:#18202B;box-shadow:inset 1px 2px 3px rgba(0,3,9,.7),inset -1px -1px 2px rgba(196,220,255,.06)}
+.dots i.on{background:#FF8F5E;box-shadow:0 0 6px rgba(255,143,94,.7)}
+@media (max-width:760px){
+ .sw{display:flex}
+ .row{display:block}
+ .cell{display:none}
+ .cell.on{display:flex}
+}
+@media (prefers-reduced-motion:reduce){.wave{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+ <h1>One pane of clay, more content than fits</h1>
+ <p>Three sketches on Ink, using the v5 light. Each one loops by itself: slow down, pause, a fast flick, then back up. Drag any pane with a finger to take over; the loop picks up again three seconds after you let go.</p>
+ <div class="sw" role="group" aria-label="Sketch">
+  <button data-k="0" aria-pressed="true">1</button><button data-k="1" aria-pressed="false">2</button><button data-k="2" aria-pressed="false">4</button>
+ </div>
+</header>
+<div class="row" id="row"></div>
+<script>
+(()=>{
+'use strict';
+const SURF=[0x1D,0x26,0x33],LIFT=[0xE6,0xF0,0xFF];
+const HUE={water:'#56B6FF',meals:'#F2B13C',stretch:'#6BD18C',sleep:'#A99CFF',read:'#F28CC2',ember:'#FF6B3D'};
+const ss=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)};
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const STILL=/[?&]still/.test(location.search);
+
+/* ---- the v5 Ink elevation recipe, as one function of h (1 unit = 6 px), light from top-left ---- */
+function tone(h){if(h>=0){const k=h*.011;return `rgb(${SURF.map((c,i)=>Math.round(c+(LIFT[i]-c)*k)).join(',')})`}const k=Math.min(1,-h*.04);return `rgb(${SURF.map(c=>Math.round(c*(1-k))).join(',')})`}
+function shadow(h){
+ if(Math.abs(h)<.004)return 'none';
+ const f=n=>n.toFixed(2);
+ if(h>0){const r=h,k=Math.min(r,1);
+  return `${f(.3*r)}px ${f(.72*r)}px ${f(1.5*r+1)}px rgba(0,3,9,${f(.55*k)}),`+
+   `${f(2.4*r)}px ${f(5.1*r)}px ${f(9*r)}px rgba(0,3,9,${f(.46*k)}),`+
+   `0 ${f(1.8*r)}px ${f(14.4*r)}px rgba(0,3,9,${f(.26*k)}),`+
+   `${f(-1.3*r)}px ${f(-2.7*r)}px ${f(6*r)}px rgba(196,220,255,${f(.055*k)}),`+
+   `inset 0 ${f(k)}px 0 rgba(196,220,255,${f(.1*k)}),inset 0 ${f(-k)}px 0 rgba(0,3,9,${f(.25*k)})`}
+ const d=-h,k=Math.min(d,1);
+ return `inset ${f(2.2*d)}px ${f(5.6*d)}px ${f(12.6*d)}px rgba(0,3,9,${f(.66*k)}),`+
+  `inset ${f(-1.3*d)}px ${f(-4.2*d)}px ${f(8*d)}px rgba(196,220,255,${f(.06*k)}),`+
+  `inset 0 ${f(k)}px ${f(1.5*k)}px rgba(0,3,9,${f(.4*k)}),0 ${f(k)}px 0 rgba(196,220,255,${f(.07*k)})`}
+function setH(n,h){if(n.lh!==undefined&&Math.abs(n.lh-h)<.006)return;n.lh=h;n.el.style.boxShadow=shadow(h);n.el.style.background=tone(h)}
+
+/* ---- still grain, made once ---- */
+let GRAIN='';
+function makeGrain(){const c=document.createElement('canvas');c.width=c.height=160;const x=c.getContext('2d'),im=x.createImageData(160,160);let s=7;
+ const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647};
+ for(let i=0;i<im.data.length;i+=4){const v=128+(rnd()-.5)*64+(rnd()-.5)*26;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=255}
+ x.putImageData(im,0,0);GRAIN=`url(${c.toDataURL()})`}
+
+/* ---- placeholder content: header, dial as a disc, rows with a key, a tall card, more rows ---- */
+function buildContent(host,W){
+ const forms=[],g=18;let y=54;
+ const mk=(parent,cls,css,txt)=>{const e=document.createElement('div');e.className=cls;Object.assign(e.style,css);if(txt!=null)e.textContent=txt;parent.appendChild(e);return e};
+ const px=n=>n+'px';
+ const form=(o)=>{const el=mk(host,'f',{left:px(o.x),top:px(o.y),width:px(o.w),height:px(o.h),borderRadius:px(o.r)});const F={el,x:o.x,y:o.y,w:o.w,h:o.h,rest:o.rest,kids:[],texts:[],glow:[]};forms.push(F);return F};
+ const kid=(F,o)=>{const el=mk(F.el,'f',{left:px(o.x),top:px(o.y),width:px(o.w),height:px(o.h),borderRadius:px(o.r)});const K={el,rest:o.rest};F.kids.push(K);return K};
+ const text=(F,cls,x,yy,s,parent)=>{const e=mk(parent||F.el,'t '+cls,{left:px(x),top:px(yy)},s);F.texts.push(e);return e};
+ // header (text pressed into the clay, plus two round keys)
+ const H=form({x:g,y,w:W-2*g,h:64,r:0,rest:0});H.el.style.background='transparent';H.flat=true;
+ text(H,'h1',0,0,'Thursday');text(H,'d',0,40,'29 October');
+ [W-2*g-44,W-2*g-96].forEach(x=>{const k=kid(H,{x,y:6,w:42,h:42,r:21,rest:1.5});H.texts.push(mk(k.el,'t k',{left:'0',top:'0',width:'42px',lineHeight:'40px',textAlign:'center'},x>W-2*g-60?'⌕':'+'))});
+ y+=84;
+ // dial disc with a carved groove, beads of light and a centre well
+ const D=W-2*g-8,dx=(W-D)/2,dial=form({x:dx,y,w:D,h:D,r:D/2,rest:1.2});
+ const gw=D-36;kid(dial,{x:18,y:18,w:gw,h:gw,r:gw/2,rest:-.5});
+ const inner=D-72,top=kid(dial,{x:36,y:36,w:inner,h:inner,r:inner/2,rest:.4});
+ const ww=D*.44,well=kid(dial,{x:(D-ww)/2,y:(D-ww)/2,w:ww,h:ww,r:ww/2,rest:-.9});
+ const beads=[[30,'sleep'],[60,'sleep'],[90,'sleep'],[128,'water'],[150,'meals'],[176,'stretch'],[204,'water'],[232,'meals'],[262,'read']];
+ beads.forEach(([a,hh])=>{const R=D/2-27,t=a*Math.PI/180;const b=mk(dial.el,'bead',{left:px(D/2+R*Math.sin(t)-6),top:px(D/2-R*Math.cos(t)-6),background:HUE[hh],boxShadow:`0 0 8px ${HUE[hh]}`});dial.glow.push(b)});
+ text(dial,'c',0,D/2-30,'17:30').style.cssText+=`;width:${D}px;text-align:center`;
+ text(dial,'s',0,D/2+14,'9 logged today').style.cssText+=`;width:${D}px;text-align:center`;
+ y+=D+26;
+ const ROWS=[['Water','580 ml of 2 L','water',.3],['Meals','1 of 3, last 08:20','meals',.33],['Stretch','Last yesterday, 21:40','stretch',0],['Reading','usually 35 min','read',0]];
+ const row=(n,s,hh,fill)=>{const F=form({x:g,y,w:W-2*g,h:68,r:22,rest:1});
+  const gr=kid(F,{x:14,y:14,w:5,h:40,r:3,rest:-.36});if(fill){const b=mk(gr.el,'bar',{left:'0',bottom:'0',width:'5px',height:px(40*fill),background:HUE[hh],boxShadow:`0 0 7px ${HUE[hh]}`});F.glow.push(b)}
+  text(F,'n',32,13,n);text(F,'s',32,38,s);
+  const k=kid(F,{x:W-2*g-56,y:13,w:42,h:42,r:21,rest:1.5});F.texts.push(mk(k.el,'t k',{left:'0',top:'0',width:'42px',lineHeight:'40px',textAlign:'center'},'+'));
+  y+=80};
+ ROWS.forEach(r=>row(...r));
+ y+=6;
+ // the tall card: a weekly picture carved into a plateau
+ const C=form({x:g,y,w:W-2*g,h:372,r:26,rest:1});const cw=W-2*g;
+ text(C,'s',20,18,'Last 7 nights');text(C,'n',20,38,'Your usual night');
+ const well2=kid(C,{x:16,y:76,w:cw-32,h:170,r:18,rest:-.64});
+ for(let i=0;i<7;i++){const hgt=60+((i*37)%70),b=mk(well2.el,'bar',{left:px(18+i*((cw-68)/7)),bottom:'18px',width:'14px',height:px(hgt),background:HUE.sleep,opacity:i===6?1:.55,boxShadow:i===6?`0 0 8px ${HUE.sleep}`:'none'});C.glow.push(b)}
+ text(C,'s',20,266,'Mostly 23:30 to 07:10.');text(C,'s',20,288,'Two late nights, Tuesday and Friday.');
+ const k2=kid(C,{x:20,y:318,w:cw-40,h:38,r:14,rest:.85});C.texts.push(mk(k2.el,'t s',{left:'0',top:'0',width:px(cw-40),lineHeight:'38px',textAlign:'center'},'See the week'));
+ y+=392;
+ [['Bins out','Thursday, every week','ember',0],['Push-ups','Any time today','stretch',0],['Sketching','usually 40 min','read',0]].forEach(r=>row(...r));
+ y+=40;
+ host.style.height=y+'px';
+ forms.forEach(F=>{F.cx=F.y+F.h/2});
+ return {forms,total:y};
+}
+function applyForm(F,f,soft){
+ const m=f*(1-soft);
+ if(!F.flat)setH(F,F.rest*m);
+ F.kids.forEach(K=>setH(K,K.rest*m));
+ const o=ss(.12,.7,f);
+ if(Math.abs((F.lo??-1)-o)>.004){F.lo=o;F.texts.forEach(t=>t.style.opacity=o.toFixed(3));F.glow.forEach(t=>t.style.opacity=o.toFixed(3))}
+}
+
+/* ---- shared scroll physics: finger, momentum, rubber band, and a looped demo path ---- */
+function scroller(pane,getMax,onFrame){
+ const S={s:0,v:0,vs:0,auto:!STILL&&!RM,drag:null,ps:0,last:performance.now(),resumeAt:0,clock:0,visible:true};
+ const path=[[0,0],[1.1,0],[2.9,.42],[3.9,.42],[4.45,1],[5.8,1],[7.4,0],[8.2,0]];
+ const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+ const at=c=>{const T=path[path.length-1][0];c%=T;for(let i=1;i<path.length;i++)if(c<=path[i][0]){const[a,pa]=path[i-1],[b,pb]=path[i];const t=(c-a)/(b-a);return(pa+(pb-pa)*(i===4?t*t*(3-2*t):ease(t)))*getMax()}return 0};
+ pane.addEventListener('pointerdown',e=>{pane.setPointerCapture(e.pointerId);S.auto=false;S.drag={y:e.clientY,s:S.s,t:performance.now(),hist:[[performance.now(),e.clientY]]};S.v=0});
+ pane.addEventListener('pointermove',e=>{if(!S.drag)return;const max=getMax();let s=S.drag.s-(e.clientY-S.drag.y);if(s<0)s*=.45;if(s>max)s=max+(s-max)*.45;S.s=s;const n=performance.now();S.drag.hist.push([n,e.clientY]);while(S.drag.hist.length>2&&n-S.drag.hist[0][0]>90)S.drag.hist.shift()});
+ const up=()=>{if(!S.drag)return;const h=S.drag.hist,a=h[0],b=h[h.length-1];S.v=b[0]-a[0]>4?-(b[1]-a[1])/((b[0]-a[0])/1000):0;S.drag=null;S.resumeAt=performance.now()+3000};
+ pane.addEventListener('pointerup',up);pane.addEventListener('pointercancel',up);
+ pane.addEventListener('wheel',e=>{e.preventDefault();S.auto=false;S.v=0;S.s=clamp(S.s+e.deltaY,0,getMax());S.resumeAt=performance.now()+3000},{passive:false});
+ S.tick=now=>{const dt=Math.min(.034,(now-S.last)/1000);S.last=now;const prev=S.s,max=getMax();
+  if(S.auto){S.clock+=dt;S.s=at(S.clock)}
+  else if(!S.drag){
+   if(S.resumeAt&&now>S.resumeAt&&!STILL&&!RM){S.auto=true;S.resumeAt=0;// pick the loop up where the pane is
+    let best=0,bd=1e9;for(let c=0;c<8.2;c+=.05){const d=Math.abs(at(c)-S.s);if(d<bd){bd=d;best=c}}S.clock=best}
+   S.v*=Math.exp(-dt*3.2);S.s+=S.v*dt;
+   if(S.s<0){S.s+=(0-S.s)*(1-Math.exp(-dt*14));S.v*=.7}else if(S.s>max){S.s+=(max-S.s)*(1-Math.exp(-dt*14));S.v*=.7}
+   if(Math.abs(S.v)<4)S.v=0}
+  const inst=dt>0?(S.s-prev)/dt:0;S.vs+=(inst-S.vs)*(1-Math.exp(-dt*18));
+  onFrame(S,dt)};
+ return S}
+
+/* ================= 1 PIN SCREEN ================= */
+function pinSketch(pane,W,H){
+ const content=document.createElement('div');content.className='content';pane.appendChild(content);
+ const C=buildContent(content,W);const max=()=>Math.max(0,C.total-H);
+ const wave=document.createElement('div');wave.className='wave';pane.appendChild(wave);
+ const eT=document.createElement('div'),eB=document.createElement('div');eT.className=eB.className='edgefade';eT.style.top='0';eB.style.bottom='0';eT.style.height=eB.style.height='34px';
+ eT.style.background='linear-gradient(180deg,var(--surf) 18%,rgba(29,38,51,0))';eB.style.background='linear-gradient(0deg,var(--surf) 18%,rgba(29,38,51,0))';pane.appendChild(eT);pane.appendChild(eB);
+ const P={soft:0,wy:0,wa:0,wd:0};
+ const render=(s,dt)=>{
+  content.style.transform=`translate3d(0,${(-s).toFixed(2)}px,0)`;
+  const M=max(),Ft=70*ss(0,70,s),Fb=70*ss(0,70,M-s);
+  // a fast move pushes a soft ridge through the clay ahead of the motion
+  const tgt=.42*ss(250,2600,Math.abs(P.v||0));P.soft+=(tgt-P.soft)*(1-Math.exp(-dt/.3*3));
+  if(Math.abs(P.v||0)>1400&&P.wa<.05){P.wd=Math.sign(P.v);P.wy=P.wd>0?H*.78:H*.22;}
+  if(Math.abs(P.v||0)>1400)P.wa+=(1-P.wa)*(1-Math.exp(-dt*8));else P.wa*=Math.exp(-dt*3.2);
+  P.wy-=P.wd*Math.min(Math.abs(P.v||0),2600)*.35*dt;
+  if(P.wa>.01){wave.style.opacity=(P.wa*.9).toFixed(3);wave.style.transform=`translate3d(0,${(P.wy-70).toFixed(1)}px,0)`;
+   wave.style.background=`linear-gradient(${P.wd>0?'180deg':'0deg'},rgba(196,220,255,0) 0%,rgba(196,220,255,.10) 36%,rgba(196,220,255,.0) 50%,rgba(0,3,9,.40) 64%,rgba(0,3,9,0) 100%)`}else wave.style.opacity=0;
+  eT.style.opacity=(Ft/70).toFixed(3);eB.style.opacity=(Fb/70).toFixed(3);
+  for(const F of C.forms){const t0=F.y-s,bt0=t0+F.h,big=Math.max(0,F.h-100),t=t0+big,bt=bt0-big;
+   const f=(Ft>1?ss(2,2+Ft,t):(t>=-1?1:0))*(Fb>1?ss(H-2,H-2-Fb,bt):(bt<=H+1?1:0));
+   const vis=!(bt0<-4||t0>H+4);F.el.style.visibility=vis&&(f>.002||F.flat)?'visible':'hidden';if(!vis)continue;
+   const ridge=P.wa>.01?.55*P.wa*Math.exp(-Math.pow((t0+F.h/2-P.wy)/70,2)):0;
+   const pull=(1-f)*9;F.el.style.transform=pull>.05?`scale(${((F.w-2*pull)/F.w).toFixed(4)},${((F.h-2*pull)/F.h).toFixed(4)})`:'';
+   applyForm(F,Math.min(1.4,f+ridge*f),P.soft)}};
+ return {max,render,P};
+}
+
+/* ================= 2 ROLLED SHEET ================= */
+function rollSketch(pane,W,H){
+ pane.style.perspective='860px';pane.style.background='#0C1118';pane.style.perspectiveOrigin='50% 50%';
+ const R=86,arc=Math.PI/2*R,step=7,strips=[];
+ const make=(top,h)=>{const o=document.createElement('div');o.className='strip';o.style.top=top+'px';o.style.height=h+'px';
+  const inner=document.createElement('div');inner.className='content';inner.style.background='var(--surf)';
+  o.appendChild(inner);pane.appendChild(o);const C=buildContent(inner,W);C.forms.forEach(F=>applyForm(F,1,0));const gr=document.createElement('div');gr.className='grain';gr.style.background=GRAIN;gr.style.backgroundSize='160px 160px';inner.appendChild(gr);return {o,inner,top,C}};
+ // flat middle
+ const mid=make(R,H-2*R);strips.push(mid);
+ // the two drums: each strip is a band of the sheet, placed on the cylinder by its arc distance
+ const n=Math.ceil(arc/step);
+ for(const side of [-1,1])for(let i=0;i<n;i++){const u0=i*step,u1=Math.min(arc,u0+step),uc=(u0+u1)/2,th=uc/R;
+  const flatTop=side<0?R-u1:H-R+u0,hh=u1-u0+.9;const S=make(flatTop-.45,hh);
+  const yc=flatTop+(u1-u0)/2,yScreen=side<0?R-R*Math.sin(th):H-R+R*Math.sin(th),z=-R*(1-Math.cos(th));
+  S.o.style.transformOrigin='50% 50%';S.o.style.transform=`translate3d(0,${(yScreen-yc).toFixed(2)}px,${z.toFixed(2)}px) rotateX(${(side<0?th:-th).toFixed(4)}rad)`;
+  // same light: L from top-left-front; a face turning up catches it, a face turning down loses it
+  const dot=(side<0?.6*Math.sin(th):-.6*Math.sin(th))+.74*Math.cos(th)-.74;
+  const sh=document.createElement('div');sh.className='shade';sh.style.background=dot>0?`rgba(196,220,255,${(dot*.32).toFixed(3)})`:`rgba(0,3,9,${Math.min(.85,-dot*.62+th*.18).toFixed(3)})`;S.o.appendChild(sh);
+  S.o.style.zIndex=String(2);strips.push(S)}
+ // the rollers' own form behind the turn: a dark slot so the sheet reads as going over and away
+ for(const side of [-1,1]){const d=document.createElement('div');d.className='drum';d.style.height='10px';d.style[side<0?'top':'bottom']='0';
+  d.style.background=`linear-gradient(${side<0?'180deg':'0deg'},rgba(0,3,9,.55),rgba(0,3,9,0))`;pane.appendChild(d)}
+ const total=strips[0].C.total;const max=()=>Math.max(0,total-H);
+ const render=s=>{for(const S of strips)S.inner.style.transform=`translate3d(0,${(-(S.top+s)).toFixed(2)}px,0)`};
+ return {max,render};
+}
+
+/* ================= 4 RE-SCULPT ================= */
+function sculptSketch(pane,W,H){
+ const content=document.createElement('div');content.className='content';pane.appendChild(content);
+ const C=buildContent(content,W);
+ // pages: cut only between forms, each new page starts its first form just under the status bar
+ const pages=[0];{let start=0;for(const F of C.forms){if(F.y+F.h>start+H-12&&F.y-58>start){start=F.y-58;pages.push(start)}}}
+ const dots=document.createElement('div');dots.className='dots';dots.innerHTML=pages.map(()=>'<i></i>').join('');pane.appendChild(dots);
+ const Q={page:0,target:0,t:0,anim:null,auto:!STILL&&!RM,clock:0,resumeAt:0,drag:null,dir:1};
+ const show=(off,phase,rising)=>{content.style.transform=`translate3d(0,${-off}px,0)`;
+  for(const F of C.forms){const t=F.y-off,vis=t>=-1&&t+F.h<=H-12;F.el.style.visibility=vis?'visible':'hidden';if(!vis)continue;
+   const di=clamp(t/H,0,1),p=clamp((phase-di*.4)/.6,0,1),e=p*p*(3-2*p),f=rising?e:1-e;
+   const pull=(1-f)*9;F.el.style.transform=pull>.05?`scale(${((F.w-2*pull)/F.w).toFixed(4)},${((F.h-2*pull)/F.h).toFixed(4)})`:'';applyForm(F,f,0)}};
+ const render=()=>{const t=Q.t;if(t<=1)show(pages[Q.page],t,false);else show(pages[Q.target],t-1,true);
+  [...dots.children].forEach((d,i)=>d.classList.toggle('on',i===(t>1?Q.target:Q.page)))};
+ const go=(to,dur)=>{Q.target=to;Q.anim={from:Q.t,to:2,t0:performance.now(),dur}};
+ pane.addEventListener('pointerdown',e=>{pane.setPointerCapture(e.pointerId);Q.auto=false;Q.anim=null;Q.drag={y:e.clientY,t:Q.t}});
+ pane.addEventListener('pointermove',e=>{if(!Q.drag)return;const dy=e.clientY-Q.drag.y;
+  if(Q.drag.t===0){const to=dy<0?Q.page+1:Q.page-1;if(to<0||to>=pages.length){Q.t=0;render();return}Q.target=to}
+  Q.t=clamp(Q.drag.t+Math.abs(dy)/150,0,2);render()});
+ const up=()=>{if(!Q.drag)return;Q.drag=null;Q.anim={from:Q.t,to:Q.t>.85?2:0,t0:performance.now(),dur:Q.t>.85?(2-Q.t)*420:Q.t*420};Q.resumeAt=performance.now()+3000};
+ pane.addEventListener('pointerup',up);pane.addEventListener('pointercancel',up);
+ const tick=now=>{
+  if(Q.anim){const a=Q.anim,k=a.dur>0?clamp((now-a.t0)/a.dur,0,1):1;Q.t=a.from+(a.to-a.from)*k;if(k>=1){Q.anim=null;if(Q.t>=2){Q.page=Q.target;Q.t=0}else Q.t=0;Q.clock=now}}
+  else if(Q.auto&&now-Q.clock>1500){let to=Q.page+Q.dir;if(to>=pages.length||to<0){Q.dir*=-1;to=Q.page+Q.dir}go(to,1300)}
+  else if(!Q.auto&&!Q.drag&&Q.resumeAt&&now>Q.resumeAt&&!STILL&&!RM){Q.auto=true;Q.resumeAt=0;Q.clock=now}
+  render()};
+ render();
+ return {tick,Q,pages,render};
+}
+
+/* ---- page ---- */
+const CAP=[['1','Pin screen.','The clay never moves; shapes rise out of it as they come in and sink flat before the edge.'],
+ ['2','Rolled sheet.','The clay runs over rollers at the top and bottom; content curves away around them in the same light.'],
+ ['4','Re-sculpt.','The pane smooths flat, then the next part is pressed in, a page at a time.']];
+const row=document.getElementById('row');let SK=[];
+function build(){
+ row.innerHTML='';SK=[];
+ const pw=Math.min(340,window.innerWidth-32),ph=Math.round(pw*2.08);
+ document.documentElement.style.setProperty('--pw',pw+'px');document.documentElement.style.setProperty('--ph',ph+'px');
+ const W=pw-14,H=ph-14;
+ CAP.forEach((c,i)=>{const cell=document.createElement('div');cell.className='cell'+(i===cur?' on':'');
+  cell.innerHTML=`<div class="phone"><div class="pane" id="pane${i}"><div class="status"><span>9:41</span><i></i><span>100%</span></div><div class="grain"></div></div></div><p class="cap"><b>${c[0]}</b><b>${c[1]}</b>${c[2]}</p>`;
+  row.appendChild(cell);
+  const pane=cell.querySelector('.pane');pane.querySelector('.grain').style.background=`${GRAIN}`;pane.querySelector('.grain').style.backgroundSize='160px 160px';
+  if(i===1)pane.querySelector('.grain').style.display='none';// on the rolled sheet the grain travels with the sheet
+  if(i===2){const sk=sculptSketch(pane,W,H);SK.push({cell,kind:4,sk});return}
+  const sk=i===0?pinSketch(pane,W,H):rollSketch(pane,W,H);
+  const S=scroller(pane,sk.max,(S,dt)=>{if(sk.P)sk.P.v=S.vs;sk.render(S.s,dt)});
+  sk.render(0,0.016);SK.push({cell,kind:i?2:1,sk,S})});
+}
+let cur=0;
+document.querySelectorAll('.sw button').forEach(b=>b.addEventListener('click',()=>{cur=+b.dataset.k;document.querySelectorAll('.sw button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));SK.forEach((o,i)=>o.cell.classList.toggle('on',i===cur))}));
+makeGrain();build();
+let rw=window.innerWidth;addEventListener('resize',()=>{if(Math.abs(window.innerWidth-rw)>40){rw=window.innerWidth;build()}});
+const loop=now=>{SK.forEach(o=>{if(o.cell.offsetParent===null)return;if(o.kind===4)o.sk.tick(now);else o.S.tick(now)});requestAnimationFrame(loop)};
+requestAnimationFrame(loop);
+// hooks for frame strips: SKETCH.pin(s, v), SKETCH.roll(s), SKETCH.sculpt(page, target, t)
+window.SKETCH={
+ pin(s,v){const o=SK[0];o.S.auto=false;o.S.resumeAt=0;o.S.v=0;o.S.s=s;o.S.vs=v||0;o.sk.P.v=v||0;o.sk.P.soft=.42*ss(250,2600,Math.abs(v||0));if(Math.abs(v||0)>1400){o.sk.P.wa=1;o.sk.P.wd=Math.sign(v);o.sk.P.wy=H0()*.5}else o.sk.P.wa=0;o.S.tick=()=>o.sk.render(o.S.s,.016);o.sk.render(s,.016)},
+ roll(s){const o=SK[1];o.S.auto=false;o.S.resumeAt=0;o.S.tick=()=>o.sk.render(s);o.sk.render(s)},
+ sculpt(page,target,t){const o=SK[2];const Q=o.sk.Q;Q.auto=false;Q.resumeAt=0;Q.anim=null;Q.page=page;Q.target=target;Q.t=t;o.sk.tick=()=>o.sk.render();o.sk.render()},
+ max(i){return SK[i].sk.max?SK[i].sk.max():SK[i].sk.pages.length},
+ pages(){return SK[2].sk.pages}
+};
+function H0(){return document.getElementById('pane0').clientHeight}
+})();
+</script>
+</body>
+</html>
