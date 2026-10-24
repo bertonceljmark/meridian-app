@@ -50,8 +50,8 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
    .face      lit top face
    .fl        flush overlay: surface colour, masked by (1 - height)
    JS writes only custom properties: --m (shadow mask), --mc (contact mask),
-   --mf (flush mask), --rx, --oy, --ta, --sheen                                   */
-.clay{position:relative;border-radius:22px;--pop:0;--k:calc(1 + var(--pop) * 2.5);--m:linear-gradient(#000,#000);--mc:linear-gradient(#000,#000);--mf:linear-gradient(transparent,transparent);--rx:0deg;--oy:50%;--ta:1;--sheen:0}
+   --mf (flush mask), --rx, --oy, --ta, --hp, --pop                                   */
+.clay{position:relative;border-radius:22px;--pop:0;--k:calc(1 + var(--pop) * 2.5);--m:linear-gradient(#000,#000);--mc:linear-gradient(#000,#000);--mf:linear-gradient(transparent,transparent);--rx:0deg;--oy:50%;--ta:1;--hp:1}
 .plate{position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   transform:perspective(460px) rotateX(var(--rx)) translateZ(calc(var(--pop) * 50px));transform-origin:50% var(--oy)}
 .sh{position:absolute;inset:-56px;-webkit-mask-image:var(--m);mask-image:var(--m);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
@@ -64,14 +64,8 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 .face{position:absolute;inset:0;border-radius:inherit;
   background:linear-gradient(150deg,var(--face-hi) 0%,#1f2937 55%,var(--face-lo) 100%);
   box-shadow:inset 1px 1px 0 rgba(150,175,210,.07),inset -1px -1px 0 rgba(0,0,0,.18)}
-.face::after{content:"";position:absolute;inset:0;border-radius:inherit;
-  background:linear-gradient(180deg,rgba(170,195,230,.10),rgba(170,195,230,0) 70%);opacity:max(var(--sheen),0)}
-.face::before{content:"";position:absolute;inset:0;border-radius:inherit;
-  background:linear-gradient(0deg,rgba(0,0,0,.22),rgba(0,0,0,0) 80%);opacity:max(calc(var(--sheen) * -1),0)}
 .fl{position:absolute;inset:-1px;border-radius:inherit;background:var(--ink);
-  -webkit-mask-image:var(--mf);mask-image:var(--mf);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-  /* engraved seam: where the row lies flush it is a shape cut into the surface, lit from upper-left */
-  box-shadow:inset 1.5px 1.5px 1px rgba(5,8,14,.55),inset -1px -1px 1px rgba(120,142,175,.16)}
+  -webkit-mask-image:var(--mf);mask-image:var(--mf);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .content{position:relative;opacity:var(--ta)}
 
 /* ---------- rows ---------- */
@@ -82,10 +76,10 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 .fig{font-size:34px;font-weight:300;letter-spacing:-.02em;line-height:1.05;margin-top:6px}
 .fig small{font-size:16px;font-weight:400;color:var(--text-2);letter-spacing:0;margin-left:4px}
 .groove{height:10px;border-radius:999px;margin-top:14px;background:#1b2330;
-  box-shadow:inset 2px 2px 4px rgba(6,10,16,.8),inset -1px -1px 3px rgba(70,88,114,.3);overflow:hidden}
+  box-shadow:inset 2px 2px 4px rgba(6,10,16,calc(.8 * var(--hp))),inset -1px -1px 3px rgba(70,88,114,calc(.3 * var(--hp)));overflow:hidden}
 .groove i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#5f8fc9,#8fc3ff)}
 .dots{display:flex;gap:10px;margin-top:14px}
-.dots i{width:22px;height:22px;border-radius:50%;background:#1b2330;box-shadow:inset 2px 2px 4px rgba(6,10,16,.8),inset -1px -1px 3px rgba(70,88,114,.3)}
+.dots i{width:22px;height:22px;border-radius:50%;background:#1b2330;box-shadow:inset 2px 2px 4px rgba(6,10,16,calc(.8 * var(--hp))),inset -1px -1px 3px rgba(70,88,114,calc(.3 * var(--hp)))}
 .dots i.on{background:radial-gradient(circle at 35% 30%,#b7dbff,#5f8fc9 70%);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 .withkey{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .slim{padding:15px 20px}
@@ -274,7 +268,7 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   }
   var fShadow = function(h){ return h; };
   var fContact = function(h){ return Math.min(1, h * 2.2) * (1 - h * 0.6); };
-  var fFlush = function(h){ return 1 - Math.min(1, h * 1.6); };
+  var fFlush = function(h){ return 1 - Math.min(1, h * 1.3); };   // edge/face emerge in proportion to height
 
   function set(it, k, v){ if (it.last[k] !== v){ it.last[k] = v; it.el.style.setProperty(k, v); } }
 
@@ -295,7 +289,7 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
         var near = (y0 - E0) < B + P || (E1 - y1) < B + P;
         set(it, '--m', near ? grad(y0, -P, it.h + P, fShadow, P) : 'none'); set(it, '--mc', 'linear-gradient(transparent,transparent)');
         set(it, '--mf', 'linear-gradient(transparent,transparent)');
-        set(it, '--rx', '0deg'); set(it, '--ta', '1'); set(it, '--sheen', '0');
+        set(it, '--rx', '0deg'); set(it, '--ta', '1'); set(it, '--hp', '1');
         continue;
       }
       set(it, '--m',  grad(y0, -P, it.h + P, fShadow, P));
@@ -310,8 +304,9 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
       var deg = MAXDEG * slope * Math.min(1, 90 / it.h) * fade;  // tall rows tilt less
       set(it, '--rx', a(deg) + 'deg');
       set(it, '--oy', slope >= 0 ? '0%' : '100%');        // hinge on the edge side
-      set(it, '--ta', String(a(.62 + .38 * Math.max(hm, (h0 + h1) / 2))));
-      set(it, '--sheen', String(a(slope)));
+      var hav = Math.max(hm, (h0 + h1) / 2);
+      set(it, '--ta', String(a(.74 + .26 * hav)));       // printed ink: slightly lower contrast when flush
+      set(it, '--hp', String(a(hav)));                  // inset details (track, dots) flatten to print
     }
   }
 
