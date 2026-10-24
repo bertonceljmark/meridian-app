@@ -946,6 +946,20 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .glowsurf .tok .hp.some,.glowsurf .tok.done .hp{box-shadow:inset 1px 1px 1px rgba(0,0,0,.3),0 0 10px var(--hf)}
 .glowsurf .head h1{text-shadow:2px 3px 6px rgba(var(--sd),.7),-1px -1px 1px rgba(var(--sl),.12)}
 
+/* v6: the dial stays full width but gives back height, so Now's first row is on screen at first paint */
+.head{padding-top:50px}
+.head h1{font-size:30px}
+.head .sub{margin-top:3px;font-size:14px}
+.head .ctxchip{margin-top:7px;height:30px}
+.arc.hero.h1 > .hero-dial{padding:0 0 2px}
+.panel{padding:9px 15px 9px}
+.panel .big{margin-top:4px;font-size:36px}
+.panel .ttl,.panel .ln{margin-top:5px}
+.panel .mini{padding-top:4px}
+/* a small sparkline (nights, splits) sits beside its line, not under it; bigger charts (the week) keep their own row */
+.panel:has(.mini > .nights,.mini > .splits) .mini{position:absolute;right:15px;bottom:10px;padding-top:0;margin:0}
+.panel:has(.mini > .nights,.mini > .splits) .ln{padding-right:88px}
+.sec{margin-top:6px}
 @media (prefers-reduced-motion: reduce){.nm-r,.key,.btn,.chip{transition:none!important}}
 
 @media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -1404,7 +1418,7 @@ const hueC = h => h ? h.f : '#E9E2D8';
 // drag the ring to read any hour in the centre, tap the centre (or hold anywhere) for the Day sheet.
 const DIAL = { focus: null, scrub: null };
 const clockMin = t => ((t % 1440) + 1440) % 1440;
-function dialGeo(W) { const D = Math.min(W - 40, 380), R = D / 2; return { D, R, c: R, rg: R - 46, wr: Math.round(D * .22) }; }
+function dialGeo(W) { const D = Math.min(W - 64, 372), R = D / 2; return { D, R, c: R, rg: R - 46, wr: Math.round(D * .22) }; }
 function dialClusters(D, G) {
   const out = [];
   D.logs.forEach(l => { const hr = Math.floor(clockMin(l.t) / 60); let k = out.find(q => q.id === l.e.item && q.hr === hr); if (!k) out.push(k = { id: l.e.item, hr, h: l.h, x: l.x, logs: [] }); k.logs.push(l); });
@@ -1490,6 +1504,12 @@ function bindDial() {
   });
   disc.addEventListener('pointermove', e => { if (!st) return; if (!st.moved && Math.hypot(e.clientX - st.x, e.clientY - st.y) > 6) { st.moved = true; clearTimeout(st.lp); if (st.ring) try { disc.setPointerCapture(st.id); } catch (er) {} } if (st.ring && st.moved) { const q = minAt(e); const hr = Math.floor(q.m / 60); if (DIAL.scrub == null || Math.floor(DIAL.scrub / 60) !== hr) haptic(3); DIAL.focus = null; DIAL.scrub = q.m; dialApply(); } });
   const up = e => { if (!st) return; clearTimeout(st.lp); if (st.ring && !st.bead && !st.moved && !st.held) { const q = minAt(e); DIAL.focus = null; DIAL.scrub = q.m; dialApply(); } disc._swallow = st.held || st.moved; st = null; };
+  // a finger that lands on the ring is scrubbing, not scrolling: hold the page still for that gesture only
+  // (the disc stays touch-action:pan-y, so a swipe that starts inside the ring still scrolls Today)
+  let ringTouch = false;
+  disc.addEventListener('touchstart', e => { const t = e.touches[0], b = disc.getBoundingClientRect(), R = b.width / 2, r = Math.hypot(t.clientX - b.left - R, t.clientY - b.top - R), rg = +disc.dataset.rg; ringTouch = e.touches.length === 1 && r > rg - 30 && r < R - 2; }, { passive: true });
+  disc.addEventListener('touchmove', e => { if (ringTouch && e.cancelable) e.preventDefault(); }, { passive: false });
+  disc.addEventListener('touchend', () => { ringTouch = false; }, { passive: true });
   disc.addEventListener('pointerup', up); disc.addEventListener('pointercancel', () => { if (st) clearTimeout(st.lp); st = null; });
   disc.addEventListener('click', e => { if (disc._swallow) { e.stopPropagation(); disc._swallow = false; } }, true);
   disc.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); DIAL.focus = null; DIAL.scrub = clockMin((DIAL.scrub == null ? Math.floor(S.now / 60) * 60 : Math.floor(DIAL.scrub / 60) * 60) + (e.key === 'ArrowRight' ? 60 : -60)) + 30; dialApply(); } });
