@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tilt Scroll</title>
+<title>Rise Scroll</title>
 <style>
 :root{
   --ink:#1D2633;            /* the clay surface */
@@ -15,7 +15,7 @@
   --text-2:#8f9cb0;
   --text-3:#66748a;
   --accent:#8fc3ff;
-  --band:56px;
+  --band:44px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--ink);color:var(--text);
@@ -44,28 +44,27 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 .inner{padding:calc(var(--band) + 4px) 20px calc(var(--band) + 40px);display:flex;flex-direction:column;gap:18px}
 
 /* ---------- clay object ----------
+   Each row / key has ONE height for its whole shape (no tilt, no along-the-row ramp).
    .clay      positioned box, holds content
-   .plate     the physical body: rotates a little (rotateX about the edge-side end)
-   .sh        shadow layer, bigger than the plate, masked by the height ramp
+   .plate     the physical body (lifts a touch on the pop)
+   .sh        shadow layer: opacity = height, geometry scaled by --s
+   .shc       short contact shadow, strongest at mid height
    .face      lit top face
-   .fl        flush overlay: surface colour, masked by (1 - height)
-   JS writes only custom properties: --m (shadow mask), --mc (contact mask),
-   --mf (flush mask), --rx, --oy, --ta, --hp, --pop                                   */
-.clay{position:relative;border-radius:22px;--pop:0;--k:calc(1 + var(--pop) * 2.5);--m:linear-gradient(#000,#000);--mc:linear-gradient(#000,#000);--mf:linear-gradient(transparent,transparent);--rx:0deg;--oy:50%;--ta:1;--hp:1}
+   .fl        cover in the surface colour: hides the face (edge, bevel, corners) at height 0
+   JS writes only custom properties: --h, --s, --pop, --ta                         */
+.clay{position:relative;border-radius:22px;--h:1;--s:1;--pop:0;--ta:1;
+  --k:calc(var(--s) * (1 + var(--pop) * 2.5));--hp:var(--h)}
 .plate{position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  transform:perspective(460px) rotateX(var(--rx)) translateZ(calc(var(--pop) * 50px));transform-origin:50% var(--oy)}
-.sh{position:absolute;inset:-56px;-webkit-mask-image:var(--m);mask-image:var(--m);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
-.sh::before{content:"";position:absolute;inset:56px;border-radius:22px;
+  transform:perspective(460px) translateZ(calc(var(--pop) * 50px))}
+.sh{position:absolute;inset:0;border-radius:inherit;opacity:var(--h);
   box-shadow:calc(9px * var(--k)) calc(10px * var(--k)) calc(20px * var(--k)) var(--sh-dark),calc(-7px * var(--k)) calc(-7px * var(--k)) calc(16px * var(--k)) var(--sh-light),
-    calc(14px * var(--k)) calc(16px * var(--k)) 30px rgba(5,8,14,clamp(0, calc(var(--pop) * 5), .5))}
-.shc{position:absolute;inset:-56px;-webkit-mask-image:var(--mc);mask-image:var(--mc);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
-.shc::before{content:"";position:absolute;inset:56px;border-radius:22px;
-  box-shadow:2px 3px 4px rgba(7,11,18,.55),-1px -1px 2px rgba(80,98,126,.25)}
+    calc(12px * var(--k)) calc(14px * var(--k)) calc(22px * var(--k)) rgba(5,8,14,clamp(0, calc(var(--pop) * 5), .45))}
+.shc{position:absolute;inset:0;border-radius:inherit;opacity:calc(min(1, var(--h) * 2.2) * (1 - var(--h) * .6));
+  box-shadow:calc(2px * var(--s)) calc(3px * var(--s)) calc(4px * var(--s)) rgba(7,11,18,.55),calc(-1px * var(--s)) calc(-1px * var(--s)) calc(2px * var(--s)) rgba(80,98,126,.25)}
 .face{position:absolute;inset:0;border-radius:inherit;
   background:linear-gradient(150deg,var(--face-hi) 0%,#1f2937 55%,var(--face-lo) 100%);
   box-shadow:inset 1px 1px 0 rgba(150,175,210,.07),inset -1px -1px 0 rgba(0,0,0,.18)}
-.fl{position:absolute;inset:-1px;border-radius:inherit;background:var(--ink);
-  -webkit-mask-image:var(--mf);mask-image:var(--mf);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.fl{position:absolute;inset:-1px;border-radius:inherit;background:var(--ink);opacity:calc(1 - min(1, var(--h) * 1.3))}
 .content{position:relative;opacity:var(--ta)}
 
 /* ---------- rows ---------- */
@@ -89,7 +88,7 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 /* ---------- round keys ---------- */
 .key{width:58px;height:58px;border-radius:50%;flex:none;display:grid;place-items:center}
 .key .plate,.key .face{border-radius:50%}
-.key .sh::before,.key .shc::before{border-radius:50%}
+.key .sh,.key .shc{border-radius:50%}
 .key .content{font-size:26px;font-weight:300;color:var(--text);line-height:1}
 .key.big{width:76px;height:76px}
 .key.big .content{font-size:13px;font-weight:600;color:var(--text-2);text-align:center;line-height:1.2}
@@ -110,11 +109,11 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
       <div class="date">29 October</div>
     </div>
     <div class="toggle" role="group" aria-label="Scroll style">
-      <button id="bTilt" aria-pressed="true">Tilt</button>
+      <button id="bTilt" aria-pressed="true">Rise</button>
       <button id="bPlain" aria-pressed="false">Plain</button>
     </div>
   </header>
-  <div class="ramps" role="group" aria-label="Ramp curve"><span>Ramp</span>
+  <div class="ramps" role="group" aria-label="Rise curve"><span>Rise</span>
     <button data-ramp="smooth">Smooth</button><button data-ramp="late">Late rise</button><button data-ramp="quick">Quick rise</button>
   </div>
   <div class="wrap" id="wrap">
@@ -197,17 +196,13 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 <script>
 (function(){
   var q = new URLSearchParams(location.search);
-  var B = Math.max(10, parseFloat(q.get('band')) || 56);       // band height, px
-  var MAXDEG = q.has('tilt') ? parseFloat(q.get('tilt')) : 7; // rotateX at full slope
-  var P = 56;                                                  // shadow-layer padding (matches CSS)
+  var B = Math.max(8, parseFloat(q.get('band')) || 44);   // px a row travels, once fully visible, to reach full height
   var plain = q.get('mode') === 'plain';
   document.documentElement.style.setProperty('--band', B + 'px');
   if (q.get('guide') === '1') document.getElementById('wrap').classList.add('showguide');
 
   var list = document.getElementById('list');
   var els = [].slice.call(document.querySelectorAll('.clay'));
-
-  // build plate layers (decorative, behind content)
   els.forEach(function(el){
     var plate = document.createElement('div');
     plate.className = 'plate';
@@ -224,51 +219,32 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
     });
   }
 
-  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
-  function smooth(t){ return t * t * (3 - 2 * t); }
-  // height (0 flush .. 1 fully raised) at a y position inside the scroll viewport
-  // visible clip edges, in scroll-viewport coordinates (re-measured every frame)
-  var E0 = 0, E1 = 0, H = 0;
+  // visible clip edges in scroll-viewport coordinates, re-measured every frame
+  var E0 = 0, E1 = 0;
   function measureEdges(){
     var lr = list.getBoundingClientRect(), vv = window.visualViewport;
     var vTop = vv ? vv.offsetTop : 0, vBot = vv ? vv.offsetTop + vv.height : window.innerHeight;
-    H = list.clientHeight;
-    E0 = Math.max(0, vTop - lr.top);                 // header bottom / list top
-    E1 = Math.min(H, vBot - lr.top);                 // list bottom, or the visible viewport bottom if lower chrome covers it
+    E0 = Math.max(0, vTop - lr.top);
+    E1 = Math.min(list.clientHeight, vBot - lr.top);
   }
-  // ramp curves: t = 0 at the edge .. 1 at the inner edge of the band
+
+  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function smooth(t){ return t * t * (3 - 2 * t); }
+  // rise curves over t = travel past the edge / band
   var RAMPS = {
-    smooth: function(t){ return smooth(t); },                         // (a) v1
-    late:   function(t){ return smooth(clamp01((t - .35) / .65)); },  // (b) flush for the first 35%, then rises
-    quick:  function(t){ var u = 1 - t; return 1 - u * u * u; }       // (c) ease-out: rises early, settles
+    smooth: function(t){ return smooth(t); },
+    late:   function(t){ return smooth(clamp01((t - .35) / .65)); },
+    quick:  function(t){ var u = 1 - t; return 1 - u * u * u; }
   };
-  var ramp = RAMPS[q.get('ramp')] ? q.get('ramp') : 'late';
-  function heightAt(y){
-    if (plain) return 1;
-    var t = Math.min(clamp01((y - E0) / B), clamp01((E1 - y) / B));
-    return t <= 0 ? 0 : RAMPS[ramp](t);
-  }
+  var ramp = RAMPS[q.get('ramp')] ? q.get('ramp') : 'smooth';
   function a(v){ return Math.round(v * 1000) / 1000; }
 
-  // gradient from per-px samples; f maps height -> mask alpha
-  // stops: every ~8 px plus forced stops at the clip edges and the ramp's kinks, so the
-  // value exactly at the visible edge is always sampled (0) and never interpolated
-  var LATE0 = .35;
-  function grad(y0, from, to, f, off){
-    var span = to - from, n = Math.max(6, Math.min(24, Math.ceil(span / 8))), ys = [];
-    for (var i = 0; i <= n; i++) ys.push(from + span * i / n);
-    [E0, E0 + LATE0 * B, E0 + B, E1 - B, E1 - LATE0 * B, E1].forEach(function(e){
-      var ly = e - y0; if (ly > from && ly < to) ys.push(ly);
-    });
-    ys.sort(function(p, q){ return p - q; });
-    var s = 'linear-gradient(180deg';
-    for (var j = 0; j < ys.length; j++)
-      s += ',rgba(0,0,0,' + a(f(heightAt(y0 + ys[j]))) + ') ' + (Math.round((ys[j] + off) * 10) / 10) + 'px';
-    return s + ')';
-  }
-  var fShadow = function(h){ return h; };
-  var fContact = function(h){ return Math.min(1, h * 2.2) * (1 - h * 0.6); };
-  var fFlush = function(h){ return 1 - Math.min(1, h * 1.3); };   // edge/face emerge in proportion to height
+  // d = how far the row's edge-side end is inside the nearer clip edge (<= 0: crossing or off screen)
+  function travel(y0, y1){ return Math.min(y0 - E0, E1 - y1); }
+  function heightFor(d){ return plain ? 1 : d <= 0 ? 0 : RAMPS[ramp](clamp01(d / B)); }
+  // shadow reach (~30 px at full size) never crosses the clip edge: geometry is capped by d
+  var REACH = 32;
+  function shadowScale(h, d){ return plain ? 1 : Math.max(0, Math.min(h, d / REACH)); }
 
   function set(it, k, v){ if (it.last[k] !== v){ it.last[k] = v; it.el.style.setProperty(k, v); } }
 
@@ -277,41 +253,20 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
     measureEdges();
     for (var i = 0; i < items.length; i++){
       var it = items[i], y0 = it.top - st, y1 = y0 + it.h;
-      if (y1 < E0 - P - 10 || y0 > E1 + P + 10){ it.armed = true; it.wasRaised = false; continue; }  // off screen
-      var h0 = heightAt(y0), h1 = heightAt(y1), hm = heightAt((y0 + y1) / 2);
-      var raised = h0 > .999 && h1 > .999 && hm > .999;
-      // pop: arm once the item is well inside a band, fire when it first comes fully up
-      if (!raised && Math.min(h0, h1, hm) < .3) it.armed = true;
-      if (raised && it.wasRaised === false && it.armed && !plain){ it.armed = false; startPop(it); }
-      it.wasRaised = raised;
-      if (raised){
-        // a raised row's shadow (and pop shadow) can reach ~60 px; keep it masked near the edges
-        var near = (y0 - E0) < B + P || (E1 - y1) < B + P;
-        set(it, '--m', near ? grad(y0, -P, it.h + P, fShadow, P) : 'none'); set(it, '--mc', 'linear-gradient(transparent,transparent)');
-        set(it, '--mf', 'linear-gradient(transparent,transparent)');
-        set(it, '--rx', '0deg'); set(it, '--ta', '1'); set(it, '--hp', '1');
-        continue;
-      }
-      set(it, '--m',  grad(y0, -P, it.h + P, fShadow, P));
-      set(it, '--mc', grad(y0, -P, it.h + P, fContact, P));
-      set(it, '--mf', grad(y0, -1, it.h + 1, fFlush, 1));
-      var slope = h1 - h0;                                // >0: far (lower) end raised
-      // tilt hinges on the row's edge-side end. That end must be visible: a row that crosses
-      // the clip edge gets no tilt at all (it lies flat where it is cut), and the tilt fades in
-      // over the flush part of the band as the end moves away from the edge, so nothing jumps.
-      var dist = slope >= 0 ? y0 - E0 : E1 - y1;
-      var fade = dist <= 0 ? 0 : smooth(clamp01(dist / (LATE0 * B)));
-      var deg = MAXDEG * slope * Math.min(1, 90 / it.h) * fade;  // tall rows tilt less
-      set(it, '--rx', a(deg) + 'deg');
-      set(it, '--oy', slope >= 0 ? '0%' : '100%');        // hinge on the edge side
-      var hav = Math.max(hm, (h0 + h1) / 2);
-      set(it, '--ta', String(a(.74 + .26 * hav)));       // printed ink: slightly lower contrast when flush
-      set(it, '--hp', String(a(hav)));                  // inset details (track, dots) flatten to print
+      var d = travel(y0, y1), h = heightFor(d);
+      it.d = d; it.hv = h;
+      var full = h > .999;
+      if (!full && h < .3) it.armed = true;                       // re-arm only once well back in the band
+      if (full && it.wasFull === false && it.armed && !plain){ it.armed = false; startPop(it); }
+      it.wasFull = full;
+      set(it, '--h', String(a(h)));
+      set(it, '--s', String(a(shadowScale(h, d))));
+      set(it, '--ta', String(a(.74 + .26 * h)));                  // printed ink a little softer when flush
     }
   }
 
-  // ---- pop: damped spring, time based (response .35 s, damping ratio .55) ----
-  var POP = q.has('pop') ? parseFloat(q.get('pop')) : 0.08;   // peak extra height (fraction)
+  // ---- pop: damped spring on reaching full height, time based (response .35 s, damping .55) ----
+  var POP = q.has('pop') ? parseFloat(q.get('pop')) : 0.08;
   var W0 = 2 * Math.PI / 0.35, Z = 0.55, WD = W0 * Math.sqrt(1 - Z * Z);
   var TPEAK = Math.atan(Math.sqrt(1 - Z * Z) / Z) / WD;
   var NORM = Math.exp(-Z * W0 * TPEAK) * Math.sin(WD * TPEAK);
@@ -322,12 +277,12 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   function tick(now){
     for (var i = popping.length - 1; i >= 0; i--){
       var it = popping[i], t = pinned != null ? pinned / 1000 : (now - it.popT0) / 1000;
-      var v = (plain || !it.wasRaised) ? 0 : springAt(t);   // cancelled the moment any part re-enters a band
-      if (v === 0 && pinned != null && !it.wasRaised){ set(it, '--pop', '0'); popping.splice(i, 1); continue; }
+      var ok = !plain && it.wasFull;                              // cancelled the moment it drops below full
+      var v = ok ? springAt(t) : 0;
       set(it, '--pop', String(a(v)));
-      if (v === 0 && pinned == null) popping.splice(i, 1);
+      if (!ok || (v === 0 && pinned == null)) popping.splice(i, 1);
     }
-    if (popping.length && pinned == null){ requestAnimationFrame(tick); } else ticking = false;
+    if (popping.length && pinned == null) requestAnimationFrame(tick); else ticking = false;
   }
 
   var queued = false;
@@ -340,17 +295,15 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   function setMode(p){ plain = p; bT.setAttribute('aria-pressed', String(!p)); bP.setAttribute('aria-pressed', String(p)); frame(); }
   bT.addEventListener('click', function(){ setMode(false); });
   bP.addEventListener('click', function(){ setMode(true); });
-
   var chips = [].slice.call(document.querySelectorAll('.ramps button'));
   function setRamp(n){ ramp = n; chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c.dataset.ramp === n)); }); frame(); }
   chips.forEach(function(c){ c.addEventListener('click', function(){ setRamp(c.dataset.ramp); }); });
-  setRamp(ramp);
 
-  measure(); setMode(plain);
+  measure(); setRamp(ramp); setMode(plain);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measure(); frame(); });
-  window.__tilt = { frame: frame, measure: measure, band: B, peakMs: TPEAK * 1000,
-    edges: function(){ measureEdges(); return { E0: E0, E1: E1, H: H }; }, heightAt: function(y){ return heightAt(y); },
-    // test hook for screenshots: freeze running pops at a given ms (null to release)
+  window.__tilt = { frame: frame, band: B, peakMs: TPEAK * 1000,
+    edges: function(){ measureEdges(); return { E0: E0, E1: E1 }; },
+    state: function(){ return items.map(function(it){ return { d: it.d, h: it.hv, pop: it.el.style.getPropertyValue('--pop') || '0', s: it.el.style.getPropertyValue('--s') }; }); },
     pinPopAt: function(ms){ pinned = ms; ticking = false; tick(performance.now()); } };
 })();
 </script>
