@@ -9,8 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist:wght@300..700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#0E0D0C; --ink2:#161513; --ink3:#1F1D1A; --line:rgba(243,237,228,.09); --line2:rgba(243,237,228,.16);
-  --cream:#F3EDE4; --t2:rgba(243,237,228,.62); --t3:rgba(243,237,228,.40); --t4:rgba(243,237,228,.22);
+  --ink:#0E0D0C; --ink2:#161513; --ink3:#1F1D1A; --line:rgba(var(--tx),.09); --line2:rgba(var(--tx),.16);
+  --cream:#F3EDE4; --t2:rgba(var(--tx),.62); --t3:rgba(var(--tx),.40); --t4:rgba(var(--tx),.22);
   --sun:#FF6B3D; --sun2:#FF8F5E; --sunInk:#2A0E04; --night:#8E93E8; --rec:#8F887E;
   --sky:#FF8A5B;
   --disp:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
@@ -29,9 +29,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 /* status bar + scrolled bar */
 .sbar{position:absolute;top:0;left:0;right:0;height:50px;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:6px 22px 0 34px;pointer-events:none}
 .sbar .clk{font:600 16px/1 var(--ui);letter-spacing:-.01em}
-.sbar .ddata{pointer-events:auto;font:500 12px/1 var(--ui);color:var(--t2);padding:7px 10px;border-radius:99px;background:rgba(243,237,228,.07);border:1px solid var(--line)}
+.sbar .ddata{pointer-events:auto;font:500 12px/1 var(--ui);color:var(--t2);padding:7px 10px;border-radius:99px;background:rgba(var(--tx),.07);border:1px solid var(--line)}
 .sbar .ddata b{color:var(--cream);font-weight:600}
-.topbar{position:absolute;top:0;left:0;right:0;height:92px;z-index:20;background:rgba(14,13,12,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;font:600 16px/1 var(--disp);opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .25s var(--ease);pointer-events:none}
+.topbar{position:absolute;top:0;left:0;right:0;height:92px;z-index:20;background:rgba(var(--surfRGB),.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;font:600 16px/1 var(--disp);opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .25s var(--ease);pointer-events:none}
 .topbar.on{opacity:1;transform:none}
 
 /* sky: a flat light at the sun's place, coloured by the hour */
@@ -44,7 +44,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .head .sub .ctx{color:var(--cream)}
 .hicons{display:flex;gap:2px;margin-top:-4px;margin-right:-10px}
 .ib{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;color:var(--t2)}
-.ib:active{background:rgba(243,237,228,.06)}
+.ib:active{background:rgba(var(--tx),.06)}
 .ib.on{color:var(--cream)}
 .ib .n{position:absolute;top:6px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--cream);color:var(--ink);font:700 10px/16px var(--ui);text-align:center}
 .ctxchip{display:inline-flex;align-items:center;gap:6px;margin-top:10px;height:30px;padding:0 12px;border-radius:99px;border:1px solid var(--line2);font:500 13px/1 var(--ui);color:var(--cream)}
@@ -91,23 +91,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .panel .mini{margin-top:auto;padding-top:10px}
 .panel .x{position:absolute;top:-8px;right:4px;width:36px;height:36px;display:grid;place-items:center;color:var(--t4);border-radius:12px}
 .nights{display:flex;align-items:flex-end;gap:5px;height:34px}
-.nights i{width:7px;border-radius:2px;background:rgba(243,237,228,.22)}
+.nights i{width:7px;border-radius:2px;background:rgba(var(--tx),.22)}
 .nights i.on{background:var(--night)}
 .nights i.gap{height:6px!important;background:none;border:1px dashed var(--t4)}
 .splits{display:flex;align-items:flex-end;gap:5px;height:30px}
-.splits i{width:9px;border-radius:2px 2px 0 0;background:rgba(243,237,228,.22)}
+.splits i{width:9px;border-radius:2px 2px 0 0;background:rgba(var(--tx),.22)}
 .splits i.best{background:var(--cream)}
 .prange{display:grid;gap:7px}
 .prange .r{display:grid;grid-template-columns:96px 1fr 52px;align-items:center;gap:8px;font:400 12.5px var(--ui);color:var(--t2)}
 .prange .t{position:relative;height:10px}
 .prange .t:before{content:"";position:absolute;left:0;right:0;top:4.5px;height:1px;background:var(--line)}
-.prange .t .s{position:absolute;top:3px;height:4px;border-radius:2px;background:rgba(243,237,228,.3)}
+.prange .t .s{position:absolute;top:3px;height:4px;border-radius:2px;background:rgba(var(--tx),.3)}
 .prange .t .m{position:absolute;top:0;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--cream)}
 .prange .r.b .t .m{background:var(--sun2)}
 .prange .v{text-align:right;color:var(--cream)}
 .weekd{display:flex;gap:10px;align-items:flex-end;height:40px}
 .weekd .c{display:flex;flex-direction:column-reverse;gap:2px;align-items:center;width:18px}
-.weekd .c i{width:6px;height:3px;border-radius:1px;background:rgba(243,237,228,.5)}
+.weekd .c i{width:6px;height:3px;border-radius:1px;background:rgba(var(--tx),.5)}
 .weekd .c span{font:500 10px var(--ui);color:var(--t3);margin-top:3px}
 .weekd .c.sick span{color:var(--night)}
 .weekd .c.now i{background:var(--sun2)}
@@ -152,7 +152,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .key.down{transform:translateY(2px) scale(.93)}
 .key.rel{animation:rel .38s var(--spring)}
 @keyframes rel{0%{transform:translateY(2px) scale(.93)}100%{transform:none}}
-.k-round{width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(243,237,228,.34);overflow:hidden}
+.k-round{width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(var(--tx),.34);overflow:hidden}
 .k-round .fill{position:absolute;left:-2px;right:-2px;bottom:-2px;height:0;background:var(--sun)}
 .k-round.done{border-color:var(--sun)}
 .k-round.done .fill{height:calc(100% + 4px)}
@@ -161,33 +161,33 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .k-round svg{position:relative;z-index:1}
 .k-round .ck{stroke:var(--sunInk);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22;stroke-dashoffset:22}
 .k-round.done .ck{stroke-dashoffset:0}
-.k-round .ck.ghost{stroke:rgba(243,237,228,.28);stroke-dashoffset:0}
+.k-round .ck.ghost{stroke:rgba(var(--tx),.28);stroke-dashoffset:0}
 .k-round.done.anim .ck{animation:ck .35s .32s var(--ease) both}
 @keyframes ck{from{stroke-dashoffset:22}to{stroke-dashoffset:0}}
 .k-round .pl{stroke:var(--cream);stroke-width:2;stroke-linecap:round}
-.k-seg{height:46px;padding:0 9px;gap:4px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(243,237,228,.34)}
-.k-seg i{position:relative;width:9px;height:22px;border-radius:3px;background:rgba(243,237,228,.13);overflow:hidden}
+.k-seg{height:46px;padding:0 9px;gap:4px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(var(--tx),.34)}
+.k-seg i{position:relative;width:9px;height:22px;border-radius:3px;background:rgba(var(--tx),.13);overflow:hidden}
 .k-seg i.on:after{content:"";position:absolute;inset:0;background:var(--sun);border-radius:3px}
 .k-seg i.on.anim:after{animation:segrise .5s var(--ease) both}
 @keyframes segrise{from{transform:translateY(100%)}to{transform:none}}
-.k-pill{height:46px;padding:0 16px 0 13px;gap:7px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(243,237,228,.34);font:600 15px var(--ui)}
+.k-pill{height:46px;padding:0 16px 0 13px;gap:7px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(var(--tx),.34);font:600 15px var(--ui)}
 .k-pill.on{border-color:var(--sun);color:var(--sun2)}
 .k-pill .tm{font-variant-numeric:tabular-nums}
 .livedot{width:7px;height:7px;border-radius:50%;background:var(--sun);animation:blink 1.6s ease-in-out infinite}
 @keyframes blink{50%{opacity:.35}}
-.k-word{height:46px;padding:0 14px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(243,237,228,.34);font:600 14px var(--ui);margin-right:8px}
+.k-word{height:46px;padding:0 14px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(var(--tx),.34);font:600 14px var(--ui);margin-right:8px}
 
 /* amount row */
 .amt{margin-top:12px;display:flex;gap:7px;grid-column:1/-1}
-.amt .key{flex:1;height:44px;border-radius:13px;background:rgba(243,237,228,.07);font:500 16px/1 var(--disp);font-variant-numeric:tabular-nums;overflow:hidden}
+.amt .key{flex:1;height:44px;border-radius:13px;background:rgba(var(--tx),.07);font:500 16px/1 var(--disp);font-variant-numeric:tabular-nums;overflow:hidden}
 .amt .key span{position:relative;z-index:1}
-.amt .key.last{box-shadow:inset 0 0 0 1.5px rgba(243,237,228,.28)}
+.amt .key.last{box-shadow:inset 0 0 0 1.5px rgba(var(--tx),.28)}
 .amt .key .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--sun);opacity:0}
 .amt .key.pour .fill{animation:pour .7s var(--ease)}
 @keyframes pour{0%{height:0;opacity:.95}45%{height:100%;opacity:.95}100%{height:100%;opacity:0}}
 .amt .key.pour span{animation:pourtx .7s var(--ease)}
 @keyframes pourtx{0%,45%{color:var(--sunInk)}100%{color:var(--cream)}}
-.level{position:relative;margin-top:9px;height:2px;border-radius:2px;background:rgba(243,237,228,.1);max-width:220px;pointer-events:none}
+.level{position:relative;margin-top:9px;height:2px;border-radius:2px;background:rgba(var(--tx),.1);max-width:220px;pointer-events:none}
 .level i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--sun);transition:width .7s var(--ease)}
 .roll{display:inline-block;animation:roll .45s var(--spring)}
 @keyframes roll{from{transform:translateY(.45em);opacity:0}}
@@ -198,9 +198,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .lg .h{font:400 13px/1 var(--ui);color:var(--t3);margin-bottom:6px}
 .para{display:flex;flex-wrap:wrap;column-gap:20px;row-gap:2px;align-items:center}
 .tok{display:inline-flex;align-items:center;gap:4px;min-height:48px}
-.tok .tn{font:400 19px/1.1 var(--disp);font-variation-settings:"wdth" 92;color:rgba(243,237,228,.86);padding:12px 0;text-align:left}
+.tok .tn{font:400 19px/1.1 var(--disp);font-variation-settings:"wdth" 92;color:rgba(var(--tx),.86);padding:12px 0;text-align:left}
 .tok .tf{font:400 13.5px/1 var(--ui);color:var(--t3);margin-left:5px;pointer-events:none}
-.tok .tk{width:36px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(243,237,228,.08);color:var(--cream);font:600 12px var(--ui);margin-left:4px;position:relative}
+.tok .tk{width:36px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(var(--tx),.08);color:var(--cream);font:600 12px var(--ui);margin-left:4px;position:relative}
 .tok .tk:before{content:"";position:absolute;inset:-6px}
 .tok .tk.w{width:auto;padding:0 10px}
 .tok .tk.down{background:rgba(255,107,61,.25)}
@@ -221,20 +221,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 @keyframes pop{0%{transform:scale(.6);opacity:0;color:var(--sun2)}60%{color:var(--sun2)}100%{transform:none;opacity:1}}
 
 /* suggestion */
-.sug{margin:6px var(--gut) 0;padding:16px 16px 14px;border-radius:22px;background:rgba(243,237,228,.045)}
+.sug{margin:6px var(--gut) 0;padding:16px 16px 14px;border-radius:22px;background:rgba(var(--tx),.045)}
 .sug .sn{font:500 21px/1.15 var(--disp);letter-spacing:-.01em;text-align:left;display:block}
 .sug .sr{margin-top:5px;font:400 14px var(--ui);color:var(--t2)}
 .sug .sb{display:flex;gap:8px;margin-top:14px}
 .sug .sb .primary{flex:1;height:44px;border-radius:13px;background:var(--cream);color:var(--ink);font:600 14.5px var(--ui)}
-.sug .sb .sec2{height:44px;padding:0 16px;border-radius:13px;background:rgba(243,237,228,.08);font:500 14.5px var(--ui)}
-.sug .sb .dots{width:44px;height:44px;border-radius:13px;background:rgba(243,237,228,.08);display:grid;place-items:center}
+.sug .sb .sec2{height:44px;padding:0 16px;border-radius:13px;background:rgba(var(--tx),.08);font:500 14.5px var(--ui)}
+.sug .sb .dots{width:44px;height:44px;border-radius:13px;background:rgba(var(--tx),.08);display:grid;place-items:center}
 .sughold{padding:2px var(--gut) 0;font:400 14.5px/1.45 var(--ui);color:var(--t3)}
 .addbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px var(--gut) 0;height:52px;width:calc(100% - 40px);border-radius:16px;background:var(--cream);color:var(--ink);font:600 15.5px var(--ui)}
 .foot{margin:36px var(--gut) 0;display:flex;justify-content:center}
 .foot button{font:500 13px var(--ui);color:var(--t3);height:40px;padding:0 14px;border:1px solid var(--line);border-radius:12px}
 
 /* tab bar, live bar, toast */
-.tabbar{position:absolute;left:0;right:0;bottom:0;height:86px;z-index:25;background:rgba(14,13,12,.86);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 76px 1fr 1fr;padding:6px 6px 0}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:86px;z-index:25;background:rgba(var(--surfRGB),.86);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 76px 1fr 1fr;padding:6px 6px 0}
 .tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:6px;font:500 10.5px var(--ui);color:var(--t3);height:50px}
 .tab.on{color:var(--cream)}
 .logkey{justify-self:center;width:58px;height:58px;margin-top:-4px;border-radius:50%;background:var(--cream);color:var(--ink);display:grid;place-items:center;transition:transform .08s}
@@ -244,11 +244,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .livebar .lt{flex:1;min-width:0}
 .livebar .lt .a{font:500 16px var(--disp)}
 .livebar .lt .b{font:400 13px var(--ui);color:var(--t2);margin-top:2px}
-.livebar .lp{position:absolute;left:16px;right:16px;bottom:0;height:2px;background:rgba(243,237,228,.08);border-radius:2px;overflow:hidden}
+.livebar .lp{position:absolute;left:16px;right:16px;bottom:0;height:2px;background:rgba(var(--tx),.08);border-radius:2px;overflow:hidden}
 .livebar .lp i{position:absolute;left:0;top:0;bottom:0;background:var(--sun)}
-.livebar button{height:44px;padding:0 14px;border-radius:13px;background:rgba(243,237,228,.08);font:600 14px var(--ui)}
+.livebar button{height:44px;padding:0 14px;border-radius:13px;background:rgba(var(--tx),.08);font:600 14px var(--ui)}
 .livebar button.end{background:var(--cream);color:var(--ink)}
-.toast{position:absolute;left:10px;right:10px;top:8px;z-index:35;min-height:58px;border-radius:24px;background:#26231F;border:1px solid var(--line2);box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;align-items:center;gap:10px;padding:8px 8px 8px 18px;transform:translateY(-130%) scale(.9);opacity:0;transition:transform .45s var(--spring),opacity .2s;transform-origin:top center}
+.toast{position:absolute;left:10px;right:10px;top:8px;z-index:35;min-height:58px;border-radius:24px;background:#26231F;border:1px solid var(--line2);box-shadow:0 10px 30px rgba(var(--sd),calc(.45 * var(--sda)));display:flex;align-items:center;gap:10px;padding:8px 8px 8px 18px;transform:translateY(-130%) scale(.9);opacity:0;transition:transform .45s var(--spring),opacity .2s;transform-origin:top center}
 .toast.on{transform:none;opacity:1}
 .toast .tt{flex:1;min-width:0}
 .toast .a{font:500 16px/1.2 var(--disp)}
@@ -259,7 +259,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 @keyframes tbar{to{transform:scaleX(0)}}
 
 /* sheets */
-.scrim{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim{position:absolute;inset:0;z-index:40;background:rgba(var(--sd),calc(.5 * var(--sda)));opacity:0;pointer-events:none;transition:opacity .25s}
 .scrim.on{opacity:1;pointer-events:auto}
 .sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;max-height:88%;overflow-y:auto;scrollbar-width:none;background:#191816;border-radius:28px 28px 0 0;border-top:1px solid var(--line2);padding:10px 0 40px;transform:translateY(105%);transition:transform .45s var(--spring)}
 .sheet.on{transform:none}
@@ -285,21 +285,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .bigfig{font:300 56px/1 var(--disp);letter-spacing:-.03em;font-variation-settings:"wdth" 90;margin-top:6px}
 .bigfig small{font:400 18px var(--ui);color:var(--t2);margin-left:6px;letter-spacing:0}
 .btns{display:grid;gap:8px;padding:0 var(--gut)}
-.btn{height:52px;border-radius:16px;background:rgba(243,237,228,.08);font:500 15.5px var(--ui);width:100%}
+.btn{height:52px;border-radius:16px;background:rgba(var(--tx),.08);font:500 15.5px var(--ui);width:100%}
 .btn.primary{background:var(--cream);color:var(--ink);font-weight:600}
 .btn.ghost{background:none;color:var(--t2)}
 .scrub{display:flex;gap:8px;padding:6px var(--gut) 0;overflow-x:auto;scrollbar-width:none}
-.scrub button{flex:0 0 auto;min-width:72px;height:72px;border-radius:18px;background:rgba(243,237,228,.07);font:400 22px/1 var(--disp);font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.scrub button{flex:0 0 auto;min-width:72px;height:72px;border-radius:18px;background:rgba(var(--tx),.07);font:400 22px/1 var(--disp);font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .scrub button small{font:400 11.5px var(--ui);color:var(--t3)}
-.stepper{display:flex;align-items:center;justify-content:space-between;margin:14px var(--gut) 0;padding:8px;border-radius:18px;background:rgba(243,237,228,.05)}
-.stepper button{width:52px;height:52px;border-radius:14px;background:rgba(243,237,228,.08);font:400 24px var(--ui)}
+.stepper{display:flex;align-items:center;justify-content:space-between;margin:14px var(--gut) 0;padding:8px;border-radius:18px;background:rgba(var(--tx),.05)}
+.stepper button{width:52px;height:52px;border-radius:14px;background:rgba(var(--tx),.08);font:400 24px var(--ui)}
 .stepper .v{font:400 30px var(--disp);font-variant-numeric:tabular-nums}
 .hyp{position:relative;height:96px;margin:10px var(--gut) 0}
 .hyp i{position:absolute;height:14px;border-radius:3px;background:var(--night)}
 .hyp .lb{position:absolute;left:0;font:400 11px var(--ui);color:var(--t3)}
 .bars7{display:flex;gap:12px;align-items:flex-end;height:90px;padding:0 var(--gut)}
 .bars7 .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
-.bars7 .c i{width:100%;max-width:28px;border-radius:4px;background:rgba(243,237,228,.2)}
+.bars7 .c i{width:100%;max-width:28px;border-radius:4px;background:rgba(var(--tx),.2)}
 .bars7 .c.on i{background:var(--night)}
 .bars7 .c.gap i{background:none;border:1px dashed var(--t4);height:10px!important}
 .bars7 .c span{font:400 11px var(--ui);color:var(--t3)}
@@ -308,16 +308,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-
 .stats .s .v{font:400 24px var(--disp);margin-top:4px;font-variant-numeric:tabular-nums}
 .splitrows{padding:0 var(--gut)}
 .splitrows .r{display:grid;grid-template-columns:34px 1fr 52px;gap:10px;align-items:center;height:30px;font:400 13.5px var(--ui);color:var(--t2)}
-.splitrows .r i{height:8px;border-radius:4px;background:rgba(243,237,228,.25)}
+.splitrows .r i{height:8px;border-radius:4px;background:rgba(var(--tx),.25)}
 .splitrows .r.best i{background:var(--cream)}
 .splitrows .r .v{text-align:right;color:var(--cream);font-variant-numeric:tabular-nums}
-.search{display:flex;align-items:center;gap:10px;margin:0 var(--gut);height:48px;border-radius:15px;background:rgba(243,237,228,.07);padding:0 14px;color:var(--t3)}
+.search{display:flex;align-items:center;gap:10px;margin:0 var(--gut);height:48px;border-radius:15px;background:rgba(var(--tx),.07);padding:0 14px;color:var(--t3)}
 .search input{flex:1;background:none;border:0;outline:0;color:var(--cream);font:400 16px var(--ui)}
 .note{margin:14px var(--gut) 0;font:400 13px/1.45 var(--ui);color:var(--t3)}
-textarea.field,input.field{display:block;width:calc(100% - 40px);margin:0 var(--gut);background:rgba(243,237,228,.07);border:0;border-radius:15px;padding:14px;color:var(--cream);font:400 15.5px var(--ui);outline:0;resize:none}
+textarea.field,input.field{display:block;width:calc(100% - 40px);margin:0 var(--gut);background:rgba(var(--tx),.07);border:0;border-radius:15px;padding:14px;color:var(--cream);font:400 15.5px var(--ui);outline:0;resize:none}
 
 /* =====================================================================
-   NEUMORPHIC SURFACE (today-neu). One warm graphite surface, #2B2723.
+   NEUMORPHIC SURFACE (today-neu). One warm graphite surface, var(--surf).
    Light comes from the top left, everywhere: every raised thing throws a
    soft dark shadow down-right and catches a faint warm light up-left; every
    pressed thing is the reverse, inside. No gloss, no gradients pretending to
@@ -327,11 +327,11 @@ textarea.field,input.field{display:block;width:calc(100% - 40px);margin:0 var(--
      flat    = disabled, or not a control
    ===================================================================== */
 :root{
-  --surf:#2B2723; --surfHi:#2F2B26; --surfLo:#27231F;
+  --surf:var(--surf); --surfHi:#2F2B26; --surfLo:#27231F;
   --ink:var(--surf); --ink2:var(--surf); --ink3:var(--surf);
-  --t2:rgba(243,237,228,.68); --t3:rgba(243,237,228,.57); --t4:rgba(243,237,228,.30);
-  --rec:#A39C92; --line:rgba(0,0,0,.28); --line2:rgba(243,237,228,.10);
-  --dk:rgba(12,9,6,.62); --dk2:rgba(12,9,6,.42); --lt:rgba(255,238,220,.085); --lt2:rgba(255,238,220,.055);
+  --t2:rgba(var(--tx),.68); --t3:rgba(var(--tx),.57); --t4:rgba(var(--tx),.30);
+  --rec:#A39C92; --line:rgba(var(--sd),calc(.28 * var(--sda))); --line2:rgba(var(--tx),.10);
+  --dk:rgba(var(--sd),calc(.62 * var(--sda))); --dk2:rgba(var(--sd),calc(.42 * var(--sda))); --lt:rgba(var(--sl),calc(.085 * var(--sla))); --lt2:rgba(var(--sl),calc(.055 * var(--sla)));
   /* raised, three heights */
   --r1:3px 3px 7px var(--dk2),-2px -2px 6px var(--lt2);
   --r2:6px 6px 14px var(--dk),-5px -5px 12px var(--lt);
@@ -358,7 +358,7 @@ html,body{background:#1C1916}
 /* status + scrolled bar */
 .sbar .ddata{background:var(--surf);border:0;box-shadow:var(--r1);color:var(--t2);transition:box-shadow .3s var(--back)}
 .sbar .ddata:active{box-shadow:var(--p1)}
-.topbar{background:rgba(43,39,35,.97);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:0;box-shadow:0 8px 18px -6px var(--dk)}
+.topbar{background:rgba(var(--surfRGB),.97);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:0;box-shadow:0 8px 18px -6px var(--dk)}
 
 /* header icons: small raised wells; active ones pressed */
 .hicons{gap:8px;margin-right:-2px;margin-top:-2px}
@@ -387,7 +387,7 @@ html,body{background:#1C1916}
 .panel .x:active{box-shadow:var(--p1)}
 .nights,.splits{padding:5px 7px 3px;border-radius:11px;box-shadow:var(--p1);height:auto;width:max-content}
 .nights i,.splits i{max-height:28px}
-.nights i{background:rgba(243,237,228,.26)}
+.nights i{background:rgba(var(--tx),.26)}
 .nights i.gap{border-color:var(--t3)}
 .prange .t:before{height:4px;top:3px;border-radius:2px;background:var(--surf);box-shadow:var(--p1)}
 .weekd{padding:5px 9px 3px;border-radius:12px;box-shadow:var(--p1);height:auto;width:max-content}
@@ -413,7 +413,7 @@ html,body{background:#1C1916}
 .k-round.done.anim .fill{animation:nrise .6s var(--ease)}
 @keyframes nrise{0%{height:0;border-radius:50% 50% 0 0/10px 10px 0 0}70%{border-radius:50% 50% 0 0/4px 4px 0 0}100%{height:100%;border-radius:0}}
 .k-round .pl{stroke:var(--cream)}
-.k-round .ck.ghost{stroke:rgba(243,237,228,.34)}
+.k-round .ck.ghost{stroke:rgba(var(--tx),.34)}
 .k-seg{border:0;background:var(--surf);box-shadow:var(--r2);height:48px;padding:0 12px;gap:5px}
 .k-seg.down{box-shadow:var(--p1)}
 .k-seg i{width:9px;height:24px;border-radius:5px;background:var(--surf);box-shadow:inset 1.5px 1.5px 3px var(--dk),inset -1px -1px 2px var(--lt)}
@@ -478,14 +478,14 @@ html,body{background:#1C1916}
 .livebar button{background:var(--surf);box-shadow:var(--r1);color:var(--t2);transition:box-shadow .3s var(--back),transform .3s var(--back)}
 .livebar button.end{background:var(--surf);color:var(--cream);box-shadow:var(--r2)}
 .livebar button:active{box-shadow:var(--p1);transform:scale(.97)}
-.toast{background:var(--surf);border:0;box-shadow:var(--r3),0 18px 40px rgba(0,0,0,.35);border-radius:26px}
+.toast{background:var(--surf);border:0;box-shadow:var(--r3),0 18px 40px rgba(var(--sd),calc(.35 * var(--sda)));border-radius:26px}
 .toast .undo{background:var(--surf);color:var(--sun2);box-shadow:var(--r1);transition:box-shadow .3s var(--back)}
 .toast .undo:active{box-shadow:var(--p1)}
 .toast .bar{left:26px;right:26px;bottom:5px;height:3px;border-radius:2px;opacity:.8}
 
 /* sheets: the same surface, risen; the grab is a groove */
-.scrim{background:rgba(14,11,9,.55)}
-.sheet{background:var(--surf);border-top:0;border-radius:32px 32px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.45),0 -1px 0 var(--lt)}
+.scrim{background:rgba(var(--sd),.55)}
+.sheet{background:var(--surf);border-top:0;border-radius:32px 32px 0 0;box-shadow:0 -14px 40px rgba(var(--sd),calc(.45 * var(--sda))),0 -1px 0 var(--lt)}
 .grab{width:42px;height:6px;background:var(--surf);box-shadow:var(--p1)}
 .sh .close{width:40px;height:40px;margin:-6px -4px 0 0;border-radius:50%;background:var(--surf);box-shadow:var(--r1);color:var(--t2);transition:box-shadow .3s var(--back)}
 .sh .close:active{box-shadow:var(--p1)}
@@ -493,7 +493,7 @@ html,body{background:#1C1916}
 .slist .li+.li:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(var(--dk2) 0 1px,var(--lt) 1px 2px)}
 .slist .li .rm{padding:8px 12px;margin-left:6px;border-radius:12px;background:var(--surf);box-shadow:var(--r1);transition:box-shadow .3s var(--back)}
 .slist .li .rm:active{box-shadow:var(--p1)}
-.slist .li .dot{box-shadow:0 0 0 3px var(--surf),0 0 0 4px rgba(0,0,0,.2)}
+.slist .li .dot{box-shadow:0 0 0 3px var(--surf),0 0 0 4px rgba(var(--sd),calc(.2 * var(--sda)))}
 .btns{gap:12px}
 .btn{background:var(--surf);box-shadow:var(--r2);color:var(--t2);transition:box-shadow .32s var(--back),transform .32s var(--back)}
 .btn.primary{background:var(--surf);color:var(--cream);font-weight:600;box-shadow:var(--r2)}
@@ -510,7 +510,7 @@ html,body{background:#1C1916}
 .stepper button{border-radius:50%;background:var(--surf);box-shadow:var(--r2);color:var(--cream);transition:box-shadow .3s var(--back),transform .3s var(--back)}
 .stepper button:active{box-shadow:var(--p1);transform:scale(.95);transition:box-shadow .07s,transform .07s}
 .bars7{padding:10px 14px 6px;margin:0 var(--gut);border-radius:18px;box-shadow:var(--p1)}
-.bars7 .c i{background:rgba(243,237,228,.24)}
+.bars7 .c i{background:rgba(var(--tx),.24)}
 .bars7 .c.gap i{border-color:var(--t3)}
 .splitrows .r i{background:var(--surf);box-shadow:var(--p1);position:relative}
 .splitrows .r.best i{background:var(--cream);box-shadow:none}
@@ -544,16 +544,16 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 :root{
   --night:#98A2FC; --nightT:#B3BDFF;
   /* plateau: a wide soft rise plus a tight fillet where it leaves the page */
-  --pl:12px 12px 28px rgba(12,9,6,.46),-9px -9px 22px rgba(255,238,220,.052),2px 2px 5px rgba(12,9,6,.20),-1px -1px 3px rgba(255,238,220,.035);
-  --pl0:6px 6px 16px rgba(12,9,6,.40),-5px -5px 13px rgba(255,238,220,.045),1px 1px 3px rgba(12,9,6,.18),-1px -1px 2px rgba(255,238,220,.03);
+  --pl:12px 12px 28px rgba(var(--sd),calc(.46 * var(--sda))),-9px -9px 22px rgba(var(--sl),calc(.052 * var(--sla))),2px 2px 5px rgba(var(--sd),calc(.20 * var(--sda))),-1px -1px 3px rgba(var(--sl),calc(.035 * var(--sla)));
+  --pl0:6px 6px 16px rgba(var(--sd),calc(.40 * var(--sda))),-5px -5px 13px rgba(var(--sl),calc(.045 * var(--sla))),1px 1px 3px rgba(var(--sd),calc(.18 * var(--sda))),-1px -1px 2px rgba(var(--sl),calc(.03 * var(--sla)));
   /* well: a shallow hollow with soft walls */
-  --wl:inset 7px 7px 16px rgba(12,9,6,.46),inset -6px -6px 14px rgba(255,238,220,.045),inset 1px 1px 2px rgba(12,9,6,.2);
+  --wl:inset 7px 7px 16px rgba(var(--sd),calc(.46 * var(--sda))),inset -6px -6px 14px rgba(var(--sl),calc(.045 * var(--sla))),inset 1px 1px 2px rgba(var(--sd),calc(.2 * var(--sda)));
   /* keys: tighter and crisper than plateaus, so a key never reads as a region */
-  --r1:3px 3px 7px rgba(12,9,6,.50),-2px -2px 6px rgba(255,238,220,.06);
-  --r2:5px 5px 12px rgba(12,9,6,.58),-4px -4px 10px rgba(255,238,220,.075);
-  --deb:-1px -1px 0 rgba(0,0,0,.45),1px 1px 0 rgba(255,238,220,.06);
-  --emb:2px 2px 5px rgba(12,9,6,.55),-1px -1px 1px rgba(255,238,220,.07);
-  --groove:linear-gradient(rgba(12,9,6,.5) 0 1px,rgba(255,238,220,.06) 1px 2px);
+  --r1:3px 3px 7px rgba(var(--sd),calc(.50 * var(--sda))),-2px -2px 6px rgba(var(--sl),calc(.06 * var(--sla)));
+  --r2:5px 5px 12px rgba(var(--sd),calc(.58 * var(--sda))),-4px -4px 10px rgba(var(--sl),calc(.075 * var(--sla)));
+  --deb:-1px -1px 0 rgba(var(--sd),calc(.45 * var(--sda))),1px 1px 0 rgba(var(--sl),calc(.06 * var(--sla)));
+  --emb:2px 2px 5px rgba(var(--sd),calc(.55 * var(--sda))),-1px -1px 1px rgba(var(--sl),calc(.07 * var(--sla)));
+  --groove:linear-gradient(rgba(var(--sd),calc(.5 * var(--sda))) 0 1px,rgba(var(--sl),calc(.06 * var(--sla))) 1px 2px);
 }
 .sky{opacity:.32}
 
@@ -561,7 +561,7 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .head h1{font-size:34px;text-shadow:var(--emb)}
 .head .sub{text-shadow:var(--deb);color:var(--t2)}
 .ib{box-shadow:var(--pl0)}
-.ib svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.07))}
+.ib svg{filter:drop-shadow(-.6px -.6px 0 rgba(var(--sd),calc(.5 * var(--sda)))) drop-shadow(.6px .6px 0 rgba(var(--sl),calc(.07 * var(--sla))))}
 .ib .n{box-shadow:var(--pl0);color:var(--cream)}
 .sbar .ddata{box-shadow:var(--pl0);text-shadow:var(--deb);padding:8px 12px}
 .topbar{box-shadow:none}
@@ -580,7 +580,7 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .nights i,.splits i{max-height:24px}
 .panel .ttl{font-size:20px}
 .panel{background:var(--surf);box-shadow:var(--wl);border-radius:26px;padding:11px 16px 11px;transition:box-shadow .3s var(--back)}
-.panel:active{box-shadow:inset 9px 9px 20px rgba(12,9,6,.55),inset -6px -6px 14px rgba(255,238,220,.04)}
+.panel:active{box-shadow:inset 9px 9px 20px rgba(var(--sd),calc(.55 * var(--sda))),inset -6px -6px 14px rgba(var(--sl),calc(.04 * var(--sla)))}
 .panel .k{color:var(--ht,var(--t2));font-weight:600}
 .panel .k .just{color:var(--sun2)}
 .panel .k:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hf,var(--t3));box-shadow:0 0 6px var(--hf,transparent);flex:none}
@@ -589,7 +589,7 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .nights,.splits,.weekd{box-shadow:none;padding:0}
 .nights i.on{background:var(--night);box-shadow:0 0 8px rgba(152,162,252,.45)}
 .splits i.best{background:var(--hf,var(--cream));box-shadow:0 0 8px var(--hf,transparent)}
-.prange .t:before{box-shadow:inset 1px 1px 2px rgba(12,9,6,.6),inset -1px -1px 1px rgba(255,238,220,.06)}
+.prange .t:before{box-shadow:inset 1px 1px 2px rgba(var(--sd),calc(.6 * var(--sda))),inset -1px -1px 1px rgba(var(--sl),calc(.06 * var(--sla)))}
 .prange .t .m{background:var(--cream)}
 .prange .r.b .t .m{background:var(--night)}
 
@@ -604,17 +604,17 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .row.lead .nm{font-size:26px}
 .row .st{color:var(--t2)}
 .row .st b{color:var(--cream);font-weight:550}
-.inl{position:absolute;left:13px;top:15px;bottom:15px;width:7px;border-radius:4px;background:color-mix(in oklab,var(--hd,#1d1a17) 80%,var(--surf));box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07);overflow:hidden;pointer-events:none}
-.inl i{position:absolute;left:0;right:0;bottom:0;border-radius:4px;background:var(--hf);box-shadow:inset 1px 1px 2px rgba(0,0,0,.35),0 0 10px var(--hf);transition:height .7s var(--ease)}
+.inl{position:absolute;left:13px;top:15px;bottom:15px;width:7px;border-radius:4px;background:color-mix(in oklab,var(--hd,var(--surf)) 80%,var(--surf));box-shadow:inset 1.5px 1.5px 3px rgba(var(--sd),calc(.75 * var(--sda))),inset -1px -1px 2px rgba(var(--sl),calc(.07 * var(--sla)));overflow:hidden;pointer-events:none}
+.inl i{position:absolute;left:0;right:0;bottom:0;border-radius:4px;background:var(--hf);box-shadow:inset 1px 1px 2px rgba(var(--sd),calc(.35 * var(--sda))),0 0 10px var(--hf);transition:height .7s var(--ease)}
 .row.task .inl{background:var(--surf)}
 .row.leaving{box-shadow:none}
 @keyframes leave{0%{max-height:200px;opacity:1}100%{max-height:0;opacity:0;padding-top:0;padding-bottom:0;margin-top:-12px}}
 
 /* keys take their routine's light when done or chosen; the check stays dark on it */
-.k-round.done .fill{background:var(--hf,var(--sun));box-shadow:inset 3px 3px 7px rgba(0,0,0,.32),inset -2px -2px 6px rgba(255,255,255,.16),0 0 0 transparent}
-.k-round.done .ck{stroke:#17130F}
+.k-round.done .fill{background:var(--hf,var(--sun));box-shadow:inset 3px 3px 7px rgba(var(--sd),calc(.32 * var(--sda))),inset -2px -2px 6px rgba(255,255,255,.16),0 0 0 transparent}
+.k-round.done .ck{stroke:var(--onHue)}
 .k-round.done{box-shadow:var(--p2),0 0 18px -4px var(--hf,transparent)}
-.k-seg i.on:after{background:var(--hf,var(--sun));box-shadow:inset 1px 1px 2px rgba(0,0,0,.35),0 0 6px var(--hf,transparent)}
+.k-seg i.on:after{background:var(--hf,var(--sun));box-shadow:inset 1px 1px 2px rgba(var(--sd),calc(.35 * var(--sda))),0 0 6px var(--hf,transparent)}
 .k-pill{color:var(--cream)}
 .k-pill svg{color:var(--ht,var(--cream))}
 .k-pill.on{color:var(--ht,var(--sun2))}
@@ -628,9 +628,9 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .k-word{box-shadow:var(--r1);color:var(--t2);height:42px}
 .amt .key .fill{background:var(--hf,var(--sun))}
 .amt .key.last span:after{background:var(--hf,var(--t3))}
-.level{height:7px;border-radius:4px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.level{height:7px;border-radius:4px;box-shadow:inset 1.5px 1.5px 3px rgba(var(--sd),calc(.75 * var(--sda))),inset -1px -1px 2px rgba(var(--sl),calc(.07 * var(--sla)))}
 .level i{background:var(--hf,var(--sun));box-shadow:0 0 10px var(--hf,transparent);top:1px;bottom:1px}
-@keyframes pourtx{0%,45%{color:#17130F}100%{color:var(--cream)}}
+@keyframes pourtx{0%,45%{color:var(--onHue)}100%{color:var(--cream)}}
 
 /* a date: a low plateau, neutral (dated tasks have no hue) */
 .dateline{background:var(--surf);box-shadow:var(--pl0);margin:14px var(--gut) 0;width:calc(100% - 2 * var(--gut));padding:0 16px;border-radius:20px;min-height:52px}
@@ -640,8 +640,8 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .later{margin:0 var(--gut);padding:6px 16px 10px;border-radius:26px;box-shadow:var(--wl)}
 .lg .h{text-shadow:var(--deb);font-size:12.5px;color:var(--t3)}
 .tok{gap:6px}
-.tok .hp{width:9px;height:9px;border-radius:50%;flex:none;background:color-mix(in oklab,var(--hd,#1d1a17) 90%,var(--surf));box-shadow:inset 1px 1px 2px rgba(0,0,0,.6),inset -1px -1px 1px rgba(255,238,220,.08)}
-.tok .hp.some,.tok.done .hp{background:var(--hf);box-shadow:inset 1px 1px 1px rgba(0,0,0,.3),0 0 7px var(--hf)}
+.tok .hp{width:9px;height:9px;border-radius:50%;flex:none;background:color-mix(in oklab,var(--hd,var(--surf)) 90%,var(--surf));box-shadow:inset 1px 1px 2px rgba(var(--sd),calc(.6 * var(--sda))),inset -1px -1px 1px rgba(var(--sl),calc(.08 * var(--sla)))}
+.tok .hp.some,.tok.done .hp{background:var(--hf);box-shadow:inset 1px 1px 1px rgba(var(--sd),calc(.3 * var(--sda))),0 0 7px var(--hf)}
 .tok .tn{color:var(--cream)}
 .tok.done .tn{color:var(--ht,var(--sun2))}
 .tok.done .tk{color:var(--ht,var(--sun2))}
@@ -661,7 +661,7 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 /* tab bar: the same page, divided by one groove; the current tab pressed in */
 .tabbar{box-shadow:none}
 .tabbar:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
-.tab svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.06))}
+.tab svg{filter:drop-shadow(-.6px -.6px 0 rgba(var(--sd),calc(.5 * var(--sda)))) drop-shadow(.6px .6px 0 rgba(var(--sl),calc(.06 * var(--sla))))}
 .tab.on{box-shadow:var(--p1)}
 .tab.on svg{color:var(--sun2);filter:none}
 .logkey{margin-top:-16px;box-shadow:var(--pl),0 0 0 6px var(--surf)}
@@ -676,7 +676,7 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .hdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:10px;vertical-align:4px;box-shadow:0 0 8px currentColor}
 .swatches{display:flex;gap:12px;padding:4px var(--gut) 2px;flex-wrap:wrap}
 .sw8{width:44px;height:44px;border-radius:50%;background:var(--surf);box-shadow:var(--r1);display:grid;place-items:center;transition:box-shadow .3s var(--back)}
-.sw8 i{width:20px;height:20px;border-radius:50%;background:var(--hf);box-shadow:inset 1px 1px 2px rgba(0,0,0,.35)}
+.sw8 i{width:20px;height:20px;border-radius:50%;background:var(--hf);box-shadow:inset 1px 1px 2px rgba(var(--sd),calc(.35 * var(--sda)))}
 .sw8.on{box-shadow:var(--p2)}
 .sw8.on i{box-shadow:0 0 0 3px var(--surf),0 0 0 5px var(--hf),0 0 10px var(--hf)}
 .sw8:active{box-shadow:var(--p1)}
@@ -716,53 +716,53 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 /* Hero 2, the hours */
 .hero-hours > *{position:absolute}
 .hr-night{border-radius:12px;box-shadow:var(--p2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(rgba(152,162,252,.16),rgba(152,162,252,.30));overflow:hidden}
-.hr-night:after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 3px 3px 7px rgba(12,9,6,.6),inset -2px -2px 5px rgba(255,238,220,.05)}
+.hr-night:after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 3px 3px 7px rgba(var(--sd),calc(.6 * var(--sda))),inset -2px -2px 5px rgba(var(--sl),calc(.05 * var(--sla)))}
 .hr-night b{font:500 17px/1 var(--disp);color:var(--nightT)}
 .hr-night b small{font:500 11px var(--ui);margin-left:1px}
-.hr-night.miss{background:none;box-shadow:inset 0 0 0 1.5px rgba(243,237,228,.18)}
+.hr-night.miss{background:none;box-shadow:inset 0 0 0 1.5px rgba(var(--tx),.18)}
 .hr-night.miss:after{display:none}
 .hr-night.miss b{color:var(--t3)}
 .hr-c{border-radius:7px;overflow:hidden}
-.hr-c.past,.hr-c.cur{box-shadow:inset 2.5px 2.5px 5px rgba(12,9,6,.7),inset -2px -2px 4px rgba(255,238,220,.06)}
-.hr-c.fut{box-shadow:inset 1px 1px 2px rgba(12,9,6,.45),inset -1px -1px 1px rgba(255,238,220,.04);opacity:.75}
-.hr-c.cur{box-shadow:inset 2.5px 2.5px 5px rgba(12,9,6,.7),inset -2px -2px 4px rgba(255,238,220,.06),inset 0 0 0 1.5px rgba(255,143,94,.65)}
+.hr-c.past,.hr-c.cur{box-shadow:inset 2.5px 2.5px 5px rgba(var(--sd),calc(.7 * var(--sda))),inset -2px -2px 4px rgba(var(--sl),calc(.06 * var(--sla)))}
+.hr-c.fut{box-shadow:inset 1px 1px 2px rgba(var(--sd),calc(.45 * var(--sda))),inset -1px -1px 1px rgba(var(--sl),calc(.04 * var(--sla)));opacity:.75}
+.hr-c.cur{box-shadow:inset 2.5px 2.5px 5px rgba(var(--sd),calc(.7 * var(--sda))),inset -2px -2px 4px rgba(var(--sl),calc(.06 * var(--sla))),inset 0 0 0 1.5px rgba(255,143,94,.65)}
 .hr-elapsed{position:absolute;left:0;right:0;top:0;background:rgba(255,143,94,.10)}
-.hr-s{position:absolute;left:3px;right:3px;border-radius:3px;box-shadow:inset 1px 1px 1px rgba(255,255,255,.18),inset -1px -1px 1px rgba(0,0,0,.25),0 0 6px currentColor}
+.hr-s{position:absolute;left:3px;right:3px;border-radius:3px;box-shadow:inset 1px 1px 1px rgba(255,255,255,.18),inset -1px -1px 1px rgba(var(--sd),calc(.25 * var(--sda))),0 0 6px currentColor}
 .hr-rec{width:4px;height:4px;border-radius:50%;background:var(--rec)}
 .hr-lb{font:500 11px/1 var(--ui);color:var(--t3);text-shadow:var(--deb);white-space:nowrap}
 .hr-lb.nt{color:var(--nightT)}
-.hr-sun{width:14px;height:14px;border-radius:50%;background:var(--sun);box-shadow:2px 2px 4px rgba(12,9,6,.7),0 0 12px rgba(255,107,61,.6),inset -2px -2px 3px rgba(120,30,5,.35),inset 2px 2px 3px rgba(255,210,180,.35)}
+.hr-sun{width:14px;height:14px;border-radius:50%;background:var(--sun);box-shadow:2px 2px 4px rgba(var(--sd),calc(.7 * var(--sda))),0 0 12px rgba(255,107,61,.6),inset -2px -2px 3px rgba(120,30,5,.35),inset 2px 2px 3px rgba(255,210,180,.35)}
 .hr-now{font:600 12px/1 var(--ui);color:var(--sun2);white-space:nowrap;margin-top:1px}
 
 /* Hero 3, the lanes */
 .hero-lanes > *{position:absolute}
-.ln-night{height:10px;border-radius:5px;background:var(--night);box-shadow:0 0 9px rgba(152,162,252,.55),inset 1px 1px 1px rgba(255,255,255,.2),inset -1px -1px 1px rgba(0,0,0,.25)}
-.ln-night.miss{height:2px;background:none;border-top:2px dotted rgba(243,237,228,.3);box-shadow:none}
+.ln-night{height:10px;border-radius:5px;background:var(--night);box-shadow:0 0 9px rgba(152,162,252,.55),inset 1px 1px 1px rgba(255,255,255,.2),inset -1px -1px 1px rgba(var(--sd),calc(.25 * var(--sda)))}
+.ln-night.miss{height:2px;background:none;border-top:2px dotted rgba(var(--tx),.3);box-shadow:none}
 .ln-nt{font:500 12px/1 var(--ui);color:var(--nightT);white-space:nowrap}
 .ln-nt.miss{color:var(--t2)}
-.ln-g{height:8px;border-radius:4px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
-.ln-g.fut{box-shadow:inset 1px 1px 1.5px rgba(12,9,6,.45),inset -1px -1px 1px rgba(255,238,220,.04);border-radius:0 4px 4px 0;opacity:.7}
+.ln-g{height:8px;border-radius:4px;box-shadow:inset 1.5px 1.5px 3px rgba(var(--sd),calc(.75 * var(--sda))),inset -1px -1px 2px rgba(var(--sl),calc(.07 * var(--sla)))}
+.ln-g.fut{box-shadow:inset 1px 1px 1.5px rgba(var(--sd),calc(.45 * var(--sda))),inset -1px -1px 1px rgba(var(--sl),calc(.04 * var(--sla)));border-radius:0 4px 4px 0;opacity:.7}
 .ln-name{font:500 12px/16px var(--ui);white-space:nowrap;max-width:64px;overflow:hidden;text-overflow:ellipsis;text-align:right}
-.ln-b,.ln-cap{height:10px;border-radius:5px;box-shadow:1.5px 1.5px 3px rgba(12,9,6,.7),0 0 7px currentColor,inset 1px 1px 1px rgba(255,255,255,.25),inset -1px -1px 1px rgba(0,0,0,.25)}
+.ln-b,.ln-cap{height:10px;border-radius:5px;box-shadow:1.5px 1.5px 3px rgba(var(--sd),calc(.7 * var(--sda))),0 0 7px currentColor,inset 1px 1px 1px rgba(255,255,255,.25),inset -1px -1px 1px rgba(var(--sd),calc(.25 * var(--sda)))}
 .ln-b{width:10px}
 .ln-rec{width:5px;height:5px;border-radius:50%;background:var(--rec)}
 .ln-lb{font:500 11px/1 var(--ui);color:var(--t3);transform:translateX(-50%);text-shadow:var(--deb)}
 .ln-needle{width:2px;border-radius:1px;background:linear-gradient(rgba(255,143,94,.9),rgba(255,143,94,.35));box-shadow:0 0 6px rgba(255,107,61,.5)}
-.ln-sun{width:13px;height:13px;border-radius:50%;background:var(--sun);box-shadow:2px 2px 4px rgba(12,9,6,.7),0 0 12px rgba(255,107,61,.6),inset -2px -2px 3px rgba(120,30,5,.35),inset 2px 2px 3px rgba(255,210,180,.35)}
+.ln-sun{width:13px;height:13px;border-radius:50%;background:var(--sun);box-shadow:2px 2px 4px rgba(var(--sd),calc(.7 * var(--sda))),0 0 12px rgba(255,107,61,.6),inset -2px -2px 3px rgba(120,30,5,.35),inset 2px 2px 3px rgba(255,210,180,.35)}
 .ln-now{font:600 12px/1 var(--ui);color:var(--sun2);white-space:nowrap}
 .ln-empty{font:400 13px/1.35 var(--ui);color:var(--t3);max-width:240px;white-space:normal}
 
 /* the dock: a plateau formed from the page, holding engraved tabs; the current tab pressed in and lit; + the one primary key, risen from a carved collar */
-.tabfade{position:absolute;left:0;right:0;bottom:0;height:118px;z-index:24;pointer-events:none;background:linear-gradient(rgba(43,39,35,0),var(--surf) 52%)}
+.tabfade{position:absolute;left:0;right:0;bottom:0;height:118px;z-index:24;pointer-events:none;background:linear-gradient(rgba(var(--surfRGB),0),var(--surf) 52%)}
 .tabbar{left:12px;right:12px;bottom:14px;height:68px;border-radius:26px;background:var(--surf);box-shadow:var(--pl);padding:7px 6px;grid-template-columns:1fr 1fr 78px 1fr 1fr;align-items:center}
 .tabbar:before{display:none}
 .tab{height:54px;margin:0 3px;padding-top:8px;gap:5px;border-radius:19px;color:var(--t3);font:550 10.5px/1 var(--ui);text-shadow:var(--deb);transition:box-shadow .3s var(--back),color .2s}
-.tab svg{filter:drop-shadow(-.7px -.7px 0 rgba(0,0,0,.55)) drop-shadow(.7px .7px 0 rgba(255,238,220,.07))}
+.tab svg{filter:drop-shadow(-.7px -.7px 0 rgba(var(--sd),calc(.55 * var(--sda)))) drop-shadow(.7px .7px 0 rgba(var(--sl),calc(.07 * var(--sla))))}
 .tab:active,.tab.down{box-shadow:var(--p1)}
-.tab.on{box-shadow:inset 3px 3px 7px rgba(12,9,6,.62),inset -3px -3px 6px rgba(255,238,220,.055);color:var(--cream);text-shadow:none}
+.tab.on{box-shadow:inset 3px 3px 7px rgba(var(--sd),calc(.62 * var(--sda))),inset -3px -3px 6px rgba(var(--sl),calc(.055 * var(--sla)));color:var(--cream);text-shadow:none}
 .tab.on svg{color:var(--sun2);filter:drop-shadow(0 0 5px rgba(255,107,61,.45))}
-.logkey{position:relative;width:58px;height:58px;margin-top:-30px;box-shadow:6px 6px 14px rgba(12,9,6,.6),-4px -4px 11px rgba(255,238,220,.075),1px 1px 3px rgba(12,9,6,.3)}
-.logkey:before{content:"";position:absolute;inset:-8px;border-radius:50%;background:var(--surf);box-shadow:inset 3px 3px 7px rgba(12,9,6,.6),inset -3px -3px 6px rgba(255,238,220,.05);z-index:-1}
+.logkey{position:relative;width:58px;height:58px;margin-top:-30px;box-shadow:6px 6px 14px rgba(var(--sd),calc(.6 * var(--sda))),-4px -4px 11px rgba(var(--sl),calc(.075 * var(--sla))),1px 1px 3px rgba(var(--sd),calc(.3 * var(--sda)))}
+.logkey:before{content:"";position:absolute;inset:-8px;border-radius:50%;background:var(--surf);box-shadow:inset 3px 3px 7px rgba(var(--sd),calc(.6 * var(--sda))),inset -3px -3px 6px rgba(var(--sl),calc(.05 * var(--sla)));z-index:-1}
 .logkey svg{filter:drop-shadow(0 0 6px rgba(255,107,61,.5))}
 .logkey:active,.logkey.down{box-shadow:var(--p2)}
 .livebar{bottom:96px}
@@ -785,19 +785,18 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
    of light on the lit side, and a rim: light on the edge facing the light, dark on the other.
    Higher layers are a touch lighter (closer to the light); wells a touch darker.
    ===================================================================== */
-:root{--lx:.6;--ly:.8;
-  --s-w:#28241F; --s0:#2B2723; --s5:#2D2925; --s6:#2E2A25; --s9:#302C27; --s14:#322E29; --s18:#332F2A; --s20:#34302A; --s28:#36312C; --s34:#37332D}
-*{--pl0:calc(var(--lx) * 0.6px) calc(var(--ly) * 0.6px) 2.25px rgba(8,6,4,.46), calc(var(--lx) * 4.25px) calc(var(--ly) * 4.25px) 7.5px rgba(8,6,4,.36), 0 1.5px 12px rgba(8,6,4,.14), calc(var(--lx) * -2.25px) calc(var(--ly) * -2.25px) 6px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.05), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --pl:calc(var(--lx) * 0.72px) calc(var(--ly) * 0.72px) 2.5px rgba(8,6,4,.46), calc(var(--lx) * 5.1px) calc(var(--ly) * 5.1px) 9px rgba(8,6,4,.36), 0 1.8px 14.4px rgba(8,6,4,.14), calc(var(--lx) * -2.7px) calc(var(--ly) * -2.7px) 7.2px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.06), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --r1:calc(var(--lx) * 0.6px) calc(var(--ly) * 0.6px) 2.25px rgba(8,6,4,.46), calc(var(--lx) * 4.25px) calc(var(--ly) * 4.25px) 7.5px rgba(8,6,4,.36), 0 1.5px 12px rgba(8,6,4,.14), calc(var(--lx) * -2.25px) calc(var(--ly) * -2.25px) 6px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.05), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --r2:calc(var(--lx) * 1.08px) calc(var(--ly) * 1.08px) 3.25px rgba(8,6,4,.46), calc(var(--lx) * 7.65px) calc(var(--ly) * 7.65px) 13.5px rgba(8,6,4,.36), 0 2.7px 21.6px rgba(8,6,4,.14), calc(var(--lx) * -4.05px) calc(var(--ly) * -4.05px) 10.8px rgba(255,238,220,0.04), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.07), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --r3:calc(var(--lx) * 2.4px) calc(var(--ly) * 2.4px) 6px rgba(8,6,4,.46), calc(var(--lx) * 17px) calc(var(--ly) * 17px) 30px rgba(8,6,4,.36), 0 6px 48px rgba(8,6,4,.14), calc(var(--lx) * -9px) calc(var(--ly) * -9px) 24px rgba(255,238,220,0.07), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.12), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --e14:calc(var(--lx) * 1.68px) calc(var(--ly) * 1.68px) 4.5px rgba(8,6,4,.46), calc(var(--lx) * 11.9px) calc(var(--ly) * 11.9px) 21px rgba(8,6,4,.36), 0 4.2px 33.6px rgba(8,6,4,.14), calc(var(--lx) * -6.3px) calc(var(--ly) * -6.3px) 16.8px rgba(255,238,220,0.05), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.09), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --e18:calc(var(--lx) * 2.16px) calc(var(--ly) * 2.16px) 5.5px rgba(8,6,4,.46), calc(var(--lx) * 15.3px) calc(var(--ly) * 15.3px) 27px rgba(8,6,4,.36), 0 5.4px 43.2px rgba(8,6,4,.14), calc(var(--lx) * -8.1px) calc(var(--ly) * -8.1px) 21.6px rgba(255,238,220,0.06), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.11), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --e34:calc(var(--lx) * 4.08px) calc(var(--ly) * 4.08px) 9.5px rgba(8,6,4,.46), calc(var(--lx) * 28.9px) calc(var(--ly) * 28.9px) 51px rgba(8,6,4,.36), 0 10.2px 81.6px rgba(8,6,4,.14), calc(var(--lx) * -15.3px) calc(var(--ly) * -15.3px) 40.8px rgba(255,238,220,0.1), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(255,238,220,0.18), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.16);
-  --p1:inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 4.5px rgba(8,6,4,.62), inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 3.75px rgba(255,238,220,.055), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.28);
-  --p2:inset calc(var(--lx) * 3.6px) calc(var(--ly) * 3.6px) 8.1px rgba(8,6,4,.62), inset calc(var(--lx) * -2.7px) calc(var(--ly) * -2.7px) 6.75px rgba(255,238,220,.055), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.28);
-  --wl:inset calc(var(--lx) * 5.6px) calc(var(--ly) * 5.6px) 12.6px rgba(8,6,4,.62), inset calc(var(--lx) * -4.2px) calc(var(--ly) * -4.2px) 10.5px rgba(255,238,220,.055), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(0,0,0,.28)}
+.app{--s-w:color-mix(in oklab,var(--surf),var(--deep) 5%); --s0:var(--surf); --s5:color-mix(in oklab,var(--surf),var(--lift) 1.2%); --s6:color-mix(in oklab,var(--surf),var(--lift) 1.6%); --s9:color-mix(in oklab,var(--surf),var(--lift) 2.4%); --s14:color-mix(in oklab,var(--surf),var(--lift) 3.2%); --s18:color-mix(in oklab,var(--surf),var(--lift) 3.6%); --s20:color-mix(in oklab,var(--surf),var(--lift) 4%); --s28:color-mix(in oklab,var(--surf),var(--lift) 5%); --s34:color-mix(in oklab,var(--surf),var(--lift) 6%)}
+*{--pl0:calc(var(--lx) * 0.6px) calc(var(--ly) * 0.6px) 2.25px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 4.25px) calc(var(--ly) * 4.25px) 7.5px rgba(var(--sd),calc(.36 * var(--sda))), 0 1.5px 12px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -2.25px) calc(var(--ly) * -2.25px) 6px rgba(var(--sl),calc(0.04 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.05 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --pl:calc(var(--lx) * 0.72px) calc(var(--ly) * 0.72px) 2.5px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 5.1px) calc(var(--ly) * 5.1px) 9px rgba(var(--sd),calc(.36 * var(--sda))), 0 1.8px 14.4px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -2.7px) calc(var(--ly) * -2.7px) 7.2px rgba(var(--sl),calc(0.04 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.06 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --r1:calc(var(--lx) * 0.6px) calc(var(--ly) * 0.6px) 2.25px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 4.25px) calc(var(--ly) * 4.25px) 7.5px rgba(var(--sd),calc(.36 * var(--sda))), 0 1.5px 12px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -2.25px) calc(var(--ly) * -2.25px) 6px rgba(var(--sl),calc(0.04 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.05 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --r2:calc(var(--lx) * 1.08px) calc(var(--ly) * 1.08px) 3.25px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 7.65px) calc(var(--ly) * 7.65px) 13.5px rgba(var(--sd),calc(.36 * var(--sda))), 0 2.7px 21.6px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -4.05px) calc(var(--ly) * -4.05px) 10.8px rgba(var(--sl),calc(0.04 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.07 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --r3:calc(var(--lx) * 2.4px) calc(var(--ly) * 2.4px) 6px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 17px) calc(var(--ly) * 17px) 30px rgba(var(--sd),calc(.36 * var(--sda))), 0 6px 48px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -9px) calc(var(--ly) * -9px) 24px rgba(var(--sl),calc(0.07 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.12 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --e14:calc(var(--lx) * 1.68px) calc(var(--ly) * 1.68px) 4.5px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 11.9px) calc(var(--ly) * 11.9px) 21px rgba(var(--sd),calc(.36 * var(--sda))), 0 4.2px 33.6px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -6.3px) calc(var(--ly) * -6.3px) 16.8px rgba(var(--sl),calc(0.05 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.09 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --e18:calc(var(--lx) * 2.16px) calc(var(--ly) * 2.16px) 5.5px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 15.3px) calc(var(--ly) * 15.3px) 27px rgba(var(--sd),calc(.36 * var(--sda))), 0 5.4px 43.2px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -8.1px) calc(var(--ly) * -8.1px) 21.6px rgba(var(--sl),calc(0.06 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.11 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --e34:calc(var(--lx) * 4.08px) calc(var(--ly) * 4.08px) 9.5px rgba(var(--sd),calc(.46 * var(--sda))), calc(var(--lx) * 28.9px) calc(var(--ly) * 28.9px) 51px rgba(var(--sd),calc(.36 * var(--sda))), 0 10.2px 81.6px rgba(var(--sd),calc(.14 * var(--sda))), calc(var(--lx) * -15.3px) calc(var(--ly) * -15.3px) 40.8px rgba(var(--sl),calc(0.1 * var(--sla))), inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--sl),calc(0.18 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.16 * var(--sda)));
+  --p1:inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 4.5px rgba(var(--sd),calc(.62 * var(--sda))), inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 3.75px rgba(var(--sl),calc(.055 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.28 * var(--sda)));
+  --p2:inset calc(var(--lx) * 3.6px) calc(var(--ly) * 3.6px) 8.1px rgba(var(--sd),calc(.62 * var(--sda))), inset calc(var(--lx) * -2.7px) calc(var(--ly) * -2.7px) 6.75px rgba(var(--sl),calc(.055 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.28 * var(--sda)));
+  --wl:inset calc(var(--lx) * 5.6px) calc(var(--ly) * 5.6px) 12.6px rgba(var(--sd),calc(.62 * var(--sda))), inset calc(var(--lx) * -4.2px) calc(var(--ly) * -4.2px) 10.5px rgba(var(--sl),calc(.055 * var(--sla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--sd),calc(.28 * var(--sda)))}
 /* which layer each form sits on */
 .row,.sug,.dateline,.dl-disc{background:var(--s6)}
 .panel,.later{background:var(--s-w)}
@@ -807,7 +806,7 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .livebar{box-shadow:var(--e18);background:var(--s18)}
 .logkey{box-shadow:var(--r3);background:var(--s20)}
 .logkey:before{background:var(--s14)}
-.sheet{background:var(--s28);box-shadow:0 -12px 44px rgba(8,6,4,.55),0 -2px 8px rgba(8,6,4,.35),inset 0 1px 0 rgba(255,238,220,.12)}
+.sheet{background:var(--s28);box-shadow:0 -12px 44px rgba(var(--sd),calc(.55 * var(--sda))),0 -2px 8px rgba(var(--sd),calc(.35 * var(--sda))),inset 0 1px 0 rgba(var(--sl),calc(.12 * var(--sla)))}
 .toast{box-shadow:var(--e34);background:var(--s34)}
 .tab.on{background:var(--s14)}
 /* pressed, chosen and done things sink back to the page's own tone */
@@ -829,24 +828,24 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 *{
   --eR:max(var(--h),0); --eD:max(calc(var(--h) * -1),0); --eR1:min(var(--eR),1); --eD1:min(var(--eD),1);
   --elev:
-    calc(var(--lx) * var(--eR) * .72px) calc(var(--ly) * var(--eR) * .72px) calc(var(--eR) * 1.5px + var(--eR1) * 1px) rgba(8,6,4,.46),
-    calc(var(--lx) * var(--eR) * 5.1px) calc(var(--ly) * var(--eR) * 5.1px) calc(var(--eR) * 9px) rgba(8,6,4,.36),
-    0 calc(var(--eR) * 1.8px) calc(var(--eR) * 14.4px) rgba(8,6,4,.14),
-    calc(var(--lx) * var(--eR) * -2.7px) calc(var(--ly) * var(--eR) * -2.7px) calc(var(--eR) * 7.2px) rgba(255,238,220,.042),
-    inset calc(var(--lx) * var(--eR1) * -1px) calc(var(--ly) * var(--eR1) * -1px) 0 rgba(255,238,220,.06),
-    inset calc(var(--lx) * var(--eR1) * 1px) calc(var(--ly) * var(--eR1) * 1px) calc(var(--eR1) * 1px) rgba(0,0,0,.16),
-    inset calc(var(--lx) * var(--eD) * 5.6px) calc(var(--ly) * var(--eD) * 5.6px) calc(var(--eD) * 12.6px) rgba(8,6,4,.62),
-    inset calc(var(--lx) * var(--eD) * -4.2px) calc(var(--ly) * var(--eD) * -4.2px) calc(var(--eD) * 10.5px) rgba(255,238,220,.055),
-    inset calc(var(--lx) * var(--eD1) * 1px) calc(var(--ly) * var(--eD1) * 1px) calc(var(--eD1) * 1px) rgba(0,0,0,.28);
+    calc(var(--lx) * var(--eR) * .72px) calc(var(--ly) * var(--eR) * .72px) calc(var(--eR) * 1.5px + var(--eR1) * 1px) rgba(var(--sd),calc(.46 * var(--sda))),
+    calc(var(--lx) * var(--eR) * 5.1px) calc(var(--ly) * var(--eR) * 5.1px) calc(var(--eR) * 9px) rgba(var(--sd),calc(.36 * var(--sda))),
+    0 calc(var(--eR) * 1.8px) calc(var(--eR) * 14.4px) rgba(var(--sd),calc(.14 * var(--sda))),
+    calc(var(--lx) * var(--eR) * -2.7px) calc(var(--ly) * var(--eR) * -2.7px) calc(var(--eR) * 7.2px) rgba(var(--sl),calc(.042 * var(--sla))),
+    inset calc(var(--lx) * var(--eR1) * -1px) calc(var(--ly) * var(--eR1) * -1px) 0 rgba(var(--sl),calc(.06 * var(--sla))),
+    inset calc(var(--lx) * var(--eR1) * 1px) calc(var(--ly) * var(--eR1) * 1px) calc(var(--eR1) * 1px) rgba(var(--sd),calc(.16 * var(--sda))),
+    inset calc(var(--lx) * var(--eD) * 5.6px) calc(var(--ly) * var(--eD) * 5.6px) calc(var(--eD) * 12.6px) rgba(var(--sd),calc(.62 * var(--sda))),
+    inset calc(var(--lx) * var(--eD) * -4.2px) calc(var(--ly) * var(--eD) * -4.2px) calc(var(--eD) * 10.5px) rgba(var(--sl),calc(.055 * var(--sla))),
+    inset calc(var(--lx) * var(--eD1) * 1px) calc(var(--ly) * var(--eD1) * 1px) calc(var(--eD1) * 1px) rgba(var(--sd),calc(.28 * var(--sda)));
   /* closer to the light is a touch lighter; deeper is a touch darker */
-  --tone:color-mix(in oklab,color-mix(in oklab,#2B2723,#FFF2E4 calc(var(--eR) * 1.1%)),#000 calc(var(--eD) * 4%));
+  --tone:color-mix(in oklab,color-mix(in oklab,var(--surf),var(--lift) calc(var(--eR) * 1.1%)),var(--deep) calc(var(--eD) * 4%));
 }
 /* every form: its height, and the one recipe */
 .row,.sug,.dateline,.dl-disc,.panel,.later,.hsw,.hsw button,
 .k-word,.tok .tk,.ib,.ib .n,.sbar .ddata,.panel .x,.chip,.sug .sb .primary,.sug .sb .sec2,.sug .sb .dots,.sh .close,.slist .li .rm,.toast .undo,.livebar button,.foot button,
 .k-round,.k-seg,.k-pill,.amt .key,.btn,.stepper,.stepper button,.scrub button,.sw8,.addbtn,.search,textarea.field,input.field,.grab,
 .tabbar,.tab,.logkey,.logkey:before,.livebar,.toast,
-.f,.fk,.tabbar .tw{box-shadow:var(--elev);background-color:var(--tone)}
+.f,.fk,.tabbar .tw,.hero-dial .dl-well{box-shadow:var(--elev);background-color:var(--tone)}
 /* morph-lab hooks: .f regions and .fk keys take the same recipe; the engine sets --h per frame (never a CSS transition on --h);
    .tw is the dock's pressed well the engine places under the current tab; .held is the + while the Log sheet is open */
 .tabbar .tw{position:absolute;border-radius:19px;--h:-.55;pointer-events:none}
@@ -880,6 +879,58 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .k-round.done{box-shadow:var(--elev),0 0 18px -4px var(--hf,transparent)}
 .sw8.on i{box-shadow:0 0 0 3px var(--tone),0 0 0 5px var(--hf),0 0 10px var(--hf)}
 
+
+/* =====================================================================
+   v4: the dial, screen-wide
+   ===================================================================== */
+.arc.hero.h1{height:auto;cursor:default}
+.arc.hero.h1 > .hero-dial{position:relative;inset:auto;display:flex;justify-content:center;align-items:flex-start;padding:6px 0 8px}
+.hero-dial .dl-disc{position:relative;flex:none;border-radius:50%;touch-action:pan-y;--h:1.2}
+.hero-dial .dl-disc svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.hero-dial .dl-h{position:absolute;transform:translate(-50%,-50%);font:600 12px/1 var(--ui);color:var(--t2);text-shadow:var(--deb);pointer-events:none}
+.hero-dial .dl-h.m{font-size:13.5px;color:var(--cream)}
+.hero-dial .dl-well{position:absolute;border-radius:50%;--h:-.9;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;cursor:pointer}
+.hero-dial .dl-well #dlc{display:flex;flex-direction:column;align-items:center;gap:5px;max-width:100%}
+.hero-dial .dl-well b{font:400 34px/1 var(--disp);letter-spacing:-.02em;color:var(--cream)}
+.hero-dial .dl-well b.now{color:var(--sun2);font-weight:450}
+.hero-dial .dl-well .s{font:500 13px/1.2 var(--ui);color:var(--cream)}
+.hero-dial .dl-well .s.nt{color:var(--nightT)}
+.hero-dial .dl-well .s.nt.miss{color:var(--t2)}
+.hero-dial .dl-well .k{display:inline-flex;align-items:center;gap:6px;font:600 13px/1 var(--ui);color:var(--cream)}
+.hero-dial .dl-well .k i,.hero-dial .dl-well .li i{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 6px currentColor}
+.hero-dial .dl-well .hint{font:400 11px/1.25 var(--ui);color:var(--t3);max-width:130px}
+.hero-dial .dl-well .ls{display:grid;gap:5px;margin-top:2px}
+.hero-dial .dl-well .li{display:grid;grid-template-columns:8px auto auto;align-items:center;gap:6px;font:500 13px/1.15 var(--ui);color:var(--cream);white-space:nowrap}
+.hero-dial .dl-well .li em{font-style:normal;color:var(--t2);font-weight:400}
+.hero-dial .dl-well .more{font:400 11.5px var(--ui);color:var(--t3)}
+.hero-dial .db{cursor:pointer;transition:opacity .25s}
+.hero-dial .db.dim,.hero-dial .drec.dim{opacity:.16}
+.hero-dial.focused .dlv,.hero-dial.scrubbing .dlv{opacity:.45}
+.hero-dial .dbn{font:700 9.5px var(--ui);fill:var(--onHue);pointer-events:none}
+.hero-dial .db:focus-visible{outline:none}
+.hero-dial .db:focus-visible circle:first-child{stroke:var(--sun2);stroke-width:2}
+
+
+/* =====================================================================
+   v4: surfaces. The page colour, text tones, shadow and light balance all come from
+   a handful of variables set on .app by applySurface() (?surface=0..3)
+   ===================================================================== */
+.app{--cream:rgb(var(--tx));--t2:rgba(var(--tx),var(--a2));--t3:rgba(var(--tx),var(--a3));--t4:rgba(var(--tx),var(--a4));--ink:var(--surf);
+  --line:rgba(var(--sd),calc(.28 * var(--sda)));--line2:rgba(var(--tx),.10);background:var(--surf);color:var(--cream)}
+.ssw{pointer-events:auto;display:flex;gap:4px;margin-left:10px;padding:3px;border-radius:12px;box-shadow:var(--elev);--h:-.36}
+.ssw button{width:19px;height:24px;display:grid;place-items:center;border-radius:8px}
+.ssw button i{width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(var(--tx),.35)}
+.ssw button.on{box-shadow:var(--elev);--h:.85;background-color:var(--tone)}
+.ssw button.on i{box-shadow:0 0 0 1.5px var(--sun2)}
+.hsw{margin-left:6px}
+.sbar{padding-left:26px;padding-right:14px}
+.sbar .ddata{padding:8px 9px;white-space:nowrap}
+.sbar .clk{color:var(--cream)}
+/* a light page: light can't glow on light, so glows turn to soft tinted shadows and the grain is quieter */
+.lightsurf .grain{opacity:.05}
+.lightsurf .tab.on svg,.lightsurf .logkey svg{filter:none}
+.lightsurf .head h1{text-shadow:-1px -1px 1px rgba(255,255,255,.85),1px 1px 2px rgba(var(--sd),.28)}
+
 @media (prefers-reduced-motion: reduce){.nm-r,.key,.btn,.chip{transition:none!important}}
 
 @media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -891,7 +942,7 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
   <div class="sky" id="sky"></div>
   <div class="scroll" id="scroll"></div>
   <div class="topbar" id="topbar"></div>
-  <div class="sbar"><span class="clk tnum" id="clk">08:40</span><div class="hsw" id="hsw" role="group" aria-label="Hero variant"></div><button class="ddata" id="ddata" data-act="next-sample" aria-label="Show different data">Different data <b id="dnum">1/7</b></button></div>
+  <div class="sbar"><span class="clk tnum" id="clk">08:40</span><div class="ssw" id="ssw" role="group" aria-label="Surface"></div><div class="hsw" id="hsw" role="group" aria-label="Hero variant"></div><button class="ddata" id="ddata" data-act="next-sample" aria-label="Show different data">Data <b id="dnum">1/7</b></button></div>
   <div class="livebar" id="livebar"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="tabfade" aria-hidden="true"></div>
@@ -1136,18 +1187,44 @@ const hueOf = id => { const k = USERHUE[id] || AREA[id]; return k ? HUES[k] : nu
 const hs = id => { const h = hueOf(id); return h ? ` style="--hf:${h.f};--ht:${h.t};--hd:${h.d}"` : ''; };
 // how far into its period a routine is, 0..1, from its real count; nothing expected is ever lit
 const progOf = x => { if (!x || !x.v) return 0; if (x.m === 'tap' || (x.m === 'dur' && x.per !== 'week')) return 1; if (x.m === 'passive') return 0; return Math.min(1, x.v / (x.aim || 1)); };
+// ---------- surfaces: four candidate pages (?surface=0..3), each with its own shadow balance, text tones and hue set ----------
+const oklch = (L, C, h) => { const a = C * Math.cos(h * Math.PI / 180), b = C * Math.sin(h * Math.PI / 180);
+  const l = (L + .3963377774 * a + .2158037573 * b) ** 3, m = (L - .1055613458 * a - .0638541728 * b) ** 3, s = (L - .0894841775 * a - 1.291485548 * b) ** 3;
+  const lin = [4.0767416621 * l - 3.3077115913 * m + .2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - .3413193965 * s, -.0041960863 * l - .7034186147 * m + 1.707614701 * s];
+  const g = x => Math.max(0, Math.min(1, x <= .0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - .055)); const c = lin.map(g);
+  return { hex: '#' + c.map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('').toUpperCase(), rgb: c }; };
+const SURFACES = [
+  { name: 'Slate', surf: '#2A2E33', tx: '236,239,243', a: [.70, .58, .30], sd: '4,6,10', sda: 1, sl: '225,235,255', sla: 1.05, lift: '#F2F6FF', deep: '#000000', rec: '#A0A4AB', onHue: '#121417', lv0: '#EEF0F4', sun: '#FF6B3D', sun2: '#FF8F5E', light: false },
+  { name: 'Ink', surf: '#1D2633', tx: '232,239,248', a: [.70, .58, .30], sd: '1,4,10', sda: 1.15, sl: '190,215,255', sla: 1.2, lift: '#E6F0FF', deep: '#000000', rec: '#9AA3B2', onHue: '#0E1219', lv0: '#E8EEF8', sun: '#FF6B3D', sun2: '#FF8F5E', light: false },
+  { name: 'Clay', surf: '#E2DFDA', tx: '30,32,38', a: [.78, .70, .34], sd: '92,88,98', sda: .82, sl: '255,255,255', sla: 9, lift: '#FFFFFF', deep: '#3E3C44', rec: '#6C6A71', onHue: '#16171B', lv0: '#C8AE93', sun: '#E0562B', sun2: '#A2441F', light: true },
+  { name: 'Mineral', surf: '#22302F', tx: '230,242,239', a: [.70, .58, .30], sd: '1,8,8', sda: 1.1, sl: '200,255,245', sla: 1, lift: '#EFFFFB', deep: '#000000', rec: '#9AABA8', onHue: '#0E1615', lv0: '#EAF4F1', sun: '#FF6B3D', sun2: '#FF8F5E', light: false },
+];
+const HUEH = { saffron: 82, moss: 138, jade: 178, lagoon: 232, iris: 300, rose: 8 };
+let SURF = Math.max(0, Math.min(3, params.has('surface') ? +params.get('surface') : 2));
+function applySurface() {
+  const P = SURFACES[SURF], el = $('#app'), lt = P.light;
+  Object.entries(HUEH).forEach(([k, h]) => { const f = lt ? oklch(.56, .15, h) : oklch(.74, .13, h), t = lt ? oklch(.45, .12, h) : oklch(.82, .11, h), d = lt ? oklch(.88, .05, h) : oklch(.42, .08, h); Object.assign(HUES[k], { f: f.hex, t: t.hex, d: d.hex, rgb: f.rgb }); });
+  const nf = lt ? oklch(.56, .15, 278).hex : '#98A2FC', nt = lt ? oklch(.45, .12, 278).hex : '#B3BDFF';
+  const v = { '--surf': P.surf, '--surfRGB': P.surf.match(/\w\w/g).map(x => parseInt(x, 16)).join(','), '--tx': P.tx, '--a2': P.a[0], '--a3': P.a[1], '--a4': P.a[2], '--sd': P.sd, '--sda': P.sda, '--sl': P.sl, '--sla': P.sla, '--lift': P.lift, '--deep': P.deep, '--rec': P.rec, '--onHue': P.onHue, '--lv0': P.lv0, '--sun': P.sun, '--sun2': P.sun2, '--night': nf, '--nightT': nt };
+  Object.entries(v).forEach(([k, x]) => el.style.setProperty(k, x));
+  el.classList.toggle('lightsurf', lt); document.body.style.background = P.surf; document.documentElement.style.background = P.surf;
+  const sw = $('#ssw'); if (sw) sw.innerHTML = SURFACES.map((q, i) => `<button data-act="surface" data-n="${i}" class="${i === SURF ? 'on' : ''}" aria-pressed="${i === SURF}" aria-label="Surface ${i}, ${q.name}" style="--c:${q.surf}"><i></i></button>`).join('');
+}
+const qs = () => `?sample=${si}&hero=${HERO}&surface=${SURF}${STILL ? '&still' : ''}`;
 
 function load(i) {
+  applySurface();
   si = (i + SAMPLES.length) % SAMPLES.length;
   S = JSON.parse(JSON.stringify(SAMPLES[si]));
   S.entries = S.entries.map(e => ({ id: 'e' + uid++, t: e[0], k: ['dose', 'obs'].includes(e[1]) ? e[1] : 'b', item: ['dose', 'obs'].includes(e[1]) ? null : e[1], name: ['dose', 'obs'].includes(e[1]) ? e[2] : null, v: ['dose', 'obs'].includes(e[1]) ? 0 : e[2], dur: e[3] || 0 }));
   S.items.forEach(x => { if (x.live) { S.live = { id: x.id, start: Date.now() - x.live * 60000 - 4000 }; delete x.live; } });
+  DIAL.focus = null; DIAL.scrub = null;
   U = { more: false, dismissed: new Set(), fx: {}, lock: 0, sugState: S.sug ? 'show' : null, mins: null, tonight: {} };
   closeSheet(true); hideToast(true);
   render(); scrollEl.scrollTop = 0;
   $('#dnum').textContent = `${si + 1}/${SAMPLES.length}`;
   $('#clk').textContent = hm(S.now);
-  try { history.replaceState(null, '', `?sample=${si}${HERO ? '&hero=' + HERO : ''}${STILL ? '&still' : ''}`); } catch (e) {}
+  try { history.replaceState(null, '', qs()); } catch (e) {}
   heroSwitch();
 }
 
@@ -1241,22 +1318,22 @@ function arcSvg() {
   const noData = sl.missing || sl.none;
   let g = '';
   // horizon
-  g += `<line x1="0" x2="${W}" y1="${A.hz}" y2="${A.hz}" stroke="rgba(243,237,228,.13)" stroke-width="1"/>`;
+  g += `<line x1="0" x2="${W}" y1="${A.hz}" y2="${A.hz}" style="stroke:rgba(var(--tx),.13)" stroke-width="1"/>`;
   // the meridian: midpoint of the waking day
-  const mid = (A.wake + A.bed) / 2; g += `<line x1="${A.X(mid)}" x2="${A.X(mid)}" y1="${A.Y(mid) + 10}" y2="${A.hz}" stroke="rgba(243,237,228,.10)" stroke-dasharray="1 4"/>`;
+  const mid = (A.wake + A.bed) / 2; g += `<line x1="${A.X(mid)}" x2="${A.X(mid)}" y1="${A.Y(mid) + 10}" y2="${A.hz}" style="stroke:rgba(var(--tx),.10)" stroke-dasharray="1 4"/>`;
   // last night: the trough under the horizon
   const tr = pathOf(A, A.start, A.wake, 4);
   if (!noData) g += `<path d="${tr} L${A.X(A.wake)} ${A.hz} L${A.X(A.start)} ${A.hz}Z" fill="rgba(142,147,232,.14)"/><path d="${tr}" stroke="var(--night)" stroke-width="2" fill="none" stroke-linecap="round"/>`;
-  else g += `<path d="${tr}" stroke="rgba(243,237,228,.28)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+  else g += `<path d="${tr}" style="stroke:rgba(var(--tx),.28)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
   // the day: lived part solid, the rest dashed
   const nowC = Math.max(A.start, Math.min(A.end, now));
   // flat fallback: the same groove, drawn as a dark wall above and a lit lip below, the light inside it
-  const groove = d => `<path d="${d}" transform="translate(-.9 -.9)" stroke="rgba(12,9,6,.75)" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="${d}" transform="translate(.9 .9)" stroke="rgba(255,238,220,.10)" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#2B2723" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const groove = d => `<path d="${d}" transform="translate(-.9 -.9)" style="stroke:rgba(var(--sd),calc(.75 * var(--sda)))" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="${d}" transform="translate(.9 .9)" style="stroke:rgba(var(--sl),calc(.10 * var(--sla)))" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="${d}" style="stroke:var(--surf)" stroke-width="5" fill="none" stroke-linecap="round"/>`;
   if (nowC > A.wake) g += groove(pathOf(A, A.wake, Math.min(nowC, A.bed)));
   if (!noData) g = groove(tr) + g;
-  if (nowC > A.wake) g += `<path d="${pathOf(A, A.wake, Math.min(nowC, A.bed))}" stroke="rgba(243,237,228,.58)" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
-  g += `<path d="${pathOf(A, Math.max(A.wake, nowC), A.bed)}" stroke="rgba(243,237,228,.24)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
-  g += `<path d="${pathOf(A, A.bed, A.end)}" stroke="rgba(243,237,228,.16)" stroke-width="1.3" fill="none" stroke-dasharray="2 5"/>`;
+  if (nowC > A.wake) g += `<path d="${pathOf(A, A.wake, Math.min(nowC, A.bed))}" style="stroke:rgba(var(--tx),.58)" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  g += `<path d="${pathOf(A, Math.max(A.wake, nowC), A.bed)}" style="stroke:rgba(var(--tx),.24)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+  g += `<path d="${pathOf(A, A.bed, A.end)}" style="stroke:rgba(var(--tx),.16)" stroke-width="1.3" fill="none" stroke-dasharray="2 5"/>`;
   // sessions thicken the arc over their span
   S.entries.filter(e => e.k === 'b' && e.dur).forEach(e => { g += `<path class="sess" d="${pathOf(A, e.t - e.dur, e.t, 3)}" opacity=".9"/>`; });
   // rays: every log of something done, stacked outward where they share a place
@@ -1293,7 +1370,7 @@ function arcSvg() {
   return { svg: `<svg viewBox="0 0 ${W} ${A.H}" aria-hidden="true">${g}${lbl.join('')}</svg>`, A, sx, sy, W, data };
 }
 // ---------- heroes: four ways to show the same day (?hero=0 the carved arc, 1 the dial, 2 the hours, 3 the lanes) ----------
-let HERO = Math.max(0, Math.min(3, +(params.get('hero') || 0)));
+let HERO = Math.max(0, Math.min(3, params.has('hero') ? +params.get('hero') : 1)); // the dial is the default
 // one summary of the day, shared by every hero: the same records the arc reads
 function dayData() {
   const sl = S.sleep, noNight = !!(sl.missing || sl.none), now = S.now, wake = sl.wake, bed = Math.max(wake + 600, S.bed);
@@ -1307,38 +1384,99 @@ function dayData() {
 const nightTxt = D => D.noNight ? (D.sl.none ? 'No sleep record' : 'Last night not in yet') : `${dur(D.sl.asleep)} asleep`;
 const hueC = h => h ? h.f : '#E9E2D8';
 
-// Hero 1, the dial: the whole 24 hours as one moulded ring, read at a glance, with the day so far listed beside it
+// Hero 1, the dial: the whole 24 hours as one moulded disc, screen-wide. Its details live in it:
+// logs gather as one bead per routine per hour (with a count), tap a bead to light only that routine,
+// drag the ring to read any hour in the centre, tap the centre (or hold anywhere) for the Day sheet.
+const DIAL = { focus: null, scrub: null };
+const clockMin = t => ((t % 1440) + 1440) % 1440;
+function dialGeo(W) { const D = Math.min(W - 40, 380), R = D / 2; return { D, R, c: R, rg: R - 46, wr: Math.round(D * .22) }; }
+function dialClusters(D, G) {
+  const out = [];
+  D.logs.forEach(l => { const hr = Math.floor(clockMin(l.t) / 60); let k = out.find(q => q.id === l.e.item && q.hr === hr); if (!k) out.push(k = { id: l.e.item, hr, h: l.h, x: l.x, logs: [] }); k.logs.push(l); });
+  out.forEach(k => { k.t = k.logs.reduce((s, l) => s + clockMin(l.t), 0) / k.logs.length; k.n = k.logs.length; });
+  out.sort((a, b) => a.t - b.t);
+  // place each on the ring at its time; a bead that would touch another steps inward, one track at a time
+  const placed = [], ang = t => t / 1440 * Math.PI * 2, P = (t, r) => [G.c + r * Math.sin(ang(t)), G.c - r * Math.cos(ang(t))];
+  const knob = P(clockMin(D.now), G.rg);
+  const free = p => placed.every(q => Math.hypot(q.p[0] - p[0], q.p[1] - p[1]) >= 17.5) && Math.hypot(knob[0] - p[0], knob[1] - p[1]) >= 20;
+  out.forEach(k => { let best = null; search: for (const dt of [0, 12, -12, 24, -24, 36]) for (const r of [G.rg, G.rg - 19, G.rg - 37]) { const p = P(k.t + dt, r); if (free(p)) { best = p; break search; } } k.p = best || P(k.t, G.rg - 37); placed.push(k); });
+  return out;
+}
+const figOf = (x, L) => !x ? `${L.length}` : x.m === 'amount' ? amt(L.reduce((s, l) => s + l.e.v, 0)) : x.m === 'reps' ? `${L.reduce((s, l) => s + l.e.v, 0)} reps` : (x.m === 'dur' || x.m === 'watch') && L.some(l => l.e.dur) ? dur(L.reduce((s, l) => s + (l.e.dur || 0), 0)) : x.m === 'count' ? `${L.length} ${x.unit || ''}${L.length > 1 ? 's' : ''}`.trim() : L.length > 1 ? `${L.length} times` : 'once';
 function heroDial(W) {
-  const D = dayData(), R = 150, c = R / 2, rg = 55;
-  const ang = t => ((t % 1440) + 1440) % 1440 / 1440 * Math.PI * 2;
-  const pt = (t, r) => { const a = ang(t); return [c + r * Math.sin(a), c - r * Math.cos(a)]; };
-  const arcP = (t0, t1, r) => { if (t1 <= t0) return ''; const [x0, y0] = pt(t0, r), [x1, y1] = pt(t1, r); const big = (t1 - t0) % 1440 > 720 ? 1 : 0; return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${big} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  const D = dayData(), G = dialGeo(W), { R, c, rg } = G;
+  const P = (t, r) => { const a = clockMin(t) / 1440 * Math.PI * 2; return [c + r * Math.sin(a), c - r * Math.cos(a)]; };
+  const arcP = (t0, t1, r) => { if (t1 <= t0) return ''; if (t1 - t0 >= 1439) t1 = t0 + 1439; const [x0, y0] = P(t0, r), [x1, y1] = P(t1, r); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${t1 - t0 > 720 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
   let g = `<defs>${SVGF}</defs>`;
-  // the ring: a groove carved round the dial
-  g += `<circle cx="${c}" cy="${c}" r="${rg}" fill="none" stroke="#2B2723" stroke-width="15" filter="url(#ins)"/>`;
-  // hour marks: four engraved numerals, and a fine pit every hour
-  for (let hh = 0; hh < 24; hh++) { const [x, y] = pt(hh * 60, 67.5); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${hh % 6 ? .9 : 1.5}" fill="rgba(12,9,6,.7)"/>`; }
-  // last night, as cool light in the groove; a missing night is a dotted trace only
-  if (!D.noNight) g += `<path d="${arcP(D.sl.onset, D.wake, rg)}" stroke="var(--night)" stroke-width="6" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
-  else g += `<path d="${arcP(D.sl.onset, D.wake, rg)}" stroke="rgba(243,237,228,.3)" stroke-width="1.6" stroke-dasharray="1.5 4" stroke-linecap="round" fill="none"/>`;
-  // the day lived: warm light from waking to now
-  if (D.now > D.wake) g += `<path d="${arcP(D.wake, Math.min(D.now, D.bed), rg)}" stroke="url(#lived)" stroke-width="4" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
-  // the rest of the day, to bedtime: shallow pits, never lit
-  for (let t = Math.max(D.now, D.wake) + 20; t < D.bed; t += 20) { const [x, y] = pt(t, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.1" fill="rgba(12,9,6,.75)"/>`; }
-  { const [x, y] = pt(D.bed, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="none" stroke="rgba(243,237,228,.35)" stroke-width="1"/>`; }
-  // logs: a bead each in its routine's hue, at its own time; beads that share a moment stack inward
-  const slot = {}; D.logs.forEach(l => { const k = Math.round(ang(l.t) / (Math.PI * 2) * 96); const n = slot[k] = (slot[k] || 0) + 1; const [x, y] = pt(l.t, rg - (n - 1) * 7.5); g += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.1" fill="${hueC(l.h)}" filter="url(#bead)"/>`; });
-  // records: small grey pits just outside the groove
-  D.recs.forEach(e => { const [x, y] = pt(e.t, 67.5); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.1" fill="var(--rec)"/>`; });
-  // now: a raised ember knob on the ring
-  { const [x, y] = pt(D.now, rg); g += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="7.5" fill="var(--sun)" filter="url(#knob)"/>`; }
-  const list = D.by.slice(0, D.by.length > 5 ? 4 : 5), more = D.by.length - list.length;
-  const side = `<div class="dl-side">
-    <div class="dl-night${D.noNight ? ' miss' : ''}"><i></i>${nightTxt(D)}${!D.noNight ? `<span>, woke ${hm(D.wake)}</span>` : ''}</div>
-    ${D.by.length ? `<div class="dl-list">${list.map(r => `<div class="dl-r"><i style="background:${hueC(r.h)};color:${hueC(r.h)}"></i><span class="n">${esc(r.name)}</span><span class="v tnum">${esc(r.fig)}</span></div>`).join('')}${more ? `<div class="dl-more">and ${more} more</div>` : ''}${D.recs.length ? `<div class="dl-more">${D.recs.length} record${D.recs.length > 1 ? 's' : ''}</div>` : ''}</div>` : `<div class="dl-empty">Nothing logged yet. What you log gathers on the ring.</div>`}
-  </div>`;
-  return `<div class="hero-dial"><div class="dl-disc"><svg viewBox="0 0 ${R} ${R}" width="${R}" height="${R}">${g}</svg><div class="dl-well"><b class="tnum">${hm(D.now)}</b><span>${D.logs.length ? `${D.logs.length} logged` : 'now'}</span></div>
-    <span class="dl-h" style="left:${c}px;top:2px">0</span><span class="dl-h" style="left:${R - 5}px;top:${c}px">6</span><span class="dl-h" style="left:${c}px;top:${R - 3}px">12</span><span class="dl-h" style="left:5px;top:${c}px">18</span></div>${side}</div>`;
+  g += `<circle cx="${c}" cy="${c}" r="${rg}" fill="none" style="stroke:var(--s6)" stroke-width="26" filter="url(#ins)"/>`;
+  for (let hh = 0; hh < 24; hh++) { const [x, y] = P(hh * 60, R - 27); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${hh % 3 ? 1 : 1.7}" style="fill:rgba(var(--sd),calc(.75 * var(--sda)))"/>`; }
+  if (!D.noNight) g += `<path class="dn" d="${arcP(D.sl.onset, D.wake, rg)}" stroke="var(--night)" stroke-width="7" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
+  else g += `<path d="${arcP(D.sl.onset, D.wake, rg)}" style="stroke:rgba(var(--tx),.32)" stroke-width="2" stroke-dasharray="1.5 5" stroke-linecap="round" fill="none"/>`;
+  if (D.now > D.wake) g += `<path class="dlv" d="${arcP(D.wake, Math.min(D.now, D.bed), rg)}" stroke="url(#lived)" stroke-width="5" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
+  for (let t = Math.max(D.now, D.wake) + 15; t < D.bed; t += 15) { const [x, y] = P(t, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.3" style="fill:rgba(var(--sd),calc(.8 * var(--sda)))"/>`; }
+  { const [x, y] = P(D.bed, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="none" style="stroke:rgba(var(--tx),.38)" stroke-width="1.2"/>`; }
+  D.recs.forEach(e => { const [x, y] = P(e.t, rg + 18); g += `<circle class="drec" data-hr="${Math.floor(clockMin(e.t) / 60)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="var(--rec)"/>`; });
+  // the scrub mark: a cream notch riding the ring, hidden until you drag
+  g += `<g id="dlmark" style="display:none"><path id="dlhour" d="" style="stroke:rgba(var(--tx),.55)" stroke-width="20" stroke-linecap="butt" fill="none" opacity=".18"/><circle id="dlknob" r="6" style="fill:var(--cream)" filter="url(#bead)"/></g>`;
+  dialClusters(D, G).forEach(k => {
+    const col = hueC(k.h), nm = k.x ? (k.x.short || k.x.name) : k.id;
+    g += `<g class="db" data-act="dfocus" data-id="${esc(k.id)}" data-hr="${k.hr}" role="button" tabindex="0" aria-label="${esc(nm)}, ${k.n} at ${String(k.hr).padStart(2, '0')}:00. Show only ${esc(nm)}"><circle cx="${k.p[0].toFixed(2)}" cy="${k.p[1].toFixed(2)}" r="${k.n > 1 ? 8.5 : 6.5}" fill="${col}" filter="url(#bead)"/>${k.n > 1 ? `<text x="${k.p[0].toFixed(2)}" y="${(k.p[1] + 3.4).toFixed(2)}" text-anchor="middle" class="dbn">${k.n}</text>` : ''}<circle cx="${k.p[0].toFixed(2)}" cy="${k.p[1].toFixed(2)}" r="13" fill="transparent"/></g>`;
+  });
+  { const [x, y] = P(D.now, rg); g += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="9.5" fill="var(--sun)" filter="url(#knob)"/>`; }
+  const nums = [0, 3, 6, 9, 12, 15, 18, 21].map(hh => { const [x, y] = P(hh * 60, R - 13); return `<span class="dl-h${hh % 6 ? '' : ' m'}" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px">${hh}</span>`; }).join('');
+  return `<div class="hero-dial" style="height:${G.D + 14}px"><div class="dl-disc" style="width:${G.D}px;height:${G.D}px" data-r="${R}" data-rg="${rg}"><svg viewBox="0 0 ${G.D} ${G.D}" width="${G.D}" height="${G.D}">${g}</svg>${nums}
+    <button class="dl-well" data-act="dcentre" style="left:${c - G.wr}px;top:${c - G.wr}px;width:${G.wr * 2}px;height:${G.wr * 2}px" aria-live="polite"><span id="dlc">${dialCentre(D)}</span></button></div></div>`;
+}
+function dialCentre(D) {
+  D = D || dayData();
+  if (DIAL.focus) {
+    const r = D.by.find(q => q.id === DIAL.focus); if (!r) { DIAL.focus = null; return dialCentre(D); }
+    const last = r.logs[r.logs.length - 1];
+    return `<span class="k" style="color:${r.h ? r.h.t : 'var(--cream)'}"><i style="background:${hueC(r.h)}"></i>${esc(r.x ? r.x.name : r.id)}</span><b class="tnum">${esc(figOf(r.x, r.logs))}</b><span class="s">today, last ${hm(last.t)}</span><span class="hint">Tap to see the whole day</span>`;
+  }
+  if (DIAL.scrub != null) {
+    const hr = Math.floor(clockMin(DIAL.scrub) / 60), a = hr * 60, b = a + 60, nowM = clockMin(D.now);
+    const L = D.logs.filter(l => Math.floor(clockMin(l.t) / 60) === hr), Rc = D.recs.filter(e => Math.floor(clockMin(e.t) / 60) === hr);
+    const asleep = !D.noNight && [[clockMin(D.sl.onset), clockMin(D.sl.onset) + D.sl.asleep + (D.wake - D.sl.onset - D.sl.asleep)]].some(([s, e]) => (a < e % 1440 + (e > 1440 ? 1440 : 0) && b > s) || (e > 1440 && a < e - 1440));
+    const head = `<span class="k tnum">${String(hr).padStart(2, '0')}:00 to ${String((hr + 1) % 24).padStart(2, '0')}:00</span>`;
+    let body;
+    if (L.length) { const by = []; L.forEach(l => { let q = by.find(z => z.id === l.e.item); if (!q) by.push(q = { id: l.e.item, x: l.x, h: l.h, logs: [] }); q.logs.push(l); });
+      body = `<span class="ls">${by.slice(0, 3).map(q => `<span class="li"><i style="background:${hueC(q.h)}"></i>${esc(q.x ? (q.x.short || q.x.name) : q.id)}<em class="tnum">${esc(figOf(q.x, q.logs))}</em></span>`).join('')}${by.length > 3 ? `<span class="more">and ${by.length - 3} more</span>` : ''}</span>`; }
+    else if (a > nowM) body = `<span class="s">Later today</span>`;
+    else if (asleep && a < clockMin(D.wake)) body = `<span class="s nt">Asleep</span>`;
+    else if (hr === Math.floor(nowM / 60)) body = `<span class="s">Now, nothing yet this hour</span>`;
+    else body = `<span class="s">Nothing logged</span>`;
+    return head + body + (Rc.length ? `<span class="hint">${Rc.length} record${Rc.length > 1 ? 's' : ''}: ${esc(Rc.map(e => e.name.split(' ')[0]).join(', '))}</span>` : '');
+  }
+  return `<b class="tnum now">${hm(D.now)}</b><span class="s">${D.logs.length ? `${D.logs.length} logged today` : 'Nothing logged yet'}</span><span class="s nt${D.noNight ? ' miss' : ''}">${nightTxt(D)}</span><span class="hint">${D.logs.length ? 'Tap a bead, or drag the ring' : 'What you log gathers on the ring'}</span>`;
+}
+function dialApply() {
+  const host = scrollEl.querySelector('.hero-dial'); if (!host) return;
+  const hr = DIAL.scrub != null ? Math.floor(clockMin(DIAL.scrub) / 60) : null;
+  host.querySelectorAll('.db').forEach(b => b.classList.toggle('dim', (DIAL.focus && b.dataset.id !== DIAL.focus) || (hr != null && +b.dataset.hr !== hr)));
+  host.querySelectorAll('.drec').forEach(b => b.classList.toggle('dim', !!DIAL.focus || (hr != null && +b.dataset.hr !== hr)));
+  host.classList.toggle('focused', !!DIAL.focus); host.classList.toggle('scrubbing', hr != null);
+  const mk = host.querySelector('#dlmark'), disc = host.querySelector('.dl-disc');
+  if (hr != null) { const R = +disc.dataset.r, rg = +disc.dataset.rg, A = t => t / 1440 * Math.PI * 2, P = (t, r) => [R + r * Math.sin(A(t)), R - r * Math.cos(A(t))];
+    const [x, y] = P(clockMin(DIAL.scrub), rg); mk.style.display = ''; mk.querySelector('#dlknob').setAttribute('cx', x.toFixed(1)); mk.querySelector('#dlknob').setAttribute('cy', y.toFixed(1));
+    const [x0, y0] = P(hr * 60, rg), [x1, y1] = P(hr * 60 + 60, rg); mk.querySelector('#dlhour').setAttribute('d', `M${x0.toFixed(1)} ${y0.toFixed(1)}A${rg} ${rg} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`);
+  } else mk.style.display = 'none';
+  host.querySelector('#dlc').innerHTML = dialCentre();
+}
+function bindDial() {
+  const disc = scrollEl.querySelector('.dl-disc'); if (!disc) return;
+  let st = null;
+  const minAt = e => { const b = disc.getBoundingClientRect(), R = b.width / 2, dx = e.clientX - b.left - R, dy = e.clientY - b.top - R; let a = Math.atan2(dx, -dy); if (a < 0) a += Math.PI * 2; return { m: a / (Math.PI * 2) * 1440, r: Math.hypot(dx, dy), R }; };
+  disc.addEventListener('pointerdown', e => {
+    const q = minAt(e), rg = +disc.dataset.rg;
+    st = { id: e.pointerId, x: e.clientX, y: e.clientY, ring: q.r > rg - 30 && q.r < q.R - 2, bead: !!e.target.closest('.db'), moved: false, lp: setTimeout(() => { if (st && !st.moved) { st.held = true; haptic(15); openSheet('day'); } }, 520) };
+  });
+  disc.addEventListener('pointermove', e => { if (!st) return; if (!st.moved && Math.hypot(e.clientX - st.x, e.clientY - st.y) > 6) { st.moved = true; clearTimeout(st.lp); if (st.ring) try { disc.setPointerCapture(st.id); } catch (er) {} } if (st.ring && st.moved) { const q = minAt(e); const hr = Math.floor(q.m / 60); if (DIAL.scrub == null || Math.floor(DIAL.scrub / 60) !== hr) haptic(3); DIAL.focus = null; DIAL.scrub = q.m; dialApply(); } });
+  const up = e => { if (!st) return; clearTimeout(st.lp); if (st.ring && !st.bead && !st.moved && !st.held) { const q = minAt(e); DIAL.focus = null; DIAL.scrub = q.m; dialApply(); } disc._swallow = st.held || st.moved; st = null; };
+  disc.addEventListener('pointerup', up); disc.addEventListener('pointercancel', () => { if (st) clearTimeout(st.lp); st = null; });
+  disc.addEventListener('click', e => { if (disc._swallow) { e.stopPropagation(); disc._swallow = false; } }, true);
+  disc.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); DIAL.focus = null; DIAL.scrub = clockMin((DIAL.scrub == null ? Math.floor(S.now / 60) * 60 : Math.floor(DIAL.scrub / 60) * 60) + (e.key === 'ArrowRight' ? 60 : -60)) + 30; dialApply(); } });
+  dialApply();
 }
 
 // Hero 2, the hours: one moulded cell per waking hour, each filling with a segment of light per log in its routine's hue
@@ -1395,13 +1533,13 @@ function heroLanes(W) {
 }
 // SVG filters for the dial: an inner shadow (groove), a glow (light in the groove), a raised bead and a raised knob, all lit from the top left
 const SVGF = `<filter id="ins" x="-20%" y="-20%" width="140%" height="140%"><feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
-<feGaussianBlur in="inv" stdDeviation="2.4" result="b"/><feOffset in="b" dx="2.4" dy="2.4" result="o1"/><feFlood flood-color="#0C0906" flood-opacity=".8"/><feComposite in2="o1" operator="in"/><feComposite in2="SourceAlpha" operator="in" result="dk"/>
-<feOffset in="b" dx="-1.8" dy="-1.8" result="o2"/><feFlood flood-color="#FFEEDC" flood-opacity=".09"/><feComposite in2="o2" operator="in"/><feComposite in2="SourceAlpha" operator="in" result="lt"/>
+<feGaussianBlur in="inv" stdDeviation="2.4" result="b"/><feOffset in="b" dx="2.4" dy="2.4" result="o1"/><feFlood style="flood-color:rgb(var(--sd));flood-opacity:calc(.8 * var(--sda))"/><feComposite in2="o1" operator="in"/><feComposite in2="SourceAlpha" operator="in" result="dk"/>
+<feOffset in="b" dx="-1.8" dy="-1.8" result="o2"/><feFlood style="flood-color:rgb(var(--sl));flood-opacity:calc(.09 * var(--sla))"/><feComposite in2="o2" operator="in"/><feComposite in2="SourceAlpha" operator="in" result="lt"/>
 <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="dk"/><feMergeNode in="lt"/></feMerge></filter>
 <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<filter id="bead" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="1" result="a"/><feOffset in="a" dx="1.2" dy="1.4" result="s"/><feFlood flood-color="#0C0906" flood-opacity=".7"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".55"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<filter id="knob" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="2" result="a"/><feOffset in="a" dx="2.5" dy="2.5" result="s"/><feFlood flood-color="#0C0906" flood-opacity=".75"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".7"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<linearGradient id="lived" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#F3E3CC"/><stop offset="1" stop-color="#FF8F5E"/></linearGradient>`;
+<filter id="bead" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="1" result="a"/><feOffset in="a" dx="1.2" dy="1.4" result="s"/><feFlood style="flood-color:rgb(var(--sd));flood-opacity:calc(.7 * var(--sda))"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".55"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="knob" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="2" result="a"/><feOffset in="a" dx="2.5" dy="2.5" result="s"/><feFlood style="flood-color:rgb(var(--sd));flood-opacity:calc(.75 * var(--sda))"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".7"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<linearGradient id="lived" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--lv0)"/><stop offset="1" stop-color="#FF8F5E"/></linearGradient>`;
 function heroSwitch() { const el = $('#hsw'); if (el) el.innerHTML = ['Arc', '1', '2', '3'].map((l, i) => `<button data-act="hero" data-h="${i}" class="${HERO === i ? 'on' : ''}" aria-pressed="${HERO === i}" aria-label="${['Hero 0, the carved arc', 'Hero 1, the dial', 'Hero 2, the hours', 'Hero 3, the lanes'][i]}">${l}</button>`).join(''); }
 
 function skyTint() {
@@ -1493,7 +1631,7 @@ function render() {
       <button class="ib" data-act="logsheet" aria-label="Search everything"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l4.5 4.5"/></svg></button>
     </div></header>`;
   const W0 = scrollEl.clientWidth || 390;
-  h += `<div class="arc${HERO ? ' hero h' + HERO : ''}" data-act="sheet" data-s="day" role="button" aria-label="Your day so far: ${S.entries.length} entries. Open the day">${HERO === 1 ? heroDial(W0) : HERO === 2 ? heroHours(W0) : HERO === 3 ? heroLanes(W0) : a.svg}${!S.entries.length && S.dayOne && !HERO ? '<div class="arcnote">What you log gathers on the day.</div>' : ''}</div>`;
+  h += (HERO === 1 ? `<div class="arc hero h1" role="group" aria-label="Your day so far: ${S.entries.length} entries. Tap a bead to show one routine, drag the ring to read an hour, tap the centre for the whole day">` : `<div class="arc${HERO ? ' hero h' + HERO : ''}" data-act="sheet" data-s="day" role="button" aria-label="Your day so far: ${S.entries.length} entries. Open the day">`) + `${HERO === 1 ? heroDial(W0) : HERO === 2 ? heroHours(W0) : HERO === 3 ? heroLanes(W0) : a.svg}${!S.entries.length && S.dayOne && !HERO ? '<div class="arcnote">What you log gathers on the day.</div>' : ''}</div>`;
   h += panels();
   if (S.welcome) h += `<p class="welcome">${S.welcome}</p>`;
   // Now
@@ -1510,6 +1648,7 @@ function render() {
   if (S.dayOne) h += `<button class="addbtn" data-act="toast-add"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>Add a routine</button>`;
   h += `<div class="foot"><button data-act="next-sample">Different data, ${si + 1} of ${SAMPLES.length}: ${esc(S.label)}</button></div>`;
   scrollEl.innerHTML = h;
+  if (HERO === 1) bindDial();
   if (window.Arc3D && !HERO) { try { window.Arc3D.attach(scrollEl.querySelector('.arc'), a.data, STILL); } catch (err) { window.Arc3D = null; } }
   scrollEl.scrollTop = sv;
   $('#topbar').textContent = S.short;
@@ -1714,7 +1853,10 @@ document.addEventListener('click', e => {
   if (a === 'dismiss') { e.stopPropagation(); U.dismissed.add(id); render(); toast('Hidden for now', 'It’s still in Time', () => { U.dismissed.delete(id); render(); }, true); return; }
   switch (a) {
     case 'next-sample': load(si + 1); break;
-    case 'hero': HERO = +t.dataset.h; try { history.replaceState(null, '', `?sample=${si}${HERO ? '&hero=' + HERO : ''}${STILL ? '&still' : ''}`); } catch (e) {} heroSwitch(); render(); break;
+    case 'surface': SURF = +t.dataset.n; applySurface(); try { history.replaceState(null, '', qs()); } catch (e) {} render(); break;
+    case 'dfocus': DIAL.scrub = null; DIAL.focus = DIAL.focus === id ? null : id; haptic(5); dialApply(); break;
+    case 'dcentre': if (DIAL.focus || DIAL.scrub != null) { DIAL.focus = null; DIAL.scrub = null; dialApply(); } else openSheet('day'); break;
+    case 'hero': HERO = +t.dataset.h; try { history.replaceState(null, '', qs()); } catch (e) {} heroSwitch(); render(); break;
     case 'sheet': openSheet(t.dataset.s, id); break;
     case 'logsheet': openSheet('logsheet'); break;
     case 'close': closeSheet(); break;
