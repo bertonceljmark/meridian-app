@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#2B2723">
+<title>Meridian Clay Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist:wght@300..700&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   MORPH LAB. One surface that deforms.
+   Every form on the page carries ONE number, --h:
+     +1  plateau (risen out of the page)      0  flat page      -1  well (pressed into the page)
+   Shadows are computed from --h and from the light direction (--lx, --ly),
+   so anything can travel continuously between raised, flat and pressed.
+   That is the whole trick: nothing slides over the page; the page itself
+   rises, flattens, sinks and flows.
+   ===================================================================== */
+@property --h{syntax:'<number>';inherits:false;initial-value:0}
+@property --lx{syntax:'<number>';inherits:true;initial-value:1}
+@property --ly{syntax:'<number>';inherits:true;initial-value:1}
+:root{
+  --surf:#2B2723; --cream:#F3EDE4;
+  --t2:rgba(243,237,228,.68); --t3:rgba(243,237,228,.57); --t4:rgba(243,237,228,.30);
+  --sun:#FF6B3D; --sun2:#FF8F5E; --night:#98A2FC; --rec:#A39C92;
+  --disp:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --ui:"Geist",ui-sans-serif,system-ui,sans-serif;
+  --gut:20px; --tabh:84px;
+  --ease:cubic-bezier(.2,.8,.2,1); --spr:cubic-bezier(.34,1.45,.55,1); --press:cubic-bezier(.3,.7,.4,1);
+  --deb:calc(var(--lx)*-1px) calc(var(--ly)*-1px) 0 rgba(0,0,0,.45),calc(var(--lx)*1px) calc(var(--ly)*1px) 0 rgba(255,238,220,.06);
+  --emb:calc(var(--lx)*2px) calc(var(--ly)*2px) 5px rgba(12,9,6,.55),calc(var(--lx)*-1px) calc(var(--ly)*-1px) 1px rgba(255,238,220,.07);
+  --groove:linear-gradient(rgba(12,9,6,.5) 0 1px,rgba(255,238,220,.06) 1px 2px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#1C1916;color:var(--cream);font-family:var(--ui);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+body{display:flex;justify-content:center}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+input{font:inherit;color:inherit;border:0;outline:0;background:none}
+.app{position:relative;width:100%;max-width:430px;height:100dvh;overflow:hidden;background:var(--surf);--lx:1;--ly:1}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- the two depth recipes ---------- */
+/* regions: plateaus (rows, sheets, bars) and wells (results, Later) */
+.f{box-shadow:
+  calc(max(var(--h),0)*12px*var(--lx)) calc(max(var(--h),0)*12px*var(--ly)) calc(max(var(--h),0)*28px) rgba(12,9,6,.46),
+  calc(max(var(--h),0)*-9px*var(--lx)) calc(max(var(--h),0)*-9px*var(--ly)) calc(max(var(--h),0)*22px) rgba(255,238,220,.052),
+  calc(max(var(--h),0)*2px*var(--lx)) calc(max(var(--h),0)*2px*var(--ly)) calc(max(var(--h),0)*5px) rgba(12,9,6,.2),
+  inset calc(max(calc(var(--h) * -1),0)*7px*var(--lx)) calc(max(calc(var(--h) * -1),0)*7px*var(--ly)) calc(max(calc(var(--h) * -1),0)*16px) rgba(12,9,6,.46),
+  inset calc(max(calc(var(--h) * -1),0)*-6px*var(--lx)) calc(max(calc(var(--h) * -1),0)*-6px*var(--ly)) calc(max(calc(var(--h) * -1),0)*14px) rgba(255,238,220,.045);
+  translate:calc(var(--h)*var(--px,0)*1px) calc(var(--h)*var(--py,0)*1px)}
+/* keys: smaller, crisper; the thing you press */
+.fk{--h:1;box-shadow:
+  calc(max(var(--h),0)*5px*var(--lx)) calc(max(var(--h),0)*5px*var(--ly)) calc(max(var(--h),0)*12px) rgba(12,9,6,.58),
+  calc(max(var(--h),0)*-4px*var(--lx)) calc(max(var(--h),0)*-4px*var(--ly)) calc(max(var(--h),0)*10px) rgba(255,238,220,.075),
+  inset calc(max(calc(var(--h) * -1),0)*4px*var(--lx)) calc(max(calc(var(--h) * -1),0)*4px*var(--ly)) calc(max(calc(var(--h) * -1),0)*10px) rgba(12,9,6,.62),
+  inset calc(max(calc(var(--h) * -1),0)*-3px*var(--lx)) calc(max(calc(var(--h) * -1),0)*-3px*var(--ly)) calc(max(calc(var(--h) * -1),0)*9px) rgba(255,238,220,.085);
+  background:var(--surf);transition:--h .36s var(--spr),transform .36s var(--spr),color .25s;
+  translate:calc(var(--h)*var(--px,0)*.6px) calc(var(--h)*var(--py,0)*.6px)}
+.fk.down{--h:-.75;transform:scale(.96);transition:--h .08s var(--press),transform .08s var(--press)}
+.fk.on,.fk.done{--h:-1}
+.fk.lo{--h:.55}
+.fk:disabled{--h:0;color:var(--t4)}
+.fk.held{--h:-1.15!important;transition:--h .3s var(--ease)}
+:focus{outline:none}
+input:focus-visible{outline:none}
+:focus-visible{outline:2px solid var(--sun2);outline-offset:3px;border-radius:14px}
+
+/* grain */
+.grain{position:absolute;inset:0;z-index:90;pointer-events:none;opacity:.07;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.2'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");background-size:160px 160px}
+
+/* ---------- chrome ---------- */
+.sbar{position:absolute;top:0;left:0;right:0;height:50px;z-index:70;display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0 30px;pointer-events:none}
+.sbar .clk{font:600 16px/1 var(--ui)}
+.sbar .gd{pointer-events:auto;font:500 12.5px/1 var(--ui);color:var(--t2);padding:9px 13px;border-radius:99px;--h:.55;text-shadow:var(--deb)}
+.sbar .gd b{color:var(--cream);font-weight:600}
+.topbar{position:absolute;top:0;left:0;right:0;height:96px;z-index:35;background:var(--surf);display:flex;align-items:flex-end;justify-content:center;padding-bottom:13px;font:600 16px/1 var(--disp);opacity:0;pointer-events:none;border-radius:0 0 26px 26px}
+.topbar span{text-shadow:var(--emb)}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:200px;display:none;-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{display:none}
+.screen.on{display:block}
+.screen.out{opacity:0;transition:opacity .16s linear}
+.screen.in{animation:txin .32s var(--ease) both}
+@keyframes txin{from{opacity:0}}
+.screen.dim{opacity:.5;transition:opacity .3s var(--ease)}
+
+/* header */
+.head{position:relative;padding:60px var(--gut) 0;display:flex;align-items:flex-start;justify-content:space-between}
+.head h1{font:600 34px/1 var(--disp);font-variation-settings:"wdth" 88;letter-spacing:-.02em;text-shadow:var(--emb);transform-origin:left bottom}
+.head .sub{margin-top:7px;font:400 15px/1.2 var(--ui);color:var(--t2);text-shadow:var(--deb)}
+.hicons{display:flex;gap:10px;margin-top:-4px}
+.ib{position:relative;width:42px;height:42px;display:grid;place-items:center;border-radius:50%;color:var(--t2);--h:.6}
+.ib svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.07))}
+.ib .n{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--surf);font:700 10.5px/18px var(--ui);color:var(--cream);text-align:center;box-shadow:2px 2px 5px rgba(12,9,6,.5),-1px -1px 3px rgba(255,238,220,.05)}
+.ib .n.pop{animation:pop .5s var(--spr)}
+@keyframes pop{0%{transform:scale(.4)}100%{transform:none}}
+
+/* pull to sync */
+.pull{position:absolute;top:50px;left:50%;width:150px;height:30px;margin-left:-75px;border-radius:15px;z-index:5;display:grid;place-items:center;font:500 11.5px var(--ui);color:var(--t3);overflow:hidden;opacity:0}
+.pull .lt{position:absolute;left:0;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,143,94,.5),transparent);transform:translateX(-120%)}
+.pull.sync .lt{animation:sweep 1s var(--ease) infinite}
+@keyframes sweep{to{transform:translateX(320%)}}
+
+/* arc placeholder (the studio owns the real arc) */
+.arc{position:relative;height:128px;margin-top:4px}
+.arc svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* results strip */
+.strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:14px;padding:6px var(--gut) 10px}
+.strip::-webkit-scrollbar{display:none}
+.panel{position:relative;flex:0 0 76%;scroll-snap-align:start;scroll-margin-left:var(--gut);border-radius:26px;padding:13px 16px 13px;text-align:left;min-height:136px;--h:-1}
+.panel .k{display:flex;align-items:center;gap:8px;font:600 13px var(--ui);color:var(--ht,var(--t2))}
+.panel .k:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hf,var(--t3));box-shadow:0 0 6px var(--hf,transparent)}
+.panel .big{margin-top:8px;font:300 40px/1 var(--disp);letter-spacing:-.02em}
+.panel .big small{font:400 17px var(--ui);color:var(--t2);margin-left:4px;letter-spacing:0}
+.panel .ln{margin-top:6px;font:400 13.5px/1.32 var(--ui);color:var(--t2)}
+.panel .mini{display:flex;gap:4px;align-items:flex-end;height:24px;margin-top:10px}
+.panel .mini i{width:7px;border-radius:2px;background:rgba(243,237,228,.24)}
+.panel .mini i.hi{background:var(--hf);box-shadow:0 0 8px var(--hf)}
+.panel .px{position:absolute;top:9px;right:9px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--t3);--h:.5}
+.panel .open{position:absolute;inset:0;border-radius:26px}
+.panel > *:not(.open):not(.px){pointer-events:none}
+
+/* sections */
+.sec{margin-top:16px}
+.sech{display:flex;justify-content:space-between;align-items:center;padding:0 var(--gut);margin-bottom:10px}
+.sech h2{font:650 12px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--t2);text-shadow:var(--deb)}
+.sech .aside{font:500 13px var(--ui);color:var(--t2);text-shadow:var(--deb)}
+
+/* Now rows: plateaus */
+.rows{padding:0 var(--gut)}
+.row{position:relative;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 34px;border-radius:24px;margin-bottom:12px;--h:1;min-height:72px}
+.row.full{flex-wrap:wrap}
+.row .open{position:absolute;inset:0 84px 0 0;border-radius:24px}
+.row.full .open{right:0;bottom:60px}
+.row .txt{flex:1;min-width:0;pointer-events:none}
+.row .nm{font:550 21px/1.1 var(--disp);letter-spacing:-.01em;transition:opacity .3s}
+.row.lead .nm{font-size:26px}
+.row .st{margin-top:4px;font:400 14px/1.3 var(--ui);color:var(--t2);transition:opacity .3s}
+.row .st b{color:var(--cream);font-weight:550;display:inline-block}
+.row .st b.roll{animation:roll .42s var(--spr)}
+@keyframes roll{from{transform:translateY(70%);opacity:0}}
+.row.melt .nm,.row.melt .st{opacity:.45}
+.row .ctl{display:flex;gap:8px;align-items:center;position:relative;z-index:2}
+.inl{position:absolute;left:14px;top:16px;bottom:16px;width:7px;border-radius:4px;background:color-mix(in oklab,var(--hf,#1d1a17) 18%,var(--surf));box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07);overflow:hidden;pointer-events:none}
+.inl i{position:absolute;left:0;right:0;bottom:0;border-radius:4px;background:var(--hf);box-shadow:0 0 10px var(--hf);transition:height .7s var(--ease)}
+.row.task .inl{background:var(--surf)}
+.more{display:block;margin:2px auto 0;padding:11px 18px;border-radius:99px;font:500 14px var(--ui);color:var(--t2);--h:.55}
+
+/* keys */
+.kr{position:relative;width:48px;height:48px;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+.kr .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--hf,var(--sun));transition:height .55s var(--ease)}
+.kr.done .fill{height:100%;box-shadow:inset 3px 3px 7px rgba(0,0,0,.32),inset -2px -2px 6px rgba(255,255,255,.16)}
+.kr svg{position:relative;z-index:1}
+.kr .pl{stroke:var(--ht,var(--cream))}
+.kr .ck{stroke:#17130F;stroke-dasharray:22;stroke-dashoffset:22;transition:stroke-dashoffset .35s .25s var(--ease)}
+.kr.done .pl{opacity:0}
+.kr.done .ck{stroke-dashoffset:0}
+.kr .ck.ghost{stroke:var(--t3);stroke-dashoffset:0}
+.ks{height:48px;padding:0 13px;border-radius:24px;display:flex;gap:5px;align-items:center}
+.ks i{position:relative;width:9px;height:24px;border-radius:5px;overflow:hidden;background:color-mix(in oklab,var(--hf,#1d1a17) 14%,var(--surf));box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.ks i:after{content:"";position:absolute;inset:0;background:var(--hf);transform:scaleY(0);transform-origin:bottom;transition:transform .5s var(--ease);box-shadow:0 0 6px var(--hf)}
+.ks i.on:after{transform:none}
+.kw{height:44px;padding:0 15px;border-radius:22px;font:500 14px var(--ui);color:var(--t2);--h:.6}
+.kw.on{color:var(--cream)}
+.kp{height:46px;padding:0 16px 0 13px;border-radius:23px;display:flex;align-items:center;gap:7px;font:550 15px var(--ui);color:var(--cream)}
+.kp svg{color:var(--ht)}
+.kp.on{color:var(--ht)}
+.amt{display:flex;gap:9px;width:100%;margin-top:2px}
+.tile{position:relative;flex:1;height:48px;border-radius:16px;overflow:hidden;font:500 16.5px var(--ui)}
+.tile span{position:relative;z-index:1}
+.tile .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--hf)}
+.tile.pour .fill{animation:pour 1.1s var(--ease)}
+.tile.pour span{animation:pourtx 1.1s var(--ease)}
+@keyframes pour{0%{height:0}38%{height:100%}100%{height:0}}
+@keyframes pourtx{0%,10%{color:var(--cream)}30%,55%{color:#17130F}100%{color:var(--cream)}}
+.level{position:relative;width:100%;height:7px;border-radius:4px;margin:8px 0 12px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.level i{position:absolute;left:1px;top:1px;bottom:1px;border-radius:3px;background:var(--hf);box-shadow:0 0 10px var(--hf);transition:width .8s var(--spr)}
+
+/* Later: one well, set as type */
+.later{margin:0 var(--gut);padding:14px 16px 14px;border-radius:26px;--h:-1}
+.lg{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:4px 0}
+.lg .h{width:100%;font:500 12.5px var(--ui);color:var(--t3);text-shadow:var(--deb);margin-top:4px}
+.tok{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:19px;font:500 15px var(--ui);color:var(--cream);--h:.6}
+.tok .hp{width:8px;height:8px;border-radius:50%;background:color-mix(in oklab,var(--hf) 18%,var(--surf));box-shadow:inset 1px 1px 2px rgba(0,0,0,.6);transition:background .4s,box-shadow .4s}
+.tok.on{color:var(--ht)}
+.tok.on .hp{background:var(--hf);box-shadow:0 0 7px var(--hf)}
+
+/* suggestion */
+.sug{margin:0 var(--gut);padding:15px 16px 14px;border-radius:26px;--h:1}
+.sug .sn{display:flex;align-items:center;gap:9px;font:550 20px var(--disp)}
+.sug .sn:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--hf);box-shadow:0 0 7px var(--hf)}
+.sug .sr{margin-top:5px;font:400 14px/1.35 var(--ui);color:var(--t2)}
+.sug .sb{display:flex;gap:10px;margin-top:13px}
+
+/* settled */
+.settled{padding:4px var(--gut) 0;display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--t2);font:500 14px var(--ui);text-shadow:var(--deb)}
+.settled span{display:inline-flex;align-items:center;gap:7px}
+.settled span i{width:7px;height:7px;border-radius:50%;background:var(--hf);box-shadow:0 0 6px var(--hf)}
+.settled span.new{animation:settle .7s var(--ease)}
+@keyframes settle{0%{opacity:0;filter:blur(2px)}100%{opacity:1}}
+.settled span.new i{animation:lightup 1.1s var(--ease)}
+@keyframes lightup{0%{box-shadow:0 0 0 var(--hf);transform:scale(.3)}40%{box-shadow:0 0 16px var(--hf);transform:scale(1.4)}100%{box-shadow:0 0 6px var(--hf)}}
+
+/* empty */
+.empty{padding:40px var(--gut) 0;text-align:center}
+.empty p{font:400 15px/1.45 var(--ui);color:var(--t2);text-shadow:var(--deb);max-width:280px;margin:0 auto 20px}
+.empty h3{font:550 26px var(--disp);text-shadow:var(--emb);margin-bottom:8px}
+
+/* buttons */
+.btn{height:50px;padding:0 20px;border-radius:25px;font:550 15.5px var(--ui);color:var(--t2);display:inline-flex;align-items:center;justify-content:center;gap:9px}
+.btn.primary{color:var(--ht,var(--cream))}
+.btn.primary:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--hf,var(--sun2))}
+.btn.ghost{--h:0;color:var(--t2)}
+.btn.ghost.down{--h:-.6}
+.btn.wide{width:100%}
+.btns{display:flex;gap:12px;padding:6px var(--gut) 0}
+.btns .btn{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:10px;padding:2px var(--gut)}
+.chip{height:40px;padding:0 15px;border-radius:20px;font:500 14px var(--ui);color:var(--t2);display:inline-flex;align-items:center;gap:8px;--h:.6}
+.chip.on{color:var(--cream)}
+.chip.on:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--hf,var(--sun2))}
+
+/* tab bar */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:var(--tabh);z-index:50;background:var(--surf);display:grid;grid-template-columns:repeat(5,1fr);align-items:start;padding:8px 8px 0}
+.tabbar:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
+.tw{position:absolute;top:8px;height:54px;border-radius:17px;--h:-1;pointer-events:none}
+.tab{position:relative;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px var(--ui);color:var(--t3);border-radius:17px;transition:color .3s}
+.tab svg{filter:drop-shadow(-.6px -.6px 0 rgba(0,0,0,.5)) drop-shadow(.6px .6px 0 rgba(255,238,220,.06));transition:color .3s}
+.tab.on{color:var(--cream)}
+.tab.on svg{color:var(--sun2);filter:none}
+.logkey{justify-self:center;width:60px;height:60px;border-radius:50%;margin-top:-14px;display:grid;place-items:center;color:var(--sun2);--h:1.25}
+.logkey.held{--h:-1!important}
+
+/* morph layers (sheets, pages, bars, fields grow out of whatever you touched) */
+.mo{position:absolute;z-index:60;background:var(--surf);overflow:hidden;will-change:left,top,width,height}
+.mo .mghost,.mo .inner{position:absolute;left:0;top:0}
+.mo .mghost{pointer-events:none;box-shadow:none!important;margin:0!important;translate:none!important}
+.mo .inner{opacity:0}
+.mo.page{z-index:40}
+.mo.bar{z-index:44}
+.mo.field{z-index:36}
+.catch{position:absolute;inset:0;z-index:55}
+.sheetin{display:flex;flex-direction:column}
+.sheetin .body{overflow-y:auto;flex:1;padding-bottom:40px;scrollbar-width:none}
+.sheetin .body::-webkit-scrollbar{display:none}
+.grab{height:30px;display:grid;place-items:center;touch-action:none;cursor:grab;flex:none}
+.grab i{width:42px;height:6px;border-radius:3px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.75),inset -1px -1px 2px rgba(255,238,220,.07)}
+.sh{display:flex;align-items:flex-start;justify-content:space-between;padding:4px var(--gut) 12px;touch-action:none}
+.sh h3{font:600 26px/1.1 var(--disp);letter-spacing:-.01em;text-shadow:var(--emb)}
+.sh .s2{margin-top:5px;font:400 14px var(--ui);color:var(--t2)}
+.close{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--t2);flex:none;--h:.6}
+.lab{padding:16px var(--gut) 9px;font:650 12px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--t2);text-shadow:var(--deb)}
+.well{margin:0 var(--gut);border-radius:22px;padding:14px 16px;--h:-1}
+.li{position:relative;display:flex;align-items:center;gap:12px;min-height:54px;padding:6px 0}
+.li+.li:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
+.li .tm{font:500 14px var(--ui);color:var(--t2);width:46px}
+.li .v{flex:1;font:500 16px var(--ui)}
+.li .rm{height:36px;padding:0 13px;border-radius:18px;font:500 13px var(--ui);color:var(--t2);--h:.55}
+.bars{display:flex;gap:10px;align-items:flex-end;height:96px;padding-top:6px}
+.bars .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;font:500 11px var(--ui);color:var(--t3)}
+.bars .c b{position:relative;width:100%;height:70px;border-radius:7px;box-shadow:inset 1.5px 1.5px 3px rgba(12,9,6,.7),inset -1px -1px 2px rgba(255,238,220,.06);overflow:hidden}
+.bars .c b i{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--hf);box-shadow:0 0 8px var(--hf);border-radius:6px;transition:height .7s var(--spr)}
+.para{padding:2px var(--gut);font:400 15px/1.5 var(--ui);color:var(--t2)}
+.para b{color:var(--cream);font-weight:550}
+.search{display:flex;align-items:center;gap:10px;height:48px;padding:0 15px;color:var(--t2)}
+.search input{flex:1;font:500 16px var(--ui);color:var(--cream)}
+.search input::placeholder{color:var(--t3)}
+
+/* switch: a bead that flows under the surface; the hue fills in behind it */
+.sw{position:relative;width:56px;height:32px;border-radius:16px;flex:none;--h:-1;overflow:visible}
+.sw .liq{position:absolute;left:3px;top:3px;bottom:3px;width:26px;border-radius:13px;background:var(--hf,var(--sun));opacity:0;transition:width .38s var(--ease),opacity .25s}
+.sw .bead{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:12px;background:var(--surf);--h:1;
+  transition:left .42s var(--spr),width .2s var(--ease)}
+.sw.mv .bead{width:34px}
+.sw.on .bead{left:28px}
+.sw.on.mv .bead{left:18px}
+.sw.on .liq{width:50px;opacity:1}
+.set{display:flex;align-items:center;gap:14px;min-height:62px;padding:8px 0}
+.set+.set{position:relative}
+.set+.set:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--groove)}
+.set .sl{flex:1}
+.set .sl b{display:block;font:500 16px var(--ui)}
+.set .sl small{display:block;margin-top:3px;font:400 13px var(--ui);color:var(--t2)}
+
+/* segmented: the chosen well flows */
+.seg{position:relative;display:flex;margin:0 var(--gut);padding:5px;border-radius:22px;--h:.7}
+.seg .sw2{position:absolute;top:5px;bottom:5px;border-radius:17px;--h:-1;pointer-events:none}
+.seg button{position:relative;flex:1;height:40px;font:500 14px var(--ui);color:var(--t3);transition:color .3s}
+.seg button.on{color:var(--cream)}
+
+/* stepper */
+.stepper{display:flex;align-items:center;gap:14px;padding:8px;border-radius:30px;--h:-1}
+.stepper button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font:500 22px/1 var(--ui);color:var(--cream)}
+.stepper .num{min-width:36px;height:44px;overflow:hidden;position:relative;text-align:center;font:500 22px/44px var(--disp)}
+.stepper .num span{position:absolute;left:0;right:0}
+.stepper .num .up-in{animation:upin .38s var(--spr)}
+.stepper .num .up-out{animation:upout .3s var(--ease) forwards}
+.stepper .num .dn-in{animation:dnin .38s var(--spr)}
+.stepper .num .dn-out{animation:dnout .3s var(--ease) forwards}
+@keyframes upin{from{transform:translateY(100%);opacity:0}}
+@keyframes upout{to{transform:translateY(-100%);opacity:0}}
+@keyframes dnin{from{transform:translateY(-100%);opacity:0}}
+@keyframes dnout{to{transform:translateY(100%);opacity:0}}
+
+/* time wheel: the chosen hour sits in a well; neighbours rise away from it */
+.wheel{position:relative;height:150px;margin:0 var(--gut);border-radius:24px;--h:.6;overflow:hidden}
+.wheel .band{position:absolute;left:10px;right:10px;top:53px;height:44px;border-radius:14px;--h:-1;pointer-events:none}
+.wheel .wl{position:absolute;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;padding:53px 0}
+.wheel .wl::-webkit-scrollbar{display:none}
+.wheel .wi{height:44px;display:grid;place-items:center;scroll-snap-align:center;font:500 20px var(--disp);color:var(--cream);will-change:transform,opacity}
+
+/* swatches */
+.swatches{display:flex;gap:12px;padding:2px var(--gut);flex-wrap:wrap}
+.sw8{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;--h:.6}
+.sw8 i{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:inset 1px 1px 2px rgba(0,0,0,.35)}
+.sw8.on i{box-shadow:0 0 0 3px var(--surf),0 0 0 5px var(--c),0 0 10px var(--c)}
+
+/* skeleton: the surface breathes while it waits */
+.skel{height:18px;border-radius:9px;margin:12px 0;animation:breathe 1.6s ease-in-out infinite}
+.skel:nth-child(2){animation-delay:.18s;width:76%}
+.skel:nth-child(3){animation-delay:.36s;width:58%}
+@keyframes breathe{0%,100%{--h:.05}50%{--h:.55}}
+
+/* toast: a blister that swells out of the surface */
+.toast{position:absolute;left:50%;height:58px;border-radius:29px;background:var(--surf);z-index:58;overflow:hidden;translate:-50% 0}
+.toast .tin{position:absolute;top:0;left:50%;height:58px;display:flex;align-items:center;gap:12px;padding:0 9px 0 20px;transform:translateX(-50%);opacity:0;transition:opacity .2s}
+.toast .tx{flex:1;font:500 14.5px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toast .tx b{font-weight:600}
+.toast .undo{height:40px;padding:0 15px;border-radius:20px;font:600 14px var(--ui);color:var(--sun2);--h:.6}
+.toast .tg{position:absolute;left:24px;right:24px;bottom:6px;height:3px;border-radius:2px;box-shadow:inset 1px 1px 2px rgba(12,9,6,.7)}
+.toast .tg i{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:var(--t4)}
+
+/* live bar inner */
+.live{display:flex;align-items:center;gap:10px;height:64px;padding:0 10px 0 18px}
+.live .ln2{flex:1}
+.live .ln2 b{display:block;font:550 16px var(--ui)}
+.live .ln2 small{font:500 13px var(--ui);color:var(--ht);font-variant-numeric:tabular-nums}
+.live .kw{height:40px}
+.live .lp{position:absolute;left:18px;right:18px;bottom:7px;height:4px;border-radius:2px;box-shadow:inset 1px 1px 2px rgba(12,9,6,.7)}
+.live .lp i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--hf);box-shadow:0 0 8px var(--hf);transition:width 1s linear}
+
+/* Time */
+.mon{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;padding:0 var(--gut)}
+.mon .wd{font:600 11px var(--ui);color:var(--t3);text-align:center;letter-spacing:.06em}
+.dc{position:relative;aspect-ratio:1;border-radius:14px;--h:-.7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 13px var(--ui);color:var(--t2)}
+.dc.today{color:var(--cream)}
+.dc.fut{color:var(--t4)}
+.dc .ds{display:flex;gap:2px;pointer-events:none}
+.dc .ds i{width:4px;height:4px;border-radius:50%;background:var(--c);box-shadow:0 0 4px var(--c)}
+.dc > span{pointer-events:none}
+
+/* Routines */
+.rrow{position:relative;display:flex;align-items:center;gap:12px;margin:0 var(--gut) 12px;padding:14px 14px 14px 34px;border-radius:22px;--h:1;text-align:left;width:calc(100% - 2*var(--gut))}
+.rrow .nm{font:550 19px var(--disp)}
+.rrow .st{margin-top:3px;font:400 13.5px var(--ui);color:var(--t2)}
+.rrow > div{flex:1;pointer-events:none}
+.rrow svg{color:var(--t3);pointer-events:none}
+.pagein{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:0 0 60px}
+.pagein::-webkit-scrollbar{display:none}
+.pagehead{padding:58px var(--gut) 8px;display:flex;align-items:center;gap:12px}
+.pagehead h2{font:600 32px/1 var(--disp);letter-spacing:-.02em;text-shadow:var(--emb)}
+.back{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--t2);--h:.6}
+
+/* guide */
+.gi{position:relative;margin:0 var(--gut) 10px;border-radius:20px;--h:.8;overflow:hidden}
+.gi > button{display:flex;width:100%;align-items:center;gap:12px;padding:13px 14px;text-align:left}
+.gi .gn{flex:1;font:550 16px var(--ui)}
+.gi .gs{font:500 11.5px var(--ui);color:var(--t3);letter-spacing:.04em}
+.gi .gs.b{color:var(--sun2)}
+.gi .gd2{height:0;overflow:hidden;transition:height .38s var(--ease)}
+.gi .gd2 > div{padding:0 14px 14px}
+.gi .gd2 p{font:400 14px/1.45 var(--ui);color:var(--t2)}
+.gi .gd2 code{display:block;margin-top:8px;font:500 12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--t3);white-space:pre-wrap}
+.gi .gd2 .btn{margin-top:12px;height:42px}
+.gi.open{--h:-.8}
+.dl{display:flex;gap:10px;padding:4px var(--gut) 16px}
+.dl .btn{flex:1;height:44px;font-size:14px}
+
+@media (prefers-reduced-motion: reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.rm-on *,.rm-on *:before,.rm-on *:after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+/* ===== clay page: experiments + storyboard ===== */
+.exp{position:absolute;inset:0;display:none;overflow:hidden;touch-action:none}
+.exp.on{display:block}
+.ctlbar{position:absolute;top:0;left:0;right:0;height:52px;z-index:80;display:flex;align-items:center;gap:8px;padding:6px 10px 0 12px;background:var(--surf);transition:transform .35s var(--spr)}
+.ctlbar.min{transform:translateY(-60px)}
+.ctlbar .seg{flex:1;margin:0;padding:4px}
+.ctlbar .seg button{height:34px;font-size:13px}
+.ctlbar .seg .sw2{top:4px;bottom:4px}
+.ctlbar .mn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--t2);flex:none;--h:.6}
+.pillmode{position:absolute;top:10px;right:12px;z-index:79;height:34px;padding:0 14px;border-radius:17px;font:600 12.5px var(--ui);color:var(--cream);--h:.6;opacity:0;pointer-events:none;transition:opacity .25s}
+.pillmode.on{opacity:1;pointer-events:auto}
+.cap{position:absolute;left:16px;right:16px;bottom:calc(var(--tabh) + 12px);z-index:58;padding:12px 16px;border-radius:20px;background:var(--surf);font:400 13.5px/1.4 var(--ui);color:var(--t2);--h:1.2;transition:opacity .4s,--h .5s var(--spr);pointer-events:none}
+.cap b{color:var(--cream);font-weight:600}
+.cap.off{opacity:0;--h:0}
+
+/* fold (E1) */
+.clay{position:absolute;left:0;right:0;top:52px;bottom:var(--tabh)}
+.blk{position:absolute;left:var(--gut);right:var(--gut);top:0;will-change:transform,height}
+.blk .shape{position:absolute;inset:0;border-radius:var(--rad,24px);background:var(--surf)}
+.blk .cnt{position:relative;transform-origin:50% 0;will-change:transform,opacity}
+.blk.lbl .cnt{padding:2px 0}
+.ridgeline{position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--groove);opacity:0}
+
+/* focus (E2) */
+.fhead{position:absolute;left:var(--gut);right:var(--gut);top:58px;height:62px}
+.fhead h1{font:600 30px/1 var(--disp);font-variation-settings:"wdth" 88;letter-spacing:-.02em;text-shadow:var(--emb)}
+.fhead .sub{margin-top:6px;font:400 14px var(--ui);color:var(--t2);text-shadow:var(--deb)}
+.fsec{position:absolute;left:12px;right:12px;overflow:hidden;border-radius:26px;will-change:top,height}
+.fsec .shape{position:absolute;inset:0;border-radius:26px;background:var(--surf)}
+.fsec .rid{position:absolute;left:0;right:0;top:0;height:50px;display:flex;align-items:center;gap:10px;padding:0 18px;cursor:pointer}
+.fsec .rid h2{font:650 12px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--t2);text-shadow:var(--deb)}
+.fsec .rid .sm{flex:1;text-align:right;font:500 13.5px var(--ui);color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fsec .rid .sm b{color:var(--cream);font-weight:550}
+.fsec .fc{position:absolute;left:0;right:0;top:50px;padding:0 8px 12px}
+.fsec .fc .rows{padding:0}
+.fsec .fc .row{min-height:64px;padding:9px 10px 9px 30px;margin-bottom:10px}
+.fsec .fc .row .nm{font-size:19px}
+.fsec .fc .row .inl{left:12px}
+.fsec .fc .row .kr{width:44px;height:44px}
+.fsec .fc .later,.fsec .fc .sug{margin:0}
+.fsec .fc .tiles{display:flex;gap:10px}
+.fsec .fc .tiles .panel{flex:1;min-height:118px;padding:11px 13px}
+.fsec .fc .tiles .panel .big{font-size:32px}
+.fpits{position:absolute;right:5px;top:50%;display:flex;flex-direction:column;gap:7px;transform:translateY(-50%);z-index:5;pointer-events:none}
+.fpits i{width:5px;height:5px;border-radius:50%;box-shadow:inset 1px 1px 1px rgba(0,0,0,.6);background:color-mix(in oklab,var(--cream) 12%,var(--surf));transition:background .3s,box-shadow .3s}
+.fpits i.on{background:var(--sun2);box-shadow:0 0 6px var(--sun2)}
+
+/* reshape (E3) */
+.page3{position:absolute;left:0;right:0;top:52px;bottom:var(--tabh)}
+.pg{position:absolute;inset:0;padding:6px var(--gut) 0}
+.pg .form{position:relative;margin-bottom:12px}
+.pg.hid{visibility:hidden}
+.mshape{position:absolute;background:var(--surf);border-radius:24px;pointer-events:none}
+
+/* storyboard */
+.board{position:absolute;left:0;right:0;top:52px;bottom:var(--tabh);overflow-y:auto;padding:4px 0 60px;touch-action:pan-y;scrollbar-width:none}
+.board::-webkit-scrollbar{display:none}
+.bintro{padding:10px var(--gut) 6px;font:400 14.5px/1.45 var(--ui);color:var(--t2)}
+.bintro b{color:var(--cream);font-weight:550}
+.bt{margin:14px var(--gut) 0;border-radius:26px;padding:14px 14px 12px;--h:1}
+.bt .bn{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 4px}
+.bt .bn b{font:600 18px var(--disp);text-shadow:var(--emb)}
+.bt .bn span{font:600 10.5px var(--ui);letter-spacing:.08em;color:var(--t3)}
+.bt .bn span.lab2{color:var(--sun2)}
+.bt .patch{position:relative;margin:12px 0 10px;min-height:120px;border-radius:20px;--h:-1;display:flex;align-items:center;justify-content:center;gap:12px;padding:16px;overflow:hidden}
+.bt .states{display:flex;flex-wrap:wrap;gap:8px}
+.bt .states button{height:34px;padding:0 12px;border-radius:17px;font:500 12.5px var(--ui);color:var(--t2);--h:.55}
+.bt .states button.on{color:var(--cream);--h:-.9}
+.bt .states button.play{color:var(--sun2)}
+.bt .rule{margin-top:10px;padding:0 4px;font:400 13.5px/1.42 var(--ui);color:var(--t2)}
+.bt .rule b{color:var(--cream);font-weight:550}
+.bt .q{margin-top:6px;padding:0 4px;font:400 12.5px/1.4 var(--ui);color:var(--t3)}
+.mini-row{width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px 10px 30px;border-radius:20px;position:relative;--h:1;min-height:60px}
+.mini-row .nm{font:550 18px var(--disp)}
+.mini-row .st{font:400 13px var(--ui);color:var(--t2);margin-top:2px}
+.mini-row .txt{flex:1}
+.mini-row .inl{left:12px;top:14px;bottom:14px}
+.mini-well{width:100%;border-radius:20px;padding:12px 14px;--h:-1;min-height:84px}
+.mini-well .k{font:600 12.5px var(--ui);color:var(--ht)}
+.mini-well .big{font:300 30px/1.1 var(--disp);margin-top:4px}
+.mtabs{position:relative;display:flex;width:100%;padding:6px;border-radius:20px;--h:0}
+.mtabs .tw2{position:absolute;top:6px;bottom:6px;border-radius:15px;--h:-1}
+.mtabs button{position:relative;flex:1;height:44px;font:500 12px var(--ui);color:var(--t3)}
+.mtabs button.on{color:var(--cream)}
+.mfield{width:100%;height:48px;border-radius:24px;display:flex;align-items:center;gap:10px;padding:0 15px;color:var(--t3);--h:-.7;transition:--h .4s var(--spr)}
+.mfield.foc{--h:-1.25;color:var(--cream)}
+.emb-demo{font:600 34px var(--disp);transition:text-shadow .4s}
+.emb-demo.e{text-shadow:var(--emb)}
+.emb-demo.d{text-shadow:var(--deb);color:var(--t2)}
+.emb-demo.f0{text-shadow:none;color:var(--t3)}
+.mtoast{height:52px;border-radius:26px;display:flex;align-items:center;gap:10px;padding:0 8px 0 18px;overflow:hidden;white-space:nowrap;font:500 14px var(--ui)}
+.mbadge{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--t2);--h:.6}
+.mbadge .n{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;font:700 11px/20px var(--ui);text-align:center;background:var(--surf);box-shadow:2px 2px 5px rgba(12,9,6,.5),-1px -1px 3px rgba(255,238,220,.05);transition:transform .45s var(--spr),opacity .3s}
+.mbadge .n.gone{transform:scale(0);opacity:0}
+.minisheet{position:absolute;background:var(--surf);overflow:hidden;z-index:3}
+.minisheet .ms{position:absolute;left:0;top:0;padding:14px 16px;font:500 14px var(--ui);color:var(--t2);opacity:0}
+.minisheet .ms b{display:block;font:600 19px var(--disp);color:var(--cream);margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="ctlbar"><div class="seg f" id="modeseg" style="--h:.7"><span class="sw2 f" style="--h:-1"></span><button data-m="board">Board</button><button data-m="fold">Fold</button><button data-m="focus">Focus</button><button data-m="reshape">Reshape</button></div><button class="mn fk" id="mn" aria-label="Hide the switcher"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>
+  <button class="pillmode fk" id="pillmode">Fold</button>
+  <section class="exp" id="x-board"><div class="board" id="board"></div></section>
+  <section class="exp" id="x-fold"><div class="clay" id="e1c"></div></section>
+  <section class="exp" id="x-focus"><div class="clay" id="e2c" style="top:0"></div></section>
+  <section class="exp" id="x-reshape"><div class="page3" id="e3c"></div></section>
+  <div class="cap f off" id="cap"></div>
+  <nav class="tabbar" id="tabbar">
+    <span class="tw f" style="left:12px;width:66px"></span>
+    <button class="tab on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 17h18"/><path d="M6 17a6 6 0 0 1 12 0"/></svg>Today</button>
+    <button class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19V11M10 19V6M15 19v-9M20 19V8"/></svg>Time</button>
+    <button class="logkey fk" aria-label="Log"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg>Routines</button>
+    <button class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</button>
+  </nav>
+  <div class="grain"></div>
+</div>
+
+<script>
+'use strict';
+/* Clay lab: the phone is a fixed lump of clay. Nothing lives off-screen; scrolling reshapes what is there. */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const app=$('#app');
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ss=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+let RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,RM?0:ms));
+const hapL=document.createElement('label');hapL.style.cssText='position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0';
+const hapI=document.createElement('input');hapI.type='checkbox';hapI.setAttribute('switch','');hapI.tabIndex=-1;hapL.appendChild(hapI);hapL.addEventListener('click',e=>e.stopPropagation());document.body.appendChild(hapL);
+function tick(){try{if(navigator.vibrate)navigator.vibrate(8);else hapL.click()}catch(e){}}
+const sp=(resp=.42,z=.8)=>({k:(2*Math.PI/resp)**2,c:4*Math.PI*z/resp});
+function spring(from,to,cfg,on,done){
+  if(RM){on(to);done&&done();return{stop(){}}}
+  let x=from,v=cfg.v||0,last=null,stopped=false;const span=Math.max(Math.abs(to-from),.02);
+  function f(now){if(stopped)return;if(last==null)last=now;const dt=Math.min(.034,(now-last)/1000);last=now;
+    for(let i=0;i<4;i++){const h=dt/4,a=-cfg.k*(x-to)-cfg.c*v;v+=a*h;x+=v*h}
+    if(Math.abs(x-to)<span*.002&&Math.abs(v)<span*.03){on(to);done&&done();return}on(x);requestAnimationFrame(f)}
+  requestAnimationFrame(f);return{stop(){stopped=true}}}
+const HUE={saf:['#D3A23B','#E8BD6D'],lag:['#40B8EE','#74D1FF'],mos:['#81BE6B','#A1D58F'],jad:['#24C5AB','#6ADCC4'],iri:['#B897F0','#CFB4FF'],ros:['#EF869B','#FFA6B6'],nig:['#98A2FC','#B3BDFF'],emb:['#FF6B3D','#FF8F5E']};
+const hv=h=>`--hf:${HUE[h][0]};--ht:${HUE[h][1]}`;
+const IC={plus:'<svg class="pl" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  ck:g=>`<svg class="ck${g?' ghost':''}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
+  play:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg>',
+  search:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>',
+  flag:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4M6 4h11l-2 4 2 4H6"/></svg>'};
+
+/* shared Today content */
+const ROWS=[['Meals','saf','count','<b>1 of 3</b>, last 08:20'],['Bins out',null,'task','<b>Today</b>, by 20:00'],['Water','lag','tap','<b>580 ml</b> of 2 L'],['Stretch','mos','tap','<b>3 of 5</b> this week'],['Reading','iri','session','Usually <b>20 min</b>'],['Floss','lag','tap','<b>4 of 7</b> this week'],['Spanish','iri','tap','<b>2 of 4</b> this week']];
+function rowH(r,i){const [n,h,k,st]=r;
+  const key=k==='count'?`<button class="key ks fk" aria-label="Log">${'<i class="on"></i><i></i><i></i>'}</button>`:k==='task'?`<button class="key kw fk">On it</button><button class="key kr fk" data-done="1">${IC.ck(1)}</button>`:k==='session'?`<button class="key kp fk">${IC.play}Start</button>`:`<button class="key kr fk" data-done="1"><span class="fill"></span>${IC.plus}${IC.ck()}</button>`;
+  return `<div class="row${k==='task'?' task':''}" style="${h?hv(h):''};margin:0;box-shadow:none;--h:0"><span class="inl"><i style="height:${[33,0,29,60,0,57,50][i]}%"></i></span><div class="txt"><div class="nm">${n}</div><div class="st">${st}</div></div><div class="ctl">${key}</div></div>`}
+const RESULTS=`<div class="k" style="${hv('nig')}">Last night, 7 h 04</div><div class="big">23:41<small>to 07:12</small></div><div class="ln">Your usual night. Yesterday: 6.2 km run.</div>`;
+const LATER=`<div class="lg"><span class="h">This afternoon</span><button class="tok fk" style="${hv('ros')}"><span class="hp"></span>Call Ana</button><button class="tok fk" style="${hv('jad')}"><span class="hp"></span>Guitar</button><button class="tok fk" style="${hv('mos')}"><span class="hp"></span>Walk</button><span class="h">This evening</span><button class="tok fk" style="${hv('jad')}"><span class="hp"></span>Sketching</button></div>`;
+const SUG=`<div class="sn" style="${hv('ros')}">Message Luka about Saturday</div><div class="sr">You usually see friends twice a month. Last time was the 9th.</div><div class="sb"><button class="btn primary fk" style="${hv('ros')}">Do it now</button><button class="btn fk lo">Not now</button></div>`;
+const SETTLED=`<div class="settled" style="padding:0"><span style="${hv('saf')}"><i></i>Vitamin D</span><span style="${hv('mos')}"><i></i>Push-ups</span></div>`;
+
+/* key presses everywhere */
+app.addEventListener('pointerdown',e=>{const k=e.target.closest('.fk');if(!k)return;k.classList.add('down')});
+const rel=()=>$$('.fk.down').forEach(k=>k.classList.remove('down'));
+app.addEventListener('pointerup',rel);app.addEventListener('pointercancel',rel);
+app.addEventListener('click',e=>{const k=e.target.closest('[data-done]');if(k){tick();k.classList.toggle('done')}});
+
+/* ===== drag helper: one finger on the clay, velocity, no native scroll ===== */
+function dragOn(el,{start,move,end}){let id=null,y0=0,last=0,lt=0,v=0,moved=false,downT=null;
+  el.addEventListener('pointerdown',e=>{if(id!==null)return;id=e.pointerId;y0=e.clientY;last=y0;lt=performance.now();v=0;moved=false;downT=e.target;start&&start()});
+  el.addEventListener('pointermove',e=>{if(e.pointerId!==id)return;const dy=e.clientY-y0;
+    if(!moved&&Math.abs(dy)>7){moved=true;try{el.setPointerCapture(id)}catch(_){}rel()}
+    if(!moved)return;const now=performance.now();const inst=(e.clientY-last)/Math.max(1,now-lt)*1000;v=v*.6+inst*.4;last=e.clientY;lt=now;move(dy,v)});
+  const up=e=>{if(e.pointerId!==id)return;id=null;if(moved)end(v);else end(null)};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  el.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault()}},true);
+  el.addEventListener('wheel',e=>{e.preventDefault();start&&start();move(-e.deltaY*.9,0,true);clearTimeout(el._wt);el._wt=setTimeout(()=>end(0,true),120)},{passive:false})}
+
+/* ===================== E1 FOLD =====================
+   The visible screen is all the clay there is. Content past an edge is not hidden: it is compressed
+   into ever-thinner ridges at that edge (strata), like clay pushed up against a wall. Scrolling moves
+   material from one bank to the other; the middle is undistorted. */
+const E1={p:0,blocks:[],V:0,Z:110};
+function e1Build(){const c=$('#e1c');
+  const items=[
+    {k:'hdr',rest:0,rad:0,html:`<div style="padding:8px 0 4px"><div style="font:600 34px/1 var(--disp);font-variation-settings:'wdth' 88;letter-spacing:-.02em;text-shadow:var(--emb)">Tuesday</div><div style="margin-top:7px;font:400 15px var(--ui);color:var(--t2);text-shadow:var(--deb)">27 October</div></div>`},
+    {k:'res',rest:-1,rad:26,html:`<div class="panel" style="box-shadow:none;--h:0;min-height:0;flex:none;padding:14px 16px">${RESULTS}</div>`},
+    {k:'lbl',rest:0,rad:0,html:`<div class="sech" style="padding:0;margin:0"><h2>Now</h2><span class="aside">5 open</span></div>`},
+    ...ROWS.map((r,i)=>({k:'row',rest:1,rad:24,html:rowH(r,i)})),
+    {k:'lbl',rest:0,rad:0,html:`<div class="sech" style="padding:0;margin:0"><h2>Later</h2><span class="aside">Tap to log</span></div>`},
+    {k:'lat',rest:-1,rad:26,html:`<div style="padding:12px 16px">${LATER}</div>`},
+    {k:'lbl',rest:0,rad:0,html:`<div class="sech" style="padding:0;margin:0"><h2>If you have a moment</h2></div>`},
+    {k:'sug',rest:1,rad:26,html:`<div class="sug" style="box-shadow:none;--h:0;margin:0">${SUG}</div>`},
+    {k:'lbl',rest:0,rad:0,html:`<div class="sech" style="padding:0;margin:0"><h2>Settled</h2></div>`},
+    {k:'set',rest:0,rad:0,html:SETTLED}];
+  c.innerHTML='';E1.blocks=items.map(it=>{const b=document.createElement('div');b.className='blk'+(it.k==='lbl'?' lbl':'');b.style.setProperty('--rad',it.rad+'px');
+    b.innerHTML=`<div class="shape f"></div><span class="ridgeline"></span><div class="cnt">${it.html}</div>`;c.appendChild(b);return{el:b,shape:$('.shape',b),cnt:$('.cnt',b),line:$('.ridgeline',b),rest:it.rest}});
+  E1.measured=false;e1Layout()}
+function e1Measure(){let y=8;E1.blocks.forEach(b=>{b.cnt.style.transform='none';b.H=b.cnt.offsetHeight;b.y=y;y+=b.H+12});E1.total=y+30;E1.measured=true}
+/* g(): natural position in the window -> position on the clay. Identity in the middle; exponential banks at both edges. */
+function g(u,V,Z,Zb){Zb=Zb??Z;if(Z>.5&&u<Z)return Z*Math.exp((u-Z)/Z);if(Zb>.5&&u>V-Zb)return V-Zb*Math.exp(-(u-(V-Zb))/Zb);return u}
+function e1Layout(){const V=$('#e1c').clientHeight;if(!V)return;E1.V=V;if(!E1.measured)e1Measure();const max=Math.max(0,E1.total-V);
+  /* a bank only forms at an edge that has material past it, so the top of Today sits undistorted */
+  const Zt=E1.Z*ss(0,E1.Z*1.4,E1.p),Zb=E1.Z*ss(0,E1.Z*1.4,max-E1.p);
+  for(const b of E1.blocks){const t=b.y-E1.p;const top=g(t,V,Zt,Zb),bot=g(t+b.H,V,Zt,Zb);const h=Math.max(0,bot-top),r=h/b.H;
+    const inset=(1-r)*10;
+    b.el.style.transform=`translateY(${top.toFixed(2)}px)`;b.el.style.height=h.toFixed(2)+'px';b.el.style.left=`calc(var(--gut) + ${inset.toFixed(1)}px)`;b.el.style.right=`calc(var(--gut) + ${inset.toFixed(1)}px)`;
+    b.cnt.style.transform=`scaleY(${r.toFixed(3)})`;b.cnt.style.opacity=ss(.55,.92,r).toFixed(3);
+    const depth=b.rest===0?(r<.5?.35*(1-r):0):b.rest*(.3+.7*r);
+    b.shape.style.setProperty('--h',depth.toFixed(3));
+    b.line.style.opacity=b.rest===0?0:(1-ss(.2,.55,r)).toFixed(2);
+    b.el.style.visibility=h<.6?'hidden':'visible'}}
+let e1s=null,e1mom=0;
+function e1Init(){const c=$('#e1c');let p0=0;
+  dragOn(c,{start(){e1s&&e1s.stop();cancelAnimationFrame(e1mom);p0=E1.p},
+    move(dy,v,wheel){const max=Math.max(0,E1.total-E1.V);let p=(wheel?E1.p:p0)-(wheel?-dy:dy);if(wheel){p=E1.p+(-dy)}
+      if(p<0)p=p*.45;if(p>max)p=max+(p-max)*.45;E1.p=p;if(wheel)p0=p;e1Layout()},
+    end(v){if(v===null)return;const max=Math.max(0,E1.total-E1.V);
+      if(E1.p<0||E1.p>max){e1Snap(E1.p<0?0:max,v);return}
+      let vel=-(v||0);let last=performance.now();
+      const step=now=>{const dt=Math.min(.034,(now-last)/1000);last=now;vel*=Math.exp(-dt*3.2);E1.p+=vel*dt;
+        if(E1.p<0||E1.p>max){e1Snap(E1.p<0?0:max,-vel);return}e1Layout();if(Math.abs(vel)>8)e1mom=requestAnimationFrame(step)};
+      if(!RM)e1mom=requestAnimationFrame(step)}})}
+function e1Snap(to,v){const c=sp(.45,.85);c.v=v||0;e1s=spring(E1.p,to,c,x=>{E1.p=x;e1Layout()})}
+
+/* ===================== E2 FOCUS =====================
+   Every section is always on screen. The one you are in swells into a basin with its contents risen
+   inside; the others shrink to ridges carrying their name and one line. Drag shifts the swelling. */
+const E2={phi:1,secs:[]};
+function e2Build(){const c=$('#e2c');
+  const S=[
+    {t:'Results',sm:'<b>7 h 04</b> asleep, <b>6.2 km</b> run',html:`<div class="tiles"><div class="panel f" style="--h:-1;${hv('nig')}">${`<div class="k">Last night</div><div class="big">7h04</div><div class="ln">Your usual night.</div>`}</div><div class="panel f" style="--h:-1;${hv('mos')}"><div class="k">Yesterday</div><div class="big">6.2<small>km</small></div><div class="ln">Second fastest of 39.</div></div></div>`},
+    {t:'Now',sm:'<b>5 open</b>, Meals first',html:`<div class="rows">${ROWS.slice(0,4).map((r,i)=>rowH(r,i).replace('margin:0;box-shadow:none;--h:0','').replace('class="row','class="row f rf')).join('')}</div><div style="padding:0 12px;font:400 13.5px var(--ui);color:var(--t2)">Reading, Floss and Spanish are open too.</div>`},
+    {t:'Later',sm:'Call Ana, Guitar, Walk, Sketching',html:`<div class="later f" style="--h:-1;padding:10px 14px">${LATER}</div>`},
+    {t:'A moment',sm:'Message Luka',html:`<div class="sug f rf" style="${hv('ros')}">${SUG}</div>`},
+    {t:'Settled',sm:'<b>2</b> done today',html:`<div style="padding:4px 10px 0">${SETTLED}</div>`}];
+  c.innerHTML=`<div class="fhead"><h1>Tuesday</h1><div class="sub">27 October</div></div><div class="fpits">${S.map(()=>'<i></i>').join('')}</div>`;
+  E2.secs=S.map((s,k)=>{const d=document.createElement('div');d.className='fsec';d.innerHTML=`<div class="shape f"></div><div class="rid"><h2>${s.t}</h2><span class="sm">${s.sm}</span></div><div class="fc">${s.html}</div>`;c.appendChild(d);
+    $('.rid',d).addEventListener('click',()=>{tick();e2To(k)});return{el:d,shape:$('.shape',d),fc:$('.fc',d),rid:$('.rid',d),sm:$('.sm',d),rf:$$('.rf',d)}});
+  E2.measured=false;e2Layout()}
+function e2Layout(){const c=$('#e2c');if(!c.clientHeight)return;if(!E2.measured){E2.secs.forEach(s=>{s.F=50+s.fc.scrollHeight+6});E2.measured=true}const top0=128,V=c.clientHeight-top0-8,C=50,gap=8;const n=E2.secs.length;
+  let y=top0;const ws=E2.secs.map((s,k)=>Math.max(0,1-Math.abs(k-E2.phi)));
+  const avail=V-(n-1)*gap;
+  E2.secs.forEach((s,k)=>{const w=ws[k];const F=Math.min(s.F,avail-(n-1)*C);const h=C+w*(F-C);
+    s.el.style.top=y.toFixed(1)+'px';s.el.style.height=h.toFixed(1)+'px';y+=h+gap;
+    /* ridge (+0.55) -> flat -> basin (-1) as it opens */
+    s.shape.style.setProperty('--h',(w<.35?lerp(.55,0,w/.35):lerp(0,-1,(w-.35)/.65)).toFixed(3));
+    s.fc.style.opacity=ss(.45,.95,w).toFixed(3);s.sm.style.opacity=(1-ss(.1,.5,w)).toFixed(3);
+    s.rf.forEach((r,i)=>r.style.setProperty('--h',(ss(.5+i*.04,1,w)).toFixed(3)))});
+  $$('.fpits i').forEach((p,k)=>p.classList.toggle('on',Math.round(E2.phi)===k))}
+let e2s=null;
+function e2To(k,v=0){const c=sp(.5,.78);c.v=v;e2s&&e2s.stop();e2s=spring(E2.phi,k,c,x=>{E2.phi=x;e2Layout()},()=>{})}
+function e2Init(){const c=$('#e2c');let f0=0,lastK=1;
+  dragOn(c,{start(){e2s&&e2s.stop();f0=E2.phi},
+    move(dy,v,wheel){const n=E2.secs.length-1;let f=wheel?E2.phi-dy/260:f0-dy/200;if(f<0)f*=.35;if(f>n)f=n+(f-n)*.35;E2.phi=f;if(wheel)f0=f;const k=Math.round(f);if(k!==lastK){lastK=k;tick()}e2Layout()},
+    end(v,wheel){if(v===null)return;const n=E2.secs.length-1;let k=Math.round(E2.phi-(v||0)/1400);k=clamp(k,0,n);e2To(k,-(v||0)/200)}})}
+
+/* ===================== E3 RESHAPE =====================
+   The screen holds one arrangement at a time. Swipe and every form sinks flat into the clay, flows
+   into the outline of the next arrangement, and rises again there. Nothing travels off an edge. */
+const E3={i:0,pages:[],t:0};
+function e3Build(){const c=$('#e3c');
+  const P=[
+    `<div class="form" data-r="0" style="padding:8px 4px 0"><div style="font:600 34px/1 var(--disp);font-variation-settings:'wdth' 88;letter-spacing:-.02em;text-shadow:var(--emb)">Tuesday</div><div style="margin-top:7px;font:400 15px var(--ui);color:var(--t2)">27 October</div></div>
+     <div class="form" data-r="-1" data-rad="26"><div class="panel" style="box-shadow:none;--h:0;min-height:0;padding:14px 16px">${RESULTS}</div></div>
+     ${ROWS.slice(0,3).map((r,i)=>`<div class="form" data-r="1" data-rad="24">${rowH(r,i)}</div>`).join('')}`,
+    ROWS.slice(3).map((r,i)=>`<div class="form" data-r="1" data-rad="24">${rowH(r,i+3)}</div>`).join('')+`<div class="form" data-r="0" style="padding:8px 4px;font:400 14px var(--ui);color:var(--t2)">That is everything open now.</div>`,
+    `<div class="form" data-r="-1" data-rad="26"><div style="padding:12px 16px">${LATER}</div></div><div class="form" data-r="1" data-rad="26"><div class="sug" style="box-shadow:none;--h:0;margin:0">${SUG}</div></div><div class="form" data-r="0" style="padding:4px">${SETTLED}</div>`];
+  c.innerHTML=`<div class="fpits" style="right:4px">${P.map(()=>'<i></i>').join('')}</div>`;
+  E3.pages=P.map((html,i)=>{const pg=document.createElement('div');pg.className='pg'+(i?' hid':'');pg.innerHTML=html;c.appendChild(pg);
+    const forms=$$('.form',pg);forms.forEach(f=>{const s=document.createElement('div');s.className='shape f';s.style.cssText=`position:absolute;inset:0;border-radius:${f.dataset.rad||0}px;background:var(--surf);z-index:-1;--h:${f.dataset.r}`;f.prepend(s);f.style.isolation='isolate'});return{pg,forms}});
+  e3Pits()}
+function e3Pits(){$$('#e3c .fpits i').forEach((p,k)=>p.classList.toggle('on',k===E3.i))}
+let e3busy=false;
+function e3Go(dir,v=0){const to=E3.i+dir;if(to<0||to>=E3.pages.length||e3busy){return false}
+  e3busy=true;tick();const c=$('#e3c'),cr=c.getBoundingClientRect();const A=E3.pages[E3.i],B=E3.pages[to];
+  B.pg.classList.remove('hid');const rect=f=>{const r=f.getBoundingClientRect();return{x:r.left-cr.left,y:r.top-cr.top,w:r.width,h:r.height,r:+(f.dataset.rad||0),d:+f.dataset.r}};
+  const ra=A.forms.map(rect),rb=B.forms.map(rect);B.pg.classList.add('hid');
+  const n=Math.max(ra.length,rb.length);const ms=[];
+  for(let i=0;i<n;i++){const a=ra[i]||{...rb[i],y:rb[i].y+rb[i].h/2,h:0,d:0},b=rb[i]||{...ra[i],y:ra[i].y+ra[i].h/2,h:0,d:0};
+    const m=document.createElement('div');m.className='mshape f';c.appendChild(m);ms.push({m,a,b})}
+  /* real pages hidden while the clay reshapes; their content cross-fades over the shapes */
+  A.pg.style.zIndex=2;B.pg.style.zIndex=2;
+  $$('.shape',A.pg).forEach(s=>s.style.visibility='hidden');$$('.shape',B.pg).forEach(s=>s.style.visibility='hidden');
+  B.pg.classList.remove('hid');B.pg.style.opacity=0;
+  const apply=t=>{const c_=clamp(t);
+    ms.forEach(({m,a,b})=>{m.style.left=lerp(a.x,b.x,c_)+'px';m.style.top=lerp(a.y,b.y,t)+'px';m.style.width=lerp(a.w,b.w,c_)+'px';m.style.height=Math.max(0,lerp(a.h,b.h,c_))+'px';m.style.borderRadius=lerp(a.r,b.r,c_)+'px';
+      const h=c_<.5?lerp(a.d,0,ss(0,.42,c_)):lerp(0,b.d,ss(.58,1,c_));m.style.setProperty('--h',h.toFixed(3))});
+    A.pg.style.opacity=(1-ss(0,.3,c_)).toFixed(3);B.pg.style.opacity=ss(.62,.95,c_).toFixed(3)};
+  apply(0);const cfg=sp(.62,.86);cfg.v=Math.abs(v)/400;
+  spring(0,1,cfg,apply,()=>{ms.forEach(o=>o.m.remove());A.pg.classList.add('hid');A.pg.style.opacity='';B.pg.style.opacity='';
+    $$('.shape',A.pg).forEach(s=>s.style.visibility='');$$('.shape',B.pg).forEach(s=>s.style.visibility='');E3.i=to;e3Pits();e3busy=false});
+  return true}
+function e3Init(){const c=$('#e3c');let fired=false;
+  dragOn(c,{start(){fired=false},move(dy,v,wheel){if(fired)return;if(Math.abs(dy)>(wheel?30:56)){fired=true;e3Go(dy<0?1:-1,v)}},end(v){fired=false}})}
+
+/* ===================== STORYBOARD ===================== */
+const BOARD=[
+ {n:'Round key',st:'Lab',demo:`<button class="key kr fk" id="b1">${'<span class="fill" style="--hf:#81BE6B"></span>'}${IC.plus}${IC.ck()}</button>`,style:hv('mos'),
+  states:{Rest:p=>{const k=$('#b1');k.classList.remove('done','on');k.style.removeProperty('--h')},Pressed:p=>{$('#b1').style.setProperty('--h','-.75')},'Second stage':p=>{const k=$('#b1');k.style.setProperty('--h','-1.45')},Done:p=>{const k=$('#b1');k.style.removeProperty('--h');k.classList.add('done')}},
+  rule:'<b>Raised</b> = press me. <b>In</b> = done. Holding past the normal depth is a second stage that opens options.',q:'Experiment: should done keys stay sunk, or slowly heal flat over the day?'},
+ {n:'Count key',st:'Lab',demo:`<button class="key ks fk" id="b2"><i></i><i></i><i></i></button>`,style:hv('saf'),
+  states:{'0':()=>$$('#b2 i').forEach(i=>i.classList.remove('on')),'1':()=>$$('#b2 i').forEach((i,n)=>i.classList.toggle('on',n<1)),'2':()=>$$('#b2 i').forEach((i,n)=>i.classList.toggle('on',n<2)),'3':()=>$$('#b2 i').forEach((i,n)=>i.classList.toggle('on',n<3))},
+  rule:'Each slot is a small pit in the key; a log fills the next pit from the bottom like liquid.'},
+ {n:'Amount tile',st:'Lab',demo:`<div class="amt" style="width:100%">${[150,250,330].map(v=>`<button class="tile fk" style="${hv('lag')}"><span class="fill"></span><span>${v}</span></button>`).join('')}</div>`,
+  states:{Rest:()=>{},Pour:()=>{const t=$$('.bt')[2].querySelectorAll('.tile')[1];t.classList.remove('pour');t.offsetWidth;t.classList.add('pour')}},rule:'The tile presses in, light pours up inside it and drains. The level groove fills with a small overshoot.'},
+ {n:'Row (plateau)',st:'Lab',demo:`<div class="mini-row f" id="b4" style="${hv('mos')}"><span class="inl"><i style="height:60%"></i></span><div class="txt"><div class="nm">Stretch</div><div class="st">3 of 5 this week</div></div><button class="key kr fk" style="width:42px;height:42px"><span class="fill"></span>${IC.plus}${IC.ck()}</button></div>`,
+  states:{Rest:()=>sH('#b4',1,1),Pressed:()=>sH('#b4',.35,1),Melted:()=>sH('#b4',0,.4),Dent:()=>sH('#b4',-.35,0)},
+  rule:'Something to act on rises out of the clay. Done, it <b>melts</b> back flat; lifted into a sheet, it leaves a <b>dent</b>.',q:'Experiment: rows that are due soon rise a little higher (height = urgency, gently).'},
+ {n:'Reading (well)',st:'Lab',demo:`<div class="mini-well f" id="b5" style="${hv('nig')}"><div class="k">Last night</div><div class="big">7 h 04</div></div>`,
+  states:{Rest:()=>sH('#b5',-1,1),'Healing':()=>sH('#b5',-.3,.4),Healed:()=>sH('#b5',0,0),'Into sheet':()=>sH('#b5',1.2,1)},
+  rule:'Things to read are hollows pressed into the clay. Hidden, the hollow <b>heals</b>. Opened, it fills and keeps rising into the sheet.'},
+ {n:'Switch',st:'Lab',demo:`<button class="sw fk" id="b6" style="--h:-1;${hv('jad')}"><span class="liq"></span><span class="bead fk"></span></button>`,
+  states:{Off:()=>swS(false),On:()=>swS(true)},rule:'A bead under the surface. It stretches as it travels and the hue fills in behind it.'},
+ {n:'Segmented choice',st:'Lab',demo:`<div class="seg f" id="b7" style="--h:.7;width:100%;margin:0"><span class="sw2 f" style="--h:-1"></span><button class="on">Daily</button><button>Weekly</button><button>Monthly</button></div>`,
+  states:{Daily:()=>segS(0),Weekly:()=>segS(1),Monthly:()=>segS(2)},rule:'The chosen option is a dent that flows to the next one, leading edge first.'},
+ {n:'Tab bar',st:'Lab',demo:`<div class="mtabs" id="b8"><span class="tw2 f"></span><button class="on">Today</button><button>Time</button><button>Routines</button><button>You</button></div>`,
+  states:{Today:()=>tabS(0),Time:()=>tabS(1),Routines:()=>tabS(2),You:()=>tabS(3)},rule:'Same dent motion as a choice, bigger. The screen above melts and rises at the same time.',q:'Experiment (Mark): in a clay world, should the tab bar itself bulge toward the chosen tab?'},
+ {n:'Sheet from a key',st:'Lab',demo:`<button class="key kr fk" id="b9" style="--hf:#FF8F5E">${IC.plus}</button>`,
+  states:{Closed:()=>msheet(false),Open:()=>msheet(true)},rule:'What you touch becomes the sheet. The key stays pressed in while its sheet is out, and the sheet sinks back into it.'},
+ {n:'Toast (blister)',st:'Lab',demo:`<div class="mtoast f" id="b10" style="--h:0;width:52px"><span style="opacity:0">Water, +250 ml</span></div>`,
+  states:{Gone:()=>toastS(false),Swelled:()=>toastS(true)},rule:'A bump forms, swells sideways into a slab, drains, sinks back flat.'},
+ {n:'Field',st:'Lab',demo:`<div class="mfield f" id="b11">${IC.search}<span>Search everything</span></div>`,
+  states:{Rest:()=>$('#b11').classList.remove('foc'),Focused:()=>$('#b11').classList.add('foc')},rule:'A field is a hollow; focus deepens it.'},
+ {n:'Badge',st:'Lab',demo:`<div class="mbadge f" id="b12">${IC.flag}<span class="n">1</span></div>`,
+  states:{One:()=>{const n=$('#b12 .n');n.classList.remove('gone');n.textContent='1'},Two:()=>{const n=$('#b12 .n');n.classList.remove('gone');n.textContent='2'},None:()=>$('#b12 .n').classList.add('gone')},rule:'Counts sit on a small bump; at zero the bump sinks away.'},
+ {n:'Type: embossed, engraved',st:'Lab',demo:`<span class="emb-demo e" id="b13">Tuesday</span>`,
+  states:{Embossed:()=>{$('#b13').className='emb-demo e'},Engraved:()=>{$('#b13').className='emb-demo d'},Flat:()=>{$('#b13').className='emb-demo f0'}},rule:'Names stand out of the clay; labels are cut into it; done things go flat.'},
+ {n:'Loading',st:'Lab',demo:`<div style="width:100%"><div class="skel f"></div><div class="skel f"></div><div class="skel f"></div></div>`,states:{Breathing:()=>{}},rule:'No shimmer. Faint ridges rise and settle in a slow wave, then flatten into the real lines.'},
+ {n:'Fold (E1) in miniature',st:'Experiment',demo:`<div id="b15" style="position:relative;width:100%;height:150px"></div>`,states:{Play:()=>foldMini()},rule:'Content past the edge compresses into strata instead of leaving the screen.'},
+ {n:'Hero dial',st:'Studio',demo:`<div style="font:500 13.5px var(--ui);color:var(--t3);text-align:center;padding:0 10px">Owned by the studio (Mark picked the dial). This board will take its live version when it lands.</div>`,states:{},rule:'Clay idea to try with it: the dial is pressed into the clay; logs rise as small bumps along its rim.'},
+];
+function sH(sel,h,o){const e=$(sel);e.style.transition='--h .5s var(--spr)';e.style.setProperty('--h',h);$$(':scope > *',e).forEach(c=>{c.style.transition='opacity .35s';c.style.opacity=o})}
+function swS(on){const k=$('#b6');k.classList.add('mv');k.classList.toggle('on',on);setTimeout(()=>k.classList.remove('mv'),170)}
+function segS(i){const s=$('#b7'),b=$$('button',s)[i],w=$('.sw2',s);$$('button',s).forEach(x=>x.classList.toggle('on',x===b));const sr=s.getBoundingClientRect(),br=b.getBoundingClientRect();
+  const L=br.left-sr.left,R=br.right-sr.left;if(s._l==null){s._l=L;s._r=R}const right=L>s._l;const draw=()=>{w.style.left=s._l+'px';w.style.width=(s._r-s._l)+'px'};
+  spring(s._l,L,right?sp(.44,.74):sp(.26,.8),x=>{s._l=x;draw()});spring(s._r,R,right?sp(.26,.8):sp(.44,.74),x=>{s._r=x;draw()})}
+function tabS(i){const s=$('#b8'),b=$$('button',s)[i],w=$('.tw2',s);$$('button',s).forEach(x=>x.classList.toggle('on',x===b));const sr=s.getBoundingClientRect(),br=b.getBoundingClientRect();
+  const L=br.left-sr.left,R=br.right-sr.left;if(s._l==null){s._l=L;s._r=R}const right=L>s._l;const draw=()=>{w.style.left=s._l+'px';w.style.width=(s._r-s._l)+'px'};
+  spring(s._l,L,right?sp(.46,.74):sp(.26,.8),x=>{s._l=x;draw()});spring(s._r,R,right?sp(.26,.8):sp(.46,.74),x=>{s._r=x;draw()})}
+let msOpen=false,msEl=null,msS=null;
+function msheet(open){const k=$('#b9'),patch=k.parentNode;if(open===msOpen)return;msOpen=open;
+  const pr=patch.getBoundingClientRect(),kr=k.getBoundingClientRect();const A={x:kr.left-pr.left,y:kr.top-pr.top,w:kr.width,h:kr.height,r:kr.width/2},B={x:10,y:10,w:pr.width-20,h:pr.height-20,r:18};
+  if(!msEl){msEl=document.createElement('div');msEl.className='minisheet f';msEl.innerHTML=`<div class="ms" style="width:${B.w}px"><b>Log</b>Anything, any time</div>`;patch.appendChild(msEl)}
+  const ms=$('.ms',msEl);let t=open?0:1;k.classList.toggle('held',open);
+  const apply=x=>{const c=Math.max(0,x);msEl.style.left=lerp(A.x,B.x,c)+'px';msEl.style.top=lerp(A.y,B.y,c)+'px';msEl.style.width=lerp(A.w,B.w,c)+'px';msEl.style.height=lerp(A.h,B.h,c)+'px';msEl.style.borderRadius=lerp(A.r,B.r,clamp(c))+'px';msEl.style.setProperty('--h',lerp(1.25,1.2,c));ms.style.opacity=ss(.4,.8,c);msEl.style.opacity=c<.02?0:1};
+  msS&&msS.stop();msS=spring(t,open?1:0,open?sp(.5,.8):sp(.4,.92),apply)}
+function toastS(on){const t=$('#b10'),s=$('span',t);const w0=t.offsetWidth;const W=t.parentNode.clientWidth-30;
+  spring(on?0:1,on?1:0,on?sp(.5,.74):sp(.36,1),x=>{t.style.width=lerp(52,W,clamp(x,0,1.06))+'px';t.style.setProperty('--h',(x*1.35).toFixed(3));s.style.opacity=ss(.5,.9,x)})}
+function foldMini(){const box=$('#b15');box.innerHTML='';const n=9,H=36,gap=8,V=150,Z=44;const els=[];for(let i=0;i<n;i++){const b=document.createElement('div');b.className='f';b.style.cssText=`position:absolute;left:0;right:0;border-radius:12px;background:var(--surf);--h:1`;box.appendChild(b);els.push(b)}
+  const lay=p=>els.forEach((b,i)=>{const t=i*(H+gap)-p;const top=g(t,V,Z),bot=g(t+H,V,Z);const h=bot-top,r=h/H;b.style.top=top+'px';b.style.height=h+'px';b.style.setProperty('--h',(.3+.7*r).toFixed(3));b.style.left=b.style.right=((1-r)*8)+'px'});
+  const max=n*(H+gap)-V;spring(0,max,sp(2.2,1),lay,()=>spring(max,0,sp(2.2,1),lay))}
+function boardBuild(){const b=$('#board');
+  b.innerHTML=`<div class="bintro"><b>Storyboard.</b> Every element of the app on its own patch of clay. Tap a state to see the clay take that shape, then compare the experiments with the tabs at the top. Each card says what the element should do in a clay world, and the open question to test.</div>`+
+  BOARD.map((x,i)=>`<div class="bt f" data-i="${i}"><div class="bn"><b>${x.n}</b><span class="${x.st==='Lab'?'':'lab2'}">${x.st.toUpperCase()}</span></div><div class="patch f" style="${x.style||''}">${x.demo}</div><div class="states">${Object.keys(x.states).map((s,j)=>`<button class="fk${j==0?' on':''}" data-s="${s}">${s}</button>`).join('')}</div><div class="rule">${x.rule}</div>${x.q?`<div class="q">${x.q}</div>`:''}</div>`).join('');
+  $$('.bt',b).forEach(card=>{const x=BOARD[+card.dataset.i];$$('[data-s]',card).forEach(btn=>btn.addEventListener('click',()=>{tick();$$('[data-s]',card).forEach(o=>o.classList.toggle('on',o===btn));x.states[btn.dataset.s]()}))});
+  requestAnimationFrame(()=>{segS(0);tabS(0);foldMini()})}
+
+/* ===================== modes ===================== */
+const CAPS={board:'<b>Storyboard.</b> Every element, all its states, and what it should do in clay.',fold:'<b>Fold.</b> Drag. Nothing leaves the screen: what is past an edge is squeezed into ridges against it.',focus:'<b>Focus.</b> Drag or tap a ridge. The section you are in swells; the rest shrink to ridges.',reshape:'<b>Reshape.</b> Swipe up or down. The clay sinks flat, flows into the next arrangement and rises again.'};
+let mode='fold',capT=0;
+function setMode(m,instant){mode=m;$$('.exp').forEach(e=>e.classList.toggle('on',e.id==='x-'+m));const s=$('#modeseg');const btn=$(`[data-m="${m}"]`,s);segTo(s,btn,instant);$('#pillmode').textContent=btn.textContent;
+  if(m==='fold')e1Layout();if(m==='focus')e2Layout();
+  const cap=$('#cap');cap.innerHTML=CAPS[m];cap.classList.remove('off');clearTimeout(capT);capT=setTimeout(()=>cap.classList.add('off'),4200);try{history.replaceState(null,'','#'+m)}catch(e){}}
+function segTo(seg,btn,instant){const w=$('.sw2',seg),sr=seg.getBoundingClientRect(),br=btn.getBoundingClientRect();$$('button',seg).forEach(b=>b.classList.toggle('on',b===btn));const L=br.left-sr.left,R=br.right-sr.left;
+  if(instant||seg._l==null){seg._l=L;seg._r=R;w.style.left=L+'px';w.style.width=(R-L)+'px';return}const right=L>seg._l;const draw=()=>{w.style.left=seg._l+'px';w.style.width=(seg._r-seg._l)+'px'};
+  spring(seg._l,L,right?sp(.44,.74):sp(.26,.8),x=>{seg._l=x;draw()});spring(seg._r,R,right?sp(.26,.8):sp(.44,.74),x=>{seg._r=x;draw()})}
+function boot(){e1Build();e1Init();e2Build();e2Init();e3Build();e3Init();boardBuild();
+  $$('#modeseg button').forEach(b=>b.addEventListener('click',()=>{tick();setMode(b.dataset.m)}));
+  $('#mn').addEventListener('click',()=>{tick();$('.ctlbar').classList.add('min');$('#pillmode').classList.add('on')});
+  $('#pillmode').addEventListener('click',()=>{tick();$('.ctlbar').classList.remove('min');$('#pillmode').classList.remove('on')});
+  const h=location.hash.slice(1);setMode(['board','fold','focus','reshape'].includes(h)?h:'fold',true);
+  window.addEventListener('resize',()=>{e1Layout();e2Layout()});
+  if(document.fonts)document.fonts.ready.then(()=>{e1Build();e2Build();setMode(mode,true)})}
+boot();
+window.__clay={E1,E2,E3,e1Layout,e2To,e3Go,setMode};
+
+</script>
+</body>
+</html>
