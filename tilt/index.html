@@ -49,8 +49,11 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
    raised  .sh  shadow (masked by h)        .shc contact shadow      .face lit top face
            .fl surface-colour cover (masked by 1 - 1.3h). No slope shading: the slope reads through shadow + bevel only.
    wells   .ins inset depth + floor (masked by h)
-   JS writes only custom properties: --m --mc --mf --ta --pop   */
-.clay{position:relative;border-radius:22px;--pop:0;--k:calc(1 + var(--pop) * 2);--ta:1;
+           .wall (x N) side wall on the lower/right edge: layer i is the shape offset i px down, shown where h * N >= i
+           .moat displaced clay: soft dark dip + faint lit outer lip, strength = item still rising x local h
+   wells   .ins inset depth + floor (masked by h)   .iw (x N) inner wall on the upper/left side   .moat raised lip
+   JS writes only custom properties: --m --mc --mf --mm --w1..--wN --ta --pop   */
+.clay{position:relative;border-radius:22px;--pop:0;--k:calc(var(--depth) * (1 + var(--pop) * 2));--ta:1;--mm:linear-gradient(transparent,transparent);
   --m:none;--mc:linear-gradient(transparent,transparent);--mf:linear-gradient(transparent,transparent)}
 .plate{position:absolute;inset:0;border-radius:inherit;pointer-events:none}
 .plate > *{position:absolute;border-radius:inherit;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
@@ -60,14 +63,21 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
     calc(11px * var(--k)) calc(13px * var(--k)) 24px rgba(5,8,14,clamp(0, calc(var(--pop) * 4), .3))}
 .shc{inset:-56px;-webkit-mask-image:var(--mc);mask-image:var(--mc)}
 .shc::before{content:"";position:absolute;inset:56px;border-radius:22px;
-  box-shadow:2px 3px 4px rgba(7,11,18,.55),-1px -1px 2px rgba(80,98,126,.25)}
+  box-shadow:calc(2px * var(--depth)) calc(3px * var(--depth)) calc(4px * var(--depth)) rgba(7,11,18,.55),calc(-1px * var(--depth)) calc(-1px * var(--depth)) calc(2px * var(--depth)) rgba(80,98,126,.25)}
+.wall{background:#151c27}
+.iw{inset:0}
+.moat{inset:-40px;-webkit-mask-image:var(--mm);mask-image:var(--mm)}
+.moat::before{content:"";position:absolute;inset:40px;border-radius:inherit;
+  box-shadow:0 0 10px 7px rgba(5,8,14,.46),-1px -1px 3px 14px rgba(96,118,150,.13)}
+.well .moat::before{box-shadow:-3px -3px 6px 1px rgba(84,104,134,.24),3px 3px 6px 1px rgba(4,7,12,.45)}
 .face{inset:0;background:linear-gradient(150deg,var(--face-hi) 0%,#1f2937 55%,var(--face-lo) 100%);
   box-shadow:inset 1px 1px 0 rgba(150,175,210,.07),inset -1px -1px 0 rgba(0,0,0,.18)}
 .fl{inset:-1px;background:var(--ink);-webkit-mask-image:var(--mf);mask-image:var(--mf)}
 .ins{inset:0;-webkit-mask-image:var(--m);mask-image:var(--m);background:rgba(4,7,12,.10);
-  box-shadow:inset 3px 3px 6px rgba(6,10,16,.85),inset -2px -2px 5px rgba(70,88,114,.32)}
-.chart .ins{box-shadow:inset 7px 7px 14px rgba(6,10,16,.85),inset -5px -5px 12px rgba(72,92,120,.30);background:rgba(4,7,12,.12)}
+  box-shadow:inset calc(3px * var(--depth)) calc(3px * var(--depth)) calc(6px * var(--depth)) rgba(6,10,16,.85),inset calc(-2px * var(--depth)) calc(-2px * var(--depth)) calc(5px * var(--depth)) rgba(70,88,114,.32)}
+.chart .ins{box-shadow:inset calc(7px * var(--depth)) calc(7px * var(--depth)) calc(14px * var(--depth)) rgba(6,10,16,.85),inset calc(-5px * var(--depth)) calc(-5px * var(--depth)) calc(12px * var(--depth)) rgba(72,92,120,.30);background:rgba(4,7,12,.12)}
 .key .sh::before,.key .shc::before{border-radius:50%}
+:root{--depth:1.4}
 .content{position:relative;opacity:var(--ta)}
 /* side-profile debug overlay (?profile=1) */
 #prof{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;display:none}
@@ -126,6 +136,9 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   </header>
   <div class="ramps" role="group" aria-label="Ramp curve"><span>Ramp</span>
     <button data-ramp="smooth">Smooth</button><button data-ramp="late">Late rise</button><button data-ramp="quick">Quick rise</button>
+  </div>
+  <div class="ramps fx" role="group" aria-label="Physics effects"><span>Effects</span>
+    <button data-fx="walls">Walls</button><button data-fx="moat">Moat</button><button data-fx="depth">Depth 1.4</button>
   </div>
   <div class="wrap" id="wrap">
     <div class="guide t"></div><div class="guide b"></div>
@@ -214,12 +227,20 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
 <script>
 (function(){
   var q = new URLSearchParams(location.search);
-  var B = Math.max(10, parseFloat(q.get('band')) || 64);       // band, px: distance over which a point reaches full height
+  function flag(n){ return q.get(n) !== '0'; }
+  var WALLS = flag('walls'), MOAT = flag('moat');
+  var DEPTH_ON = q.has('depth') ? parseFloat(q.get('depth')) : 1.4;     // ?depth=1 for v7 height
+  var DEPTH = DEPTH_ON;
+  var BAND_Q = parseFloat(q.get('band'));
+  function bandFor(d){ return BAND_Q > 0 ? BAND_Q : (d > 1.05 ? 80 : 64); }
+  var B = bandFor(DEPTH);                                      // band, px: distance over which a point reaches full height
+  var NW = 7;                                                  // wall layers (1 px each), max wall = round(5 * depth) px
   var POP = q.has('pop') ? parseFloat(q.get('pop')) : 0.04;    // gentle overshoot on full entry (?pop=0 off, ?pop=0.08 stronger)
   var P = 56;                                                  // shadow-layer padding (matches CSS)
   var plain = q.get('mode') === 'plain';
   var PROFILE = q.get('profile') === '1';
   document.documentElement.style.setProperty('--band', B + 'px');
+  document.documentElement.style.setProperty('--depth', String(DEPTH));
   var wrap = document.getElementById('wrap');
   if (q.get('guide') === '1') wrap.classList.add('showguide');
   if (PROFILE) wrap.classList.add('showprof');
@@ -229,8 +250,14 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   els.forEach(function(el){
     var plate = document.createElement('div');
     plate.className = 'plate';
-    plate.innerHTML = el.classList.contains('well') ? '<div class="ins"></div>'
-      : '<div class="sh"></div><div class="shc"></div><div class="face"></div><div class="fl"></div>';
+    var walls = '', i;
+    if (el.classList.contains('well')){
+      for (i = 1; i <= NW; i++) walls += '<div class="iw" style="box-shadow:inset ' + (i * .35).toFixed(2) + 'px ' + i + 'px 0 #121923;-webkit-mask-image:var(--w' + i + ');mask-image:var(--w' + i + ')"></div>';
+      plate.innerHTML = '<div class="moat"></div><div class="ins"></div>' + walls;
+    } else {
+      for (i = NW; i >= 1; i--) walls += '<div class="wall" style="top:' + i + 'px;bottom:-' + i + 'px;left:' + (i * .35).toFixed(2) + 'px;right:-' + (i * .35).toFixed(2) + 'px;-webkit-mask-image:var(--w' + i + ');mask-image:var(--w' + i + ')"></div>';
+      plate.innerHTML = '<div class="moat"></div><div class="sh"></div><div class="shc"></div>' + walls + '<div class="face"></div><div class="fl"></div>';
+    }
     el.insertBefore(plate, el.firstChild);
   });
 
@@ -270,10 +297,13 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   function a(v){ return Math.round(v * 1000) / 1000; }
 
   // mask gradient from per-point samples (~every 6 px) plus forced stops at both clip edges and band ends
-  function grad(y0, from, to, f){
+  function grad(y0, from, to, f, shift){
     var span = to - from, n = Math.max(4, Math.min(32, Math.ceil(span / 6))), ys = [];
     for (var i = 0; i <= n; i++) ys.push(from + span * i / n);
-    [E0 - 1, E0, E0 + 1, E0 + 1 + B, E1 - 1 - B, E1 - 1, E1, E1 + 1].forEach(function(e){ var ly = e - y0; if (ly > from && ly < to) ys.push(ly); });
+    var sh = shift || 0;
+    [E0 - 1, E0, E0 + 1, E0 + 1 + B, E1 - 1 - B, E1 - 1, E1, E1 + 1].forEach(function(e){
+      [e, e + sh].forEach(function(v){ var ly = v - y0; if (ly > from && ly < to) ys.push(ly); });
+    });
     ys.sort(function(p, q){ return p - q; });
     var s = 'linear-gradient(180deg';
     for (var j = 0; j < ys.length; j++)
@@ -284,6 +314,27 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   var fContact = function(y){ var h = hAt(y); return Math.min(1, h * 2.2) * (1 - h * 0.6); };
   var fCover   = function(y){ return 1 - Math.min(1, hAt(y) * 1.3); };
   var NONE = 'linear-gradient(transparent,transparent)';
+  // wall layer i (offset i px from the face point above it) shows where h * N >= i: visible wall height ~ h * N px
+  function nWalls(it){ var n = Math.round(5 * DEPTH); return it.well ? Math.min(n, Math.floor(it.h * .15)) : n; }
+  function setWalls(it, y0, full){
+    var n = WALLS ? nWalls(it) : 0;
+    for (var i = 1; i <= NW; i++){
+      if (i > n){ set(it, '--w' + i, NONE); continue; }
+      if (full && !nearEdge(it)){ set(it, '--w' + i, 'none'); continue; }
+      (function(i){
+        var off = it.well ? 0 : i;                         // a raised wall pixel belongs to the face point i px above it
+        set(it, '--w' + i, grad(y0 + off, 0, it.h, function(y){ return clamp01(hAt(y - off) * n - (i - 1) - .02); }, off));
+      })(i);
+    }
+  }
+  function nearEdge(it){ return (it.y0 - E0) < B + P || (E1 - it.y1) < B + P; }
+  // displaced clay: per-item "still rising" amount x local height (0 at the edge, 0 once fully up)
+  function setMoat(it, y0, hav){
+    if (!MOAT){ set(it, '--mm', NONE); return; }
+    var m = clamp01(4 * hav * (1 - hav));
+    if (m < .002){ set(it, '--mm', NONE); return; }
+    set(it, '--mm', grad(y0 - 40, 0, it.h + 80, function(y){ return m * hAt(y); }));
+  }
 
   function set(it, k, v){ if (it.last[k] !== v){ it.last[k] = v; it.el.style.setProperty(k, v); } }
 
@@ -300,6 +351,9 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
       if (POP > 0 && full && it.wasFull === false && it.armed && !plain){ it.armed = false; startPop(it); }
       it.wasFull = full;
       var near = (y0 - E0) < B + P || (E1 - y1) < B + P;
+      var hav = (h0 + h1 + 2 * hm) / 4;
+      setWalls(it, y0, full);
+      setMoat(it, y0, full ? 1 : hav);
       if (it.well){
         set(it, '--m', full ? 'none' : grad(y0, 0, it.h, fShadow));
         continue;
@@ -324,7 +378,7 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
     var dpr = window.devicePixelRatio || 1, W = list.clientWidth, Hh = list.clientHeight;
     if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(Hh * dpr)){ cv.width = Math.round(W * dpr); cv.height = Math.round(Hh * dpr); }
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, Hh);
-    var bx = W - 17, AMP = 14;
+    var bx = W - 17, AMP = 10 * DEPTH;
     cx.setLineDash([3, 3]); cx.strokeStyle = 'rgba(143,195,255,.35)'; cx.lineWidth = 1;
     [E0 + B, E1 - B].forEach(function(y){ cx.beginPath(); cx.moveTo(bx - 4, y + .5); cx.lineTo(W, y + .5); cx.stroke(); });
     cx.setLineDash([]);
@@ -370,13 +424,25 @@ header .date{font-size:30px;font-weight:300;letter-spacing:-.01em;margin-top:2px
   function setMode(p){ plain = p; bT.setAttribute('aria-pressed', String(!p)); bP.setAttribute('aria-pressed', String(p)); frame(); }
   bT.addEventListener('click', function(){ setMode(false); });
   bP.addEventListener('click', function(){ setMode(true); });
-  var chips = [].slice.call(document.querySelectorAll('.ramps button'));
+  var chips = [].slice.call(document.querySelectorAll('.ramps:not(.fx) button'));
   function setRamp(n){ ramp = n; chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c.dataset.ramp === n)); }); frame(); }
   chips.forEach(function(c){ c.addEventListener('click', function(){ setRamp(c.dataset.ramp); }); });
 
+  var fx = [].slice.call(document.querySelectorAll('.fx button'));
+  function syncFx(){ fx.forEach(function(c){ var k = c.dataset.fx; c.setAttribute('aria-pressed', String(k === 'walls' ? WALLS : k === 'moat' ? MOAT : DEPTH > 1.05)); }); }
+  fx.forEach(function(c){ c.addEventListener('click', function(){
+    var k = c.dataset.fx;
+    if (k === 'walls') WALLS = !WALLS;
+    else if (k === 'moat') MOAT = !MOAT;
+    else { DEPTH = DEPTH > 1.05 ? 1 : (DEPTH_ON > 1.05 ? DEPTH_ON : 1.4); B = bandFor(DEPTH);
+      document.documentElement.style.setProperty('--depth', String(DEPTH)); document.documentElement.style.setProperty('--band', B + 'px'); measure(); }
+    syncFx(); items.forEach(function(it){ it.last = {}; }); frame();
+  }); });
+  syncFx();
+
   measure(); setRamp(ramp); setMode(plain);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measure(); frame(); });
-  window.__tilt = { frame: frame, band: B, peakMs: TPEAK * 1000, edges: function(){ measureEdges(); return { E0: E0, E1: E1 }; }, hAt: function(y){ return hAt(y); } };
+  window.__tilt = { frame: frame, band: B, peakMs: TPEAK * 1000, edges: function(){ measureEdges(); return { E0: E0, E1: E1 }; }, hAt: function(y){ return hAt(y); }, fx: function(){ return { walls: WALLS, moat: MOAT, depth: DEPTH, band: B }; } };
 })();
 </script>
 </body>
