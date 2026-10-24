@@ -931,6 +931,21 @@ textarea.field,input.field{background:var(--surf);box-shadow:var(--p2)}
 .lightsurf .tab.on svg,.lightsurf .logkey svg{filter:none}
 .lightsurf .head h1{text-shadow:-1px -1px 1px rgba(255,255,255,.85),1px 1px 2px rgba(var(--sd),.28)}
 
+
+/* v5: Ink is the page. The scrub knob is a moulded ring riding the groove, with a lit pit; the hour it reads glows in the groove */
+.hero-dial .dlk{fill:var(--s9)}
+.hero-dial .dlkr{stroke:var(--cream);opacity:.85}
+.hero-dial .dlkp{fill:var(--sun2)}
+.hero-dial .dlhour{stroke:rgba(var(--tx),.16)}
+.glowsurf .hero-dial .dlkr{filter:drop-shadow(0 0 3px rgba(var(--tx),.55))}
+.glowsurf .hero-dial .dlkp{filter:drop-shadow(0 0 4px var(--sun))}
+.glowsurf .hero-dial .dlhour{stroke:rgba(var(--tx),.13);filter:drop-shadow(0 0 6px rgba(var(--tx),.25))}
+/* on Ink the coloured light inside forms glows a touch further */
+.glowsurf .inl i{box-shadow:inset 1px 1px 2px rgba(0,0,0,.35),0 0 14px var(--hf)}
+.glowsurf .level i{box-shadow:0 0 14px var(--hf,transparent)}
+.glowsurf .tok .hp.some,.glowsurf .tok.done .hp{box-shadow:inset 1px 1px 1px rgba(0,0,0,.3),0 0 10px var(--hf)}
+.glowsurf .head h1{text-shadow:2px 3px 6px rgba(var(--sd),.7),-1px -1px 1px rgba(var(--sl),.12)}
+
 @media (prefers-reduced-motion: reduce){.nm-r,.key,.btn,.chip{transition:none!important}}
 
 @media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -1195,19 +1210,19 @@ const oklch = (L, C, h) => { const a = C * Math.cos(h * Math.PI / 180), b = C * 
   return { hex: '#' + c.map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('').toUpperCase(), rgb: c }; };
 const SURFACES = [
   { name: 'Slate', surf: '#2A2E33', tx: '236,239,243', a: [.70, .58, .30], sd: '4,6,10', sda: 1, sl: '225,235,255', sla: 1.05, lift: '#F2F6FF', deep: '#000000', rec: '#A0A4AB', onHue: '#121417', lv0: '#EEF0F4', sun: '#FF6B3D', sun2: '#FF8F5E', light: false },
-  { name: 'Ink', surf: '#1D2633', tx: '232,239,248', a: [.70, .58, .30], sd: '1,4,10', sda: 1.15, sl: '190,215,255', sla: 1.2, lift: '#E6F0FF', deep: '#000000', rec: '#9AA3B2', onHue: '#0E1219', lv0: '#E8EEF8', sun: '#FF6B3D', sun2: '#FF8F5E', light: false },
+  { name: 'Ink', surf: '#1D2633', tx: '232,239,248', a: [.70, .58, .30], sd: '0,3,9', sda: 1.3, sl: '196,220,255', sla: 1.9, lift: '#E6F0FF', hueL: [.76, .14, .84, .11], glow: 1, deep: '#000000', rec: '#9AA3B2', onHue: '#0E1219', lv0: '#E8EEF8', sun: '#FF6B3D', sun2: '#FF8F5E', light: false },
   { name: 'Clay', surf: '#E2DFDA', tx: '30,32,38', a: [.78, .70, .34], sd: '92,88,98', sda: .82, sl: '255,255,255', sla: 9, lift: '#FFFFFF', deep: '#3E3C44', rec: '#6C6A71', onHue: '#16171B', lv0: '#C8AE93', sun: '#E0562B', sun2: '#A2441F', light: true },
   { name: 'Mineral', surf: '#22302F', tx: '230,242,239', a: [.70, .58, .30], sd: '1,8,8', sda: 1.1, sl: '200,255,245', sla: 1, lift: '#EFFFFB', deep: '#000000', rec: '#9AABA8', onHue: '#0E1615', lv0: '#EAF4F1', sun: '#FF6B3D', sun2: '#FF8F5E', light: false },
 ];
 const HUEH = { saffron: 82, moss: 138, jade: 178, lagoon: 232, iris: 300, rose: 8 };
-let SURF = Math.max(0, Math.min(3, params.has('surface') ? +params.get('surface') : 2));
+let SURF = Math.max(0, Math.min(3, params.has('surface') ? +params.get('surface') : 1)); // Ink is the page
 function applySurface() {
   const P = SURFACES[SURF], el = $('#app'), lt = P.light;
-  Object.entries(HUEH).forEach(([k, h]) => { const f = lt ? oklch(.56, .15, h) : oklch(.74, .13, h), t = lt ? oklch(.45, .12, h) : oklch(.82, .11, h), d = lt ? oklch(.88, .05, h) : oklch(.42, .08, h); Object.assign(HUES[k], { f: f.hex, t: t.hex, d: d.hex, rgb: f.rgb }); });
+  Object.entries(HUEH).forEach(([k, h]) => { const hl = P.hueL || [.74, .13, .82, .11], f = lt ? oklch(.56, .15, h) : oklch(hl[0], hl[1], h), t = lt ? oklch(.45, .12, h) : oklch(hl[2], hl[3], h), d = lt ? oklch(.88, .05, h) : oklch(.42, .08, h); Object.assign(HUES[k], { f: f.hex, t: t.hex, d: d.hex, rgb: f.rgb }); });
   const nf = lt ? oklch(.56, .15, 278).hex : '#98A2FC', nt = lt ? oklch(.45, .12, 278).hex : '#B3BDFF';
   const v = { '--surf': P.surf, '--surfRGB': P.surf.match(/\w\w/g).map(x => parseInt(x, 16)).join(','), '--tx': P.tx, '--a2': P.a[0], '--a3': P.a[1], '--a4': P.a[2], '--sd': P.sd, '--sda': P.sda, '--sl': P.sl, '--sla': P.sla, '--lift': P.lift, '--deep': P.deep, '--rec': P.rec, '--onHue': P.onHue, '--lv0': P.lv0, '--sun': P.sun, '--sun2': P.sun2, '--night': nf, '--nightT': nt };
   Object.entries(v).forEach(([k, x]) => el.style.setProperty(k, x));
-  el.classList.toggle('lightsurf', lt); document.body.style.background = P.surf; document.documentElement.style.background = P.surf;
+  el.classList.toggle('lightsurf', lt); el.classList.toggle('glowsurf', !!P.glow); document.body.style.background = P.surf; document.documentElement.style.background = P.surf;
   const sw = $('#ssw'); if (sw) sw.innerHTML = SURFACES.map((q, i) => `<button data-act="surface" data-n="${i}" class="${i === SURF ? 'on' : ''}" aria-pressed="${i === SURF}" aria-label="Surface ${i}, ${q.name}" style="--c:${q.surf}"><i></i></button>`).join('');
 }
 const qs = () => `?sample=${si}&hero=${HERO}&surface=${SURF}${STILL ? '&still' : ''}`;
@@ -1410,17 +1425,17 @@ function heroDial(W) {
   let g = `<defs>${SVGF}</defs>`;
   g += `<circle cx="${c}" cy="${c}" r="${rg}" fill="none" style="stroke:var(--s6)" stroke-width="26" filter="url(#ins)"/>`;
   for (let hh = 0; hh < 24; hh++) { const [x, y] = P(hh * 60, R - 27); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${hh % 3 ? 1 : 1.7}" style="fill:rgba(var(--sd),calc(.75 * var(--sda)))"/>`; }
-  if (!D.noNight) g += `<path class="dn" d="${arcP(D.sl.onset, D.wake, rg)}" stroke="var(--night)" stroke-width="7" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
+  if (!D.noNight) g += `<path class="dn" d="${arcP(D.sl.onset, D.wake, rg)}" stroke="var(--night)" stroke-width="7" stroke-linecap="round" fill="none" filter="url(#${SURFACES[SURF].glow ? 'glow2' : 'glow'})"/>`;
   else g += `<path d="${arcP(D.sl.onset, D.wake, rg)}" style="stroke:rgba(var(--tx),.32)" stroke-width="2" stroke-dasharray="1.5 5" stroke-linecap="round" fill="none"/>`;
-  if (D.now > D.wake) g += `<path class="dlv" d="${arcP(D.wake, Math.min(D.now, D.bed), rg)}" stroke="url(#lived)" stroke-width="5" stroke-linecap="round" fill="none" filter="url(#glow)"/>`;
+  if (D.now > D.wake) g += `<path class="dlv" d="${arcP(D.wake, Math.min(D.now, D.bed), rg)}" stroke="url(#lived)" stroke-width="5" stroke-linecap="round" fill="none" filter="url(#${SURFACES[SURF].glow ? 'glow2' : 'glow'})"/>`;
   for (let t = Math.max(D.now, D.wake) + 15; t < D.bed; t += 15) { const [x, y] = P(t, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.3" style="fill:rgba(var(--sd),calc(.8 * var(--sda)))"/>`; }
   { const [x, y] = P(D.bed, rg); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="none" style="stroke:rgba(var(--tx),.38)" stroke-width="1.2"/>`; }
   D.recs.forEach(e => { const [x, y] = P(e.t, rg + 18); g += `<circle class="drec" data-hr="${Math.floor(clockMin(e.t) / 60)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="var(--rec)"/>`; });
   // the scrub mark: a cream notch riding the ring, hidden until you drag
-  g += `<g id="dlmark" style="display:none"><path id="dlhour" d="" style="stroke:rgba(var(--tx),.55)" stroke-width="20" stroke-linecap="butt" fill="none" opacity=".18"/><circle id="dlknob" r="6" style="fill:var(--cream)" filter="url(#bead)"/></g>`;
+  g += `<g id="dlmark" style="display:none"><path id="dlhour" d="" class="dlhour" stroke-width="22" stroke-linecap="round" fill="none"/><g id="dlknob"><circle r="11" class="dlk" filter="url(#knob2)"/><circle r="11" fill="none" class="dlkr" stroke-width="1.6"/><circle r="3" class="dlkp"/></g></g>`;
   dialClusters(D, G).forEach(k => {
     const col = hueC(k.h), nm = k.x ? (k.x.short || k.x.name) : k.id;
-    g += `<g class="db" data-act="dfocus" data-id="${esc(k.id)}" data-hr="${k.hr}" role="button" tabindex="0" aria-label="${esc(nm)}, ${k.n} at ${String(k.hr).padStart(2, '0')}:00. Show only ${esc(nm)}"><circle cx="${k.p[0].toFixed(2)}" cy="${k.p[1].toFixed(2)}" r="${k.n > 1 ? 8.5 : 6.5}" fill="${col}" filter="url(#bead)"/>${k.n > 1 ? `<text x="${k.p[0].toFixed(2)}" y="${(k.p[1] + 3.4).toFixed(2)}" text-anchor="middle" class="dbn">${k.n}</text>` : ''}<circle cx="${k.p[0].toFixed(2)}" cy="${k.p[1].toFixed(2)}" r="13" fill="transparent"/></g>`;
+    g += `<g class="db" data-act="dfocus" data-id="${esc(k.id)}" data-hr="${k.hr}" role="button" tabindex="0" aria-label="${esc(nm)}, ${k.n} at ${String(k.hr).padStart(2, '0')}:00. Show only ${esc(nm)}"><circle cx="${k.p[0].toFixed(2)}" cy="${k.p[1].toFixed(2)}" r="${k.n > 1 ? 8.5 : 6.5}" fill="${col}" filter="url(#${SURFACES[SURF].glow ? 'beadg' : 'bead'})"/>${k.n > 1 ? `<text x="${k.p[0].toFixed(2)}" y="${(k.p[1] + 3.4).toFixed(2)}" text-anchor="middle" class="dbn">${k.n}</text>` : ''}<circle cx="${k.p[0].toFixed(2)}" cy="${k.p[1].toFixed(2)}" r="13" fill="transparent"/></g>`;
   });
   { const [x, y] = P(D.now, rg); g += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="9.5" fill="var(--sun)" filter="url(#knob)"/>`; }
   const nums = [0, 3, 6, 9, 12, 15, 18, 21].map(hh => { const [x, y] = P(hh * 60, R - 13); return `<span class="dl-h${hh % 6 ? '' : ' m'}" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px">${hh}</span>`; }).join('');
@@ -1458,7 +1473,7 @@ function dialApply() {
   host.classList.toggle('focused', !!DIAL.focus); host.classList.toggle('scrubbing', hr != null);
   const mk = host.querySelector('#dlmark'), disc = host.querySelector('.dl-disc');
   if (hr != null) { const R = +disc.dataset.r, rg = +disc.dataset.rg, A = t => t / 1440 * Math.PI * 2, P = (t, r) => [R + r * Math.sin(A(t)), R - r * Math.cos(A(t))];
-    const [x, y] = P(clockMin(DIAL.scrub), rg); mk.style.display = ''; mk.querySelector('#dlknob').setAttribute('cx', x.toFixed(1)); mk.querySelector('#dlknob').setAttribute('cy', y.toFixed(1));
+    const [x, y] = P(clockMin(DIAL.scrub), rg); mk.style.display = ''; mk.querySelector('#dlknob').setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
     const [x0, y0] = P(hr * 60, rg), [x1, y1] = P(hr * 60 + 60, rg); mk.querySelector('#dlhour').setAttribute('d', `M${x0.toFixed(1)} ${y0.toFixed(1)}A${rg} ${rg} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`);
   } else mk.style.display = 'none';
   host.querySelector('#dlc').innerHTML = dialCentre();
@@ -1469,7 +1484,9 @@ function bindDial() {
   const minAt = e => { const b = disc.getBoundingClientRect(), R = b.width / 2, dx = e.clientX - b.left - R, dy = e.clientY - b.top - R; let a = Math.atan2(dx, -dy); if (a < 0) a += Math.PI * 2; return { m: a / (Math.PI * 2) * 1440, r: Math.hypot(dx, dy), R }; };
   disc.addEventListener('pointerdown', e => {
     const q = minAt(e), rg = +disc.dataset.rg;
-    st = { id: e.pointerId, x: e.clientX, y: e.clientY, ring: q.r > rg - 30 && q.r < q.R - 2, bead: !!e.target.closest('.db'), moved: false, lp: setTimeout(() => { if (st && !st.moved) { st.held = true; haptic(15); openSheet('day'); } }, 520) };
+    st = { id: e.pointerId, x: e.clientX, y: e.clientY, ring: q.r > rg - 30 && q.r < q.R - 2, bead: !!e.target.closest('.db'), moved: false };
+    // hold opens the Day sheet only from inside the ring; on the ring a resting finger is the start of a scrub
+    if (!st.ring) st.lp = setTimeout(() => { if (st && !st.moved) { st.held = true; haptic(15); openSheet('day'); } }, 520);
   });
   disc.addEventListener('pointermove', e => { if (!st) return; if (!st.moved && Math.hypot(e.clientX - st.x, e.clientY - st.y) > 6) { st.moved = true; clearTimeout(st.lp); if (st.ring) try { disc.setPointerCapture(st.id); } catch (er) {} } if (st.ring && st.moved) { const q = minAt(e); const hr = Math.floor(q.m / 60); if (DIAL.scrub == null || Math.floor(DIAL.scrub / 60) !== hr) haptic(3); DIAL.focus = null; DIAL.scrub = q.m; dialApply(); } });
   const up = e => { if (!st) return; clearTimeout(st.lp); if (st.ring && !st.bead && !st.moved && !st.held) { const q = minAt(e); DIAL.focus = null; DIAL.scrub = q.m; dialApply(); } disc._swallow = st.held || st.moved; st = null; };
@@ -1539,6 +1556,9 @@ const SVGF = `<filter id="ins" x="-20%" y="-20%" width="140%" height="140%"><feC
 <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <filter id="bead" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="1" result="a"/><feOffset in="a" dx="1.2" dy="1.4" result="s"/><feFlood style="flood-color:rgb(var(--sd));flood-opacity:calc(.7 * var(--sda))"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".55"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <filter id="knob" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="2" result="a"/><feOffset in="a" dx="2.5" dy="2.5" result="s"/><feFlood style="flood-color:rgb(var(--sd));flood-opacity:calc(.75 * var(--sda))"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope=".7"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="beadg" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur in="SourceAlpha" stdDeviation="1" result="a"/><feOffset in="a" dx="1.2" dy="1.6" result="s"/><feFlood style="flood-color:rgb(var(--sd));flood-opacity:.75"/><feComposite in2="s" operator="in" result="sh"/><feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="gl"/><feComponentTransfer in="gl" result="gl2"><feFuncA type="linear" slope="1.15"/></feComponentTransfer><feMerge><feMergeNode in="sh"/><feMergeNode in="gl2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="glow2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="2" result="g1"/><feGaussianBlur in="SourceGraphic" stdDeviation="6" result="g2"/><feMerge><feMergeNode in="g2"/><feMergeNode in="g1"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="knob2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="a"/><feOffset in="a" dx="2.6" dy="3.2" result="s"/><feFlood style="flood-color:rgb(var(--sd));flood-opacity:.8"/><feComposite in2="s" operator="in" result="sh"/><feMerge><feMergeNode in="sh"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 <linearGradient id="lived" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--lv0)"/><stop offset="1" stop-color="#FF8F5E"/></linearGradient>`;
 function heroSwitch() { const el = $('#hsw'); if (el) el.innerHTML = ['Arc', '1', '2', '3'].map((l, i) => `<button data-act="hero" data-h="${i}" class="${HERO === i ? 'on' : ''}" aria-pressed="${HERO === i}" aria-label="${['Hero 0, the carved arc', 'Hero 1, the dial', 'Hero 2, the hours', 'Hero 3, the lanes'][i]}">${l}</button>`).join(''); }
 
