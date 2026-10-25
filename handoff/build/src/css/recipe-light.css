@@ -1,0 +1,16 @@
+/* the v7 recipe: one number per form (--e), its shadow, rim and tone computed from it and from the light (--lx, --ly).
+   Raised parts scale with max(e,0), carved parts with max(-e,0). --rk (set by the clay rise on keys) lowers a key with the page. */
+*, *::before, *::after{
+  --nR:max(calc(var(--e) * var(--rk,1) * var(--g,1)),0); --nD:max(calc(var(--e) * var(--rk,1) * var(--g,1) * -1),0); --nR1:min(var(--nR),1); --nD1:min(var(--nD),1);
+  --nElev:
+    calc(var(--lx) * var(--nR) * .72px) calc(var(--ly) * var(--nR) * .72px) calc(var(--nR) * 1.5px + var(--nR1) * 1px) rgba(var(--nSd),calc(.46 * var(--nSda))),
+    calc(var(--lx) * var(--nR) * 5.1px) calc(var(--ly) * var(--nR) * 5.1px) calc(var(--nR) * 9px) rgba(var(--nSd),calc(.36 * var(--nSda))),
+    0 calc(var(--nR) * 1.8px) calc(var(--nR) * 14.4px) rgba(var(--nSd),calc(.14 * var(--nSda))),
+    calc(var(--lx) * var(--nR) * -2.7px) calc(var(--ly) * var(--nR) * -2.7px) calc(var(--nR) * 7.2px) rgba(var(--nSl),calc(.042 * var(--nSla))),
+    inset calc(var(--lx) * var(--nR1) * -1px) calc(var(--ly) * var(--nR1) * -1px) 0 rgba(var(--nSl),calc(.06 * var(--nSla))),
+    inset calc(var(--lx) * var(--nR1) * 1px) calc(var(--ly) * var(--nR1) * 1px) calc(var(--nR1) * 1px) rgba(var(--nSd),calc(.16 * var(--nSda))),
+    inset calc(var(--lx) * var(--nD) * 5.6px) calc(var(--ly) * var(--nD) * 5.6px) calc(var(--nD) * 12.6px) rgba(var(--nSd),calc(.62 * var(--nSda))),
+    inset calc(var(--lx) * var(--nD) * -4.2px) calc(var(--ly) * var(--nD) * -4.2px) calc(var(--nD) * 10.5px) rgba(var(--nSl),calc(.055 * var(--nSla))),
+    inset calc(var(--lx) * var(--nD1) * 1px) calc(var(--ly) * var(--nD1) * 1px) calc(var(--nD1) * 1px) rgba(var(--nSd),calc(.28 * var(--nSda)));
+  --nTone:color-mix(in oklab,color-mix(in oklab,var(--nBase,var(--nSurf)),var(--nLift) calc(var(--nR) * 1.1%)),var(--nDeep) calc(var(--nD) * 4%));
+}

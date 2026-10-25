@@ -1,0 +1,154 @@
+/* pass 7a: the v3 screens on Ink. The same heights and recipe as the app (the document registers --e) */
+:host { --t2: rgba(232,239,248,.70); --t3: rgba(232,239,248,.62); --t4: rgba(232,239,248,.30); --gut: 16px; --rec: #9AA3B2; --night: #98A2FC; --aside: #86B8AE; }
+.v3r, .v3r.isroot { background: var(--nSurf); }
+.v3r.v3sheet { background: transparent; }
+.hue:not(.neutral) { --hf: oklch(.76 .14 var(--h)); --ht: oklch(.84 .11 var(--h)); --hd: oklch(.42 .08 var(--h)); }
+/* type: titles embossed, labels engraved; hard edges only */
+.head h1, .phead h1 { text-shadow: var(--emb); }
+.sech h2, .slab, .phead .k, .sh .k, .hero .lb { text-shadow: var(--deb); }
+/* plateaus: the lists you act on and read row by row. Grooves divide the rows */
+:host { --line: rgba(0,3,9,.5); --line2: rgba(232,239,248,.12); }
+.ledger, .set, .tl, .kvs, .staff, .toc, .idx, .pats, .recs, .n7p { margin-left: var(--gut) !important; margin-right: var(--gut) !important; padding-left: 16px !important; padding-right: 16px !important; border-radius: 22px; --e: 1; box-shadow: var(--nElev); background-color: var(--nTone); }
+.staff, .toc, .idx, .pats, .recs { padding-top: 6px !important; padding-bottom: 6px !important; }
+/* report figures: each a raised tile you press to open */
+.figs .fg { --e: 1; box-shadow: var(--nElev); background-color: var(--nTone); border: 0 !important; border-radius: 20px; transition: --e .3s var(--back), transform .3s var(--back); }
+.figs .fg:active { --e: -.36; transform: scale(.985); transition: --e .08s var(--press), transform .08s var(--press); }
+.toc .tc:active, .idx .tk:active, .staff .sf:active { background: rgba(var(--nSd),.2); border-radius: 12px; }
+.ledger .ln, .set .li, .tl .li, .kv { border-top: 0 !important; position: relative; }
+.ledger .ln + .ln::before, .set .li + .li::before, .tl .li + .li::before, .kv + .kv::before, .set > :not(.n7c) + .li::before, .ledger > :not(.n7c) + .ln::before, .tl > :not(.n7c) + .li::before { content: ""; position: absolute; left: -2px; right: -2px; top: 0; height: 2px; background: var(--groove); pointer-events: none; }
+.set .li:active, .ledger .ln:active, .tl .li:active { background: linear-gradient(rgba(var(--nSd),.2), rgba(var(--nSd),.2)) padding-box; border-radius: 14px; }
+.set .li .chev { color: var(--t3); }
+/* wells: things you read that are not rows */
+.notif, .dev, .n7w { --e: -1; box-shadow: var(--nElev); background-color: var(--nTone); border: 0 !important; }
+/* keys */
+.btn { --e: 1.5; box-shadow: var(--nElev); background: var(--nTone) !important; color: var(--cream); transition: --e .3s var(--back), transform .3s var(--back), opacity .2s; }
+.btn:active { --e: -.64; transform: scale(.98); transition: --e .08s var(--press), transform .08s var(--press); }
+.btn.primary { color: var(--ht, var(--cream)); font-weight: 650; }
+.btn.primary::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 9px; vertical-align: 2px; background: var(--hf, var(--sun2)); }
+.btn.ghost { --e: 0; background: transparent !important; color: var(--t2); }
+.btn.ghost:active { --e: -.36; }
+.btn:disabled { --e: 0; }
+.key { --e: 1.5; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--ht, var(--cream)) !important; border: 0 !important; transition: --e .3s var(--back), transform .3s var(--back); }
+.key.ghost, .key.num { --e: .85; color: var(--cream) !important; }
+.key:active { --e: -.64; transform: scale(.97); transition: --e .08s var(--press), transform .08s var(--press); }
+.key.on, .key.num.on { --e: -.64; color: var(--ht, var(--sun2)) !important; }
+.chip { --e: .85; box-shadow: var(--nElev); background: var(--nTone) !important; color: var(--t2); transition: --e .3s var(--back), color .2s; }
+.chip:active { --e: -.36; transition: --e .08s var(--press); }
+.chip.on { --e: -.36; background: var(--nTone) !important; color: var(--ht, var(--cream)); font-weight: 600; }
+.chip:disabled { --e: 0; }
+.ib { --e: .85; box-shadow: var(--nElev); background: var(--nTone); border-radius: 50%; width: 44px; height: 44px; transition: --e .3s var(--back); }
+.ib:active, .ib.on { --e: -.36; background: var(--nTone); color: var(--cream); }
+.hicons { gap: 8px; margin-right: 0; }
+.sh .close { --e: .85; box-shadow: var(--nElev); background: var(--nTone); border-radius: 50%; width: 38px; height: 38px; margin: -4px -2px 0 0; }
+.sh .close::after { content: ""; position: absolute; inset: -3px; }
+.sh .close { position: relative; }
+.sh .close:active { --e: -.36; }
+.foot button { --e: .85; box-shadow: var(--nElev); background: var(--nTone); color: var(--t2); min-height: 44px; }
+.foot button:active { --e: -.36; }
+.back { border-radius: 14px; min-height: 44px; }
+.back:active { box-shadow: var(--p1, none); color: var(--cream); }
+.go:active { color: var(--t2); }
+.say button.b:active, button.lk:active { color: var(--t2); }
+/* carved: tracks, fields, searches */
+.search, input.field, .stepper { --e: -.64; box-shadow: var(--nElev); background: var(--nTone) !important; }
+input.field:focus, .search:focus-within { box-shadow: var(--nElev), 0 0 0 2px rgba(255,143,94,.55); }
+.seg { --e: -.64; box-shadow: var(--nElev); background: var(--nTone); }
+.seg button { transition: --e .3s var(--back), color .2s; }
+.seg button.on { --e: .85; box-shadow: var(--nElev); background: var(--nTone); color: var(--cream); font-weight: 600; }
+.seg button:active { color: var(--cream); }
+.stepper button { --e: .85; box-shadow: var(--nElev); background: var(--nTone); border-radius: 12px; }
+.stepper button:active { --e: -.36; }
+.sw { --e: -.64; box-shadow: var(--nElev); background: var(--nTone); }
+.sw::after { --e: 1.5; box-shadow: var(--nElev); background: var(--nTone); }
+.sw.on { background: color-mix(in oklab, var(--hf, var(--sun)) 55%, var(--nSurf)); }
+.sw:active::after { --e: .85; }
+/* the heroes stay light printed on the surface (their canvas adds light; black is no light) */
+.figs { gap: 12px; }
+.figs .fg, .figs .fg.lead, .figs .fg:nth-child(odd):not(.lead), .figs .fg:nth-child(even) { padding: 14px 16px 16px !important; border-right: 0 !important; border-top: 0 !important; }
+/* no brown: a dim warm wash over Ink reads brown, so recorded amounts are cool light; only today's is the accent */
+.cafb i b { background: rgba(var(--nTx),.34); }
+.cafb i.t b { background: var(--sun2); }
+.mcal .cd.fut { color: var(--t3); }
+/* every other thing you can press (rows, days, links, summaries) sinks: a shade of the page's own shadow under the finger */
+:where(button, summary, [role="button"], a[href], [tabindex="0"]):not(.btn, .chip, .key, .ib, .sw, .seg button, .stepper button, .foot button, .close, .fg):active { background-color: rgba(var(--nSd),.24); border-radius: 12px; }
+.hero:active canvas { opacity: .82; }
+.hero canvas { transition: opacity .15s; }
+/* 44 pt targets: small keys and links keep their size and get a hit area around them */
+.chip.sm, .aside, .lk, .rm, button.b, .wk, .mnav button, details summary, .sw { position: relative; }
+.chip.sm::after, .aside::after, .lk::after, .rm::after, .wd::after, button.b::after, .wk::after, .mnav button::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%); }
+details summary::before, .sw::before { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%); }
+.sw::before { width: 56px; height: 44px; }
+/* pressed response for keys already in their "on" well, segment options and switches */
+.chip.on:active { --e: -.64; }
+.seg button:active, .mnav button:active, button.on:active { transform: scale(.96); transition: transform .08s var(--press); }
+.sw:active { --e: -.95; }
+/* r25 #10: each routine's own light in its ledgers (staff, rails, combs, week bars, the month list). The renderer marks
+   the routine's row with data-rh and --rh, its hue; done is its full light, partly done a softer share of it */
+[data-rh] { --rc: oklch(.76 .14 var(--rh)); --rcs: oklch(.76 .14 var(--rh) / .62); --rcg: oklch(.76 .14 var(--rh) / .38); }
+[data-rh] .sg i.on, [data-rh].part .sg i.on, [data-rh].open .sg i.on, .part[data-rh] .sg i.on { background: var(--rc); box-shadow: 0 0 10px var(--rcg); }
+[data-rh] .trk i, [data-rh].met .trk i { background: var(--rc); box-shadow: 0 0 10px var(--rcg); }
+[data-rh] .rail i.m, [data-rh] .wkb i.m b, [data-rh] .comb i.m b, [data-rh].comb i.m b, [data-rh].wkb i.m b { background: var(--rc); box-shadow: 0 0 8px var(--rcg); }
+[data-rh] .rail i.p b, [data-rh] .wkb i b, [data-rh] .comb i b, [data-rh].comb i b, [data-rh].wkb i b { background: var(--rcs); }
+[data-rh] .wkb i.t b, [data-rh].wkb i.t b { background: var(--rc); }
+[data-rh] .rail i.o, [data-rh] .wkb i.o, [data-rh].wkb i.o { border-top-color: var(--rcs); }
+[data-rh] .ch b, [data-rh] > .sl > svg, [data-rh] .ch > svg { color: var(--rc); }
+.cdh { position: absolute; display: flex; gap: 2px; pointer-events: none; z-index: 1; }
+.cdh i { width: 3px; height: 3px; border-radius: 50%; display: block; }
+/* r25 polish: no deboss on small text */
+.sech h2, .slab, .phead .k, .sh .k, .hero .lb { text-shadow: none; }
+/* r25 #3 / polish: the Watch and widget mocks. Their keys are real keys (raised, with a press), each row is at least
+   44 pt tall, so a key's 44 pt target stays inside its own row and never reaches the next one */
+.dev .wk { --e: .85; box-shadow: var(--nElev); background: var(--nTone); border-radius: 12px; min-height: 36px; min-width: 44px; padding: 0 12px; color: var(--cream); font-weight: 600; transition: --e .08s var(--press); }
+.dev .wk:active { --e: -.5; }
+.dev .wk.on { color: var(--sun2); }
+.dev.watch .wr, .dev.wid .wr { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dev.wid .wr { min-height: 52px; }
+input.field { width: calc(100% - 2 * var(--gut)); }
+/* r25 #8: inline links inside a sentence keep their line; their target grows sideways only (WCAG's inline exception),
+   so two links on neighbouring lines never take each other's taps */
+.say button.b::after, p button.b::after { display: none; } /* r25 #8: links inside a sentence keep their own line box (the inline exception); an expander would reach the next link */
+.sh .close { width: 44px; height: 44px; margin: 0 -6px 0 0; } /* r25 #8: clear of the grabber above */
+.sh .close::after { inset: 0; }
+/* r25 #9: wells and notices take the plates' 16 px inset */
+.notif, .dev { padding: 16px !important; }
+/* r25 polish: a disabled chip or button keeps its key form; only its label dims */
+.chip:disabled, .btn:disabled, .key:disabled { --e: .5 !important; opacity: 1 !important; color: rgba(232,239,248,.4) !important; }
+.btn.primary:disabled::before { opacity: .4; }
+/* r25 polish: one carving per search */
+.search input { box-shadow: none !important; background: transparent !important; border: 0 !important; }
+/* r25 #8: the whole carved search takes the tap */
+.search input { align-self: stretch; min-height: 44px; }
+/* r25 #8: chips in a wrap sit 44 apart (36 tall + 8 gap), so each expander ends where the next begins */
+.chip.sm, .perread .chip.sm { min-height: 36px; height: auto; }
+/* month arrows: two 44 pt keys side by side, no shared expander */
+.mnav { gap: 0; margin: -12px -10px -12px 0; }
+.mnav button { width: 44px; height: 44px; }
+/* a header's aside reaches over the plate edge below it instead of under it */
+.sech .aside { z-index: 1; }
+/* r26 #10: the Routines list in each routine's light: the glyph; the name stays cream, Settled takes the routine's light */
+.idx .tk[data-rh] .tn .gly, .idx .tk[data-rh] .tn > svg { color: var(--rc); }
+.idx .tk.met[data-rh] .tf { color: var(--rc); }
+.idx .tk.met:not([data-rh]) .tf { color: var(--t2); }
+/* r26 #7: every row, day, link and summary you can press sinks like the Today rows do: --e goes below the surface, so the
+   recipe's carved shadow (dark from the light side, a lift on the other) shows under the finger, with a shade of the surface */
+:where(button, summary, [role="button"], a[href], [tabindex="0"]):not(.btn, .chip, .key, .ib, .sw, .seg button, .stepper button, .foot button, .close, .fg):active,
+.toc .tc:active, .idx .tk:active, .staff .sf:active, .set .li:active, .ledger .ln:active, .tl .li:active {
+  --e: -.5; box-shadow: var(--nElev) !important; background: rgba(var(--nSd),.16) padding-box !important; border-radius: 12px; transition: --e .08s var(--press);
+}
+.idx .tk:active .tn, .set .li:active, .tl .li:active, .cd:active { color: var(--cream); }
+/* r26 #7: switches, small chips and the primary key give under the finger as well as deepening */
+.sw:active, .chip:active, .btn:active, button.on:active, .ib:active { transform: scale(.95); transition: --e .08s var(--press), transform .08s var(--press); }
+.sw:active { background: color-mix(in oklab, var(--nTone) 70%, rgba(var(--nSd),1)); }
+.sw:active { transform: scale(.9); }
+.seg button:active, .mnav button:active { background: rgba(var(--nSd),.3) !important; border-radius: 10px; }
+button.on:active { background: rgba(var(--nSd),.3) !important; border-radius: 10px; }
+.switch:active { transform: scale(.9); transition: transform .08s var(--press); }
+/* the Routines index sets its routines as words, so the well reaches 10 px past each word instead of hugging the glyph */
+.idx .tk { position: relative; isolation: isolate; }
+.idx .tk:active { box-shadow: none !important; background: none !important; }
+.idx .tk:active::before { content: ""; position: absolute; inset: -6px -10px; z-index: -1; border-radius: 14px; --e: -.5; box-shadow: var(--nElev); background: rgba(var(--nSd),.16); }
+/* r27 polish: a row's press well reaches 8 px past the row into its plate's padding, so the well never starts flush with the row's
+   text (it was a 0 px left inset); the plate keeps 8 px of its own face round the well */
+.set .li, .tl .li, .ledger .ln, .toc .tc, .pats .pt, .recs .rec, .combs .cb, .staff .sf { position: relative; isolation: isolate; }
+:is(.set .li, .tl .li, .ledger .ln, .toc .tc, .pats .pt, .recs .rec, .combs .cb, .staff .sf):active { box-shadow: none !important; background: none !important; }
+:is(.set .li, .tl .li, .ledger .ln, .toc .tc, .pats .pt, .recs .rec, .combs .cb, .staff .sf):active::after { content: ""; position: absolute; inset: -2px -8px; z-index: -1; border-radius: 12px; --e: -.5; box-shadow: var(--nElev); background: rgba(var(--nSd),.16); pointer-events: none; }

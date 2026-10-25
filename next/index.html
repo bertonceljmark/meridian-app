@@ -13435,17 +13435,21 @@ function DrinkSheet({
       margin: '20px 0 var(--sp-2)'
     }
   }, "Caffeine, roughly"), React.createElement("div", {
-    className: "card",
-    style: {
-      padding: 'var(--sp-3) var(--sp-4)',
-      margin: 0
-    },
+    className: "n7-stack",
     "data-drink-range": true
   }, [['From', lo, setLo], ['To', hi, setHi]].map(([l, x, set]) => React.createElement("div", {
-    className: "kv",
+    className: "card",
     key: l,
     style: {
-      alignItems: 'center'
+      margin: 0,
+      paddingTop: 10,
+      paddingBottom: 10
+    }
+  }, React.createElement("div", {
+    className: "kv",
+    style: {
+      alignItems: 'center',
+      border: 0
     }
   }, React.createElement("span", {
     className: "k"
@@ -13476,7 +13480,7 @@ function DrinkSheet({
   }, React.createElement(Icon, {
     n: "plus",
     s: 18
-  }))))))));
+  })))))))));
 }
 function ItemDetailsSheet({
   id
@@ -16090,7 +16094,7 @@ function TargetSheet({
     });
     close();
     S.toast({
-      title: when === 'now' || noCad ? `${preview}, starting ${it2.cadence.type === 'day' ? 'today' : 'this ' + (it2.cadence.type === 'everyN' ? 'window' : it2.cadence.type)}` : `${preview}, from ${fmtDay(from)}`,
+      title: when === 'now' || noCad ? `${preview}, starting ${it2.cadence.type === 'day' || from === db.today ? 'today' : 'this ' + (it2.cadence.type === 'everyN' ? 'window' : it2.cadence.type)}` : `${preview}, from ${fmtDay(from)}`,
       sub: 'Earlier periods keep the target they had',
       hue: it.hue,
       glyph: 'sliders'
@@ -19019,6 +19023,20 @@ button.on:active { background: rgba(var(--nSd),.3) !important; border-radius: 10
 :host .combs .cb .ch b { color: var(--cream) !important; }
 /* a stepper's − and + press like keys: carved in and darker while held */
 :host .stepper > button:active { background: rgba(var(--nSd), .38) !important; box-shadow: inset 2px 3px 6px rgba(var(--nSd), .6), inset -1px -1px 2px rgba(var(--nSl), .06) !important; transition: background-color .08s var(--press), box-shadow .08s var(--press); }
+.tl .li[data-rh] .d:not(.q) { background: var(--rc); box-shadow: 0 0 6px var(--rcg); } /* r29: an entry's dot in its routine's light */
+.scroll { padding-bottom: calc(152px + env(safe-area-inset-bottom, 0px)) !important; } /* r29: clears the dock and the home indicator */
+/* r29 (look slice B4): a routine's state goes under its name when both don't fit on one line, so a name is never cut */
+:host .idx .tk { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; justify-content: flex-start !important; align-items: center; column-gap: var(--sp-3); row-gap: var(--sp-1); }
+:host .idx .tk .tn { flex: 1 0 auto !important; max-width: 100% !important; min-width: 0; }
+:host .idx .tk .tf { flex: 0 1 auto !important; margin-left: auto !important; max-width: 100% !important; text-align: right; }
+:host .kvs .kv { font-size: calc(17px * var(--ts, 1)) !important; min-height: 56px; } /* r29: a reading plate in list type */
+#yhero .ykey { margin: 0; font: 500 calc(12px * var(--ts, 1))/1.35 var(--ui); color: var(--t3); text-shadow: var(--deb); } /* r29: the year's key */
+/* r29 (review r28 B2): a paused period is not an expectation: no empty bar or track, only a faint dotted line, and the plate says Paused */
+:host :is(.wkb, .rail) i.pz { background: linear-gradient(90deg, rgba(232,239,248,.22) 50%, transparent 0) 0 50% / 6px 2px repeat-x !important; box-shadow: none !important; border: 0 !important; }
+:host :is(.wkb, .rail) i.pz > * { display: none !important; }
+:host .comb i.pz { background: none !important; box-shadow: none !important; }
+:host :is(.sf.pa, .sfb.pa) :is(.trk, .sg) { background: linear-gradient(90deg, rgba(232,239,248,.22) 50%, transparent 0) 0 50% / 6px 2px repeat-x !important; box-shadow: none !important; border: 0 !important; }
+:host :is(.sf.pa, .sfb.pa) :is(.trk, .sg) > * { display: none !important; }
 </template>
 <template id="v3-css-common">:host{
   --ink:#1D2633; --ink2:#202936; --ink3:#222B39; --line:rgba(232,239,248,.09); --line2:rgba(232,239,248,.16);
@@ -19573,7 +19591,32 @@ a.btn{display:flex;align-items:center;justify-content:center;text-decoration:non
 /* r28: page changes. No slide, no zoom, no pane movement: the page under a push sinks into the surface (its forms flatten
    to printed, 160 ms, ease-in) and fades; the new page's printed layer appears as it does; the clay then extrudes its forms
    (CLAY.enter). Back is the same the other way. Reduce Motion: a 120 ms crossfade, nothing extrudes */
-@keyframes n7sink { from { --g: 1; opacity: 1; } to { --g: 0; opacity: 0; } }
+@keyframes n7sink { from { opacity: 1; } to { opacity: 0; } } /* r29: opacity only */
+/* r29 (look slice B3): the plate spec off Today too. A card is a plate (26 px corners, 20/18 insets) and its readings are list type;
+   a sheet's list is a stack of plates, one per row, never a raised group of rows */
+:root:root .card { border-radius: var(--pR) !important; padding: var(--pY) var(--pX) !important; }
+:root:root .card > .kv { font-size: calc(17px * var(--ts, 1)) !important; min-height: 48px; align-items: center; }
+:root:root .card > .kv .k, .card > .kv .v { font-size: inherit !important; }
+:root:root .card > .kv .v { font-weight: 600; color: var(--cream, inherit); }
+:is(.screen, #n7a) .sheet .list.list { background: none !important; box-shadow: none !important; border-radius: 0 !important; overflow: visible !important; padding: 0 !important; display: grid !important; gap: var(--pGap) !important; --e: 0 !important; }
+:is(.screen, #n7a) .sheet .list.list > .n7c { display: none !important; }
+:is(.screen, #n7a) .sheet .list.list > :not(.n7c) { border-radius: var(--pR) !important; position: relative; min-height: 64px; border: 0 !important; }
+:is(.screen, #n7a) .sheet .list.list > .row, :is(.screen, #n7a) .sheet .list.list > :not(.row):not(.n7c) > .row { padding: 12px 14px 12px var(--pX) !important; border: 0 !important; }
+:is(.screen, #n7a) .sheet .list.list > .row::before, :is(.screen, #n7a) .sheet .list.list > * > .row::before { display: none !important; }
+:is(.screen, #n7a) .sheet .list.list .row .ttl { font-size: calc(17px * var(--ts, 1)) !important; font-weight: 600 !important; line-height: 1.25 !important; }
+:is(.screen, #n7a) .sheet .list.list .row .sub { font-size: calc(15px * var(--ts, 1)) !important; line-height: 1.35 !important; }
+.n7-stack { display: grid; gap: var(--pGap); }
+/* r29 (cheap): the dock and everything placed from the bottom clear the home indicator */
+:is(.screen, #n7a) .tabbar { bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important; }
+:is(.screen, #n7a) .toast { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+:is(.screen, #n7a) .toast.nobar { bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+:is(.screen, #n7a) .livebar { bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+:is(.screen, #n7a) .sheet .padhome { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+/* a sheet's row plate presses as every plate does: the face carves in, its walls and drop go to .3 */
+:is(.screen, #n7a) .sheet .list.list > :not(.n7c):is(button:active, :has(> button:not(.act):active, > .row > button:not(.act):active)) { --e: -.4 !important; transition: --e .08s var(--press); }
+:is(.screen, #n7a) .sheet .list.list > :not(.n7c):is(button:active, :has(> button:not(.act):active, > .row > button:not(.act):active)) > .n7c .fc { box-shadow: inset 9px 9px 20px rgba(var(--nSd),calc(.55 * var(--nSda))), inset -6px -6px 14px rgba(var(--nSl),calc(.04 * var(--nSla))) !important; transition: box-shadow .08s var(--press); }
+:is(.screen, #n7a) .sheet .list.list > :not(.n7c):is(button:active, :has(> button:not(.act):active, > .row > button:not(.act):active)) > .n7c :is(.wl, .sh) { opacity: .3 !important; transition: opacity .08s var(--press); }
+
 @keyframes n7pgin { from { opacity: 0; } to { opacity: 1; } }
 .page.under { transform: none !important; transition: none !important; animation: n7sink calc(.16s * var(--n7slow, 1)) cubic-bezier(.4,0,1,1) forwards; }
 .page.enter-push, .page.enter-zoom { animation: n7pgin calc(.1s * var(--n7slow, 1)) linear calc(.13s * var(--n7slow, 1)) both !important; box-shadow: none !important; transform: none !important; }
@@ -20872,17 +20915,17 @@ function SleepReport({
     className: "v"
   }, f.v))) : React.createElement("p", {
     className: "t-s"
-  }, "Nothing recorded that day."), React.createElement("button", {
+  }, "Nothing recorded that day.")), React.createElement("button", {
     className: "btn sec2 wide",
     style: {
-      marginTop: 12
+      marginTop: 'var(--pGap)'
     },
     onClick: () => S.nav.push({
       k: 'patterns',
       role: 'sleep'
     }),
     "data-sleep-patterns": true
-  }, "Patterns involving sleep"))), React.createElement(SleepScoreSection, {
+  }, "Patterns involving sleep")), React.createElement(SleepScoreSection, {
     night: night
   })));
 }
@@ -29492,13 +29535,16 @@ window.__v3 = V3;
     AL = '<span class="ar" aria-hidden="true">←</span>';
   const vtxt = (it, v) => it.measure === 'duration' ? D.dur(v) : it.measure === 'quantity' ? M.amt(it, v) : String(v);
   const aimTxt = (it, tg = it.tg) => tg.cmp === 'range' ? `${vtxt(it, tg.v)}–${vtxt(it, tg.hi)}` : vtxt(it, tg.v);
-  function staff(w, it, a, b, bare) {
+  function staff(w, it, a, b, bare, cut) {
     const st = E.state(w, it, a, b);
     const tg0 = st.tg || it.tg;
     const lo = tg0.v || 1,
       hi = tg0.cmp === 'range' ? tg0.hi : lo;
     const cls = st.st === 'met' ? 'met' : st.st === 'aside' ? 'as' : st.st === 'paused' ? 'pa' : st.n ? 'part' : st.open ? 'open' : 'nil';
-    const say = st.st === 'met' ? st.open ? `${vtxt(it, st.v)}, settled for the ${it.cad === 'month' ? 'month' : 'week'}` : `${vtxt(it, st.v)}, at its aim` : st.st === 'aside' ? 'Set aside' : st.st === 'paused' ? 'Paused' : !st.n ? st.open ? 'Not yet' : 'Nothing recorded' : `${vtxt(it, st.v)} of ${aimTxt(it, tg0)}${st.open ? ' so far' : ''}`;
+    const since = cut != null ? ` since ${cut === w.today ? 'today' : D.day(cut, {
+      noDow: true
+    })}` : '';
+    const say = st.st === 'met' ? st.open ? since ? `${vtxt(it, st.v)}, at its aim${since}` : `${vtxt(it, st.v)}, settled for the ${it.cad === 'month' ? 'month' : 'week'}` : `${vtxt(it, st.v)}, at its aim` : st.st === 'aside' ? 'Set aside' : st.st === 'paused' ? 'Paused' : !st.n ? st.open ? since ? `None logged${since}` : 'Not yet' : 'Nothing recorded' : `${vtxt(it, st.v)} of ${aimTxt(it, tg0)}${st.open ? since || ' so far' : ''}`;
     let tr;
     if (it.measure !== 'duration' && it.measure !== 'quantity' && hi <= 12) {
       const n = Math.max(hi, st.v);
@@ -29512,8 +29558,7 @@ window.__v3 = V3;
     if (bare) return `<span class="sfb ${cls}"${neuRH(it)}>${tr}</span>`;
     return `<div class="sf ${cls}"${neuRH(it)}><div class="sl">${M.glyph(it.glyph, 17)}<b>${esc(it.short)}</b><span>${esc(say)}</span></div>${tr}</div>`;
   }
-  function rail(w, it, ws) {
-    const aim = it.tg.v || 1;
+  function rail(w, it, ws, isDay) {
     let met = 0,
       fin = 0,
       rec = 0;
@@ -29521,9 +29566,11 @@ window.__v3 = V3;
       length: 7
     }, (_, k) => {
       const d = ws + k;
-      if (d < it.created || it.retired != null && d >= it.retired || d > w.today) return '<i class="x"></i>';
+      if (d < it.created || it.retired != null && d >= it.retired || d > w.today || isDay && !isDay(d)) return '<i class="x"></i>';
       const st = E.state(w, it, d, d);
-      if (st.st === 'aside' || st.st === 'paused') return '<i class="a"></i>';
+      const aim = (st.tg || it.tg).v || 1;
+      if (st.st === 'paused') return '<i class="pz"></i>';
+      if (st.st === 'aside') return '<i class="a"></i>';
       if (d < w.today) {
         fin++;
         if (st.n) rec++;
@@ -29553,11 +29600,12 @@ window.__v3 = V3;
         v: v.n ? it.measure === 'confirmation' || it.measure === 'count' && !aim ? v.n : v.v : 0,
         n: v.n,
         as: st.st === 'aside' || st.st === 'paused',
+        pz: st.st === 'paused',
         met: st.st === 'met'
       });
     }
     const top = aim ? aim * 1.3 : Math.max(1, ...V.filter(Boolean).map(x => x.v));
-    return `<span class="comb${aim ? ' aim' : ''}"${neuRH(it)}>${V.map(x => x == null ? '<i class="x"></i>' : x.as && !x.n ? '<i class="a"></i>' : !x.n ? '<i></i>' : `<i class="${x.met || !aim ? 'm' : 'p'}"><b style="height:${Math.max(8, Math.min(100, x.v / top * 100)).toFixed(0)}%"></b></i>`).join('')}${aim ? `<u style="bottom:${(100 / 1.3).toFixed(1)}%"></u>` : ''}</span>`;
+    return `<span class="comb${aim ? ' aim' : ''}"${neuRH(it)}>${V.map(x => x == null ? '<i class="x"></i>' : x.pz && !x.n ? '<i class="pz"></i>' : x.as && !x.n ? '<i class="a"></i>' : !x.n ? '<i></i>' : `<i class="${x.met || !aim ? 'm' : 'p'}"><b style="height:${Math.max(8, Math.min(100, x.v / top * 100)).toFixed(0)}%"></b></i>`).join('')}${aim ? `<u style="bottom:${(100 / 1.3).toFixed(1)}%"></u>` : ''}</span>`;
   }
   function weekBars(w, it, m) {
     const a = D.mStart(m),
@@ -29571,7 +29619,7 @@ window.__v3 = V3;
         continue;
       }
       const st = E.state(w, it, ws, ws + 6);
-      out.push(st.st === 'aside' || st.st === 'paused' ? '<i class="a"></i>' : !st.n ? `<i class="${st.open ? 'o' : 'g'}"></i>` : `<i class="${st.st === 'met' ? 'm' : 'p'}${st.open ? ' t' : ''}"><b style="width:${Math.min(100, st.v / lo * 100).toFixed(0)}%"></b></i>`);
+      out.push(st.st === 'paused' ? '<i class="pz"></i>' : st.st === 'aside' ? '<i class="a"></i>' : !st.n ? `<i class="${st.open ? 'o' : 'g'}"></i>` : `<i class="${st.st === 'met' ? 'm' : 'p'}${st.open ? ' t' : ''}"><b style="width:${Math.min(100, st.v / lo * 100).toFixed(0)}%"></b></i>`);
     }
     return `<span class="wkb"${neuRH(it)}>${out.join('')}</span>`;
   }
@@ -29738,7 +29786,7 @@ vec3 scene(vec2 p){
       const fresh = w.today - w.first < 1;
       let h = `<header class="head"><div><h1>Time</h1><div class="sub">2026${f ? `, only <b>${esc(f.short)}</b>` : ''}</div></div>
       <div class="hicons"><button class="ib" data-act="filter" aria-label="Show one routine">${M.icon('filter', 22)}</button></div></header>`;
-      h += `<div class="yr" id="yhero" role="group" aria-label="2026, a mark a week, as tall as the share of your routines with something done that week. Press a month to read it, again to open it"><div class="yw n7-well"><div class="ywin"></div></div><div class="ypr" aria-hidden="true"></div></div>`;
+      h += `<div class="yr" id="yhero" role="group" aria-label="2026, a mark a week, ${f ? `as tall as the share of that week's days with ${esc(f.short)} done` : 'as tall as the share of your routines with something done that week'}. Press a month to read it, again to open it"><div class="yw n7-well"><div class="ywin"></div></div><div class="ypr" aria-hidden="true"></div><p class="ykey" aria-hidden="true">${f ? `Share of days with ${esc(f.short)} done, per week` : 'Share of routines done, per week'}</p></div>`;
       h += `<div id="yread">${heroRead(w, m, f)}</div>`;
       if (!f) {
         const ws = D.wStart(w.today);
@@ -29949,7 +29997,7 @@ vec3 scene(vec2 p){
     let lb = '';
     for (let k = 0; k < 12; k++) {
       const x = (X(D.mStart(k)) + X(D.mEnd(k) + 1)) / 2;
-      lb += `<span class="lb${k === m ? ' on' : ''}${k > cm ? ' q' : ''}" style="left:${x.toFixed(1)}px">${D.MON3[k][0]}</span>`;
+      lb += `<span class="lb${k === m ? ' on' : ''}${k > cm ? ' q' : ''}" style="left:${x.toFixed(1)}px">${k === m ? D.MON3[k] : D.MON3[k][0]}</span>`;
     }
     const tx = X(w.today + .5);
     lb += `<span class="lb sun bd" style="left:${tx.toFixed(1)}px">today</span>`;
@@ -30202,7 +30250,7 @@ vec3 scene(vec2 p){
     const word = types.length === 1 ? types[0] : 'period';
     const open = judged.find(p => p.pb >= w.today);
     let s;
-    if (!fin.length) s = open ? open.st === 'met' ? 'At its aim' : open.n ? `${vtxt(it, open.v)} of ${aimTxt(it, open.tg)} so far` : 'Not yet' : paused() ? 'Paused' : `No finished ${open ? open.c : 'period'} yet`;else if (fin.length === 1 && word === 'month') s = fin[0].st === 'met' ? 'At its aim' : `${vtxt(it, fin[0].v)} of ${aimTxt(it, fin[0].tg)}`;else s = met ? `At its aim ${word === 'day' ? 'on' : 'in'} ${met} of ${plural(fin.length, word)}` : 'Not at its aim yet';
+    if (!fin.length) s = paused() || open && open.st === 'paused' ? 'Paused' : open ? open.st === 'met' ? 'At its aim' : open.n ? `${vtxt(it, open.v)} of ${aimTxt(it, open.tg)} so far` : 'Not yet' : `No finished ${open ? open.c : 'period'} yet`;else if (fin.length === 1 && word === 'month') s = fin[0].st === 'met' ? 'At its aim' : `${vtxt(it, fin[0].v)} of ${aimTxt(it, fin[0].tg)}`;else s = met ? `At its aim ${word === 'day' ? 'on' : 'in'} ${met} of ${plural(fin.length, word)}` : 'Not at its aim yet';
     if (!v.n && !v.v) return {
       f: '',
       u: '',
@@ -30270,7 +30318,7 @@ vec3 scene(vec2 p){
         h += `<div class="sec"><div class="sech"><h2>Entries</h2></div><div class="tl">${L.length ? L.map(e => {
           const it = w.byId[e.item];
           const v = it.measure === 'quantity' ? M.amt(it, e.v) : it.measure === 'reps' ? e.v : it.measure === 'duration' ? D.dur(e.v) : e.dur ? D.dur(e.dur) : '';
-          return `<div class="li"><span class="tm">${D.hm(e.t)}</span><i class="d${it.kind === 'observation' ? ' q' : ''}"></i><span class="tx">${esc(it.name)}${v ? `, ${esc(String(v))}` : ''}${it.kind === 'observation' ? '<small>Observation</small>' : ''}</span><button class="rm" data-act="rmentry" data-id="${e.id}">Remove</button></div>`;
+          return `<div class="li"${it.kind === 'routine' ? neuRH(it) : ''}><span class="tm">${D.hm(e.t)}</span><i class="d${it.kind === 'observation' ? ' q' : ''}"></i><span class="tx">${esc(it.name)}${v ? `, ${esc(String(v))}` : ''}${it.kind === 'observation' ? '<small>Observation</small>' : ''}</span><button class="rm" data-act="rmentry" data-id="${e.id}">Remove</button></div>`;
         }).join('') : '<div class="none" style="padding-left:0">Nothing here. That’s fine; it stays unknown, not zero.</div>'}</div></div>`;
         if (DM.length) h += `<div class="sec" data-daydoses><div class="sech"><h2>Doses</h2></div><div class="tl">${DM.map(m => {
           const x = w.medList.find(y => y.id === m.med);
@@ -30360,11 +30408,27 @@ vec3 scene(vec2 p){
           return false;
         });
         const daily = R.filter(it => it.cad === 'day');
-        const RD = R.filter(it => it.cad === 'day' && it.tg.cmp !== 'none'),
-          RW = R.filter(it => it.cad === 'week' && it.tg.cmp !== 'none'),
-          RO = R.filter(it => it.cad === 'none' || it.tg.cmp === 'none');
-        h += `<div class="sec" style="margin-top:20px"><div class="sech"><h2>Every day</h2></div>${RD.length ? `<div class="staff">${RD.map(it => rail(w, it, ws)).join('')}</div><p class="note">Bright: at its aim. Part-filled: how far it got. Dashed: nothing recorded, unknown. Teal: set aside.</p>` : '<div class="none">No daily routines.</div>'}</div>`;
-        if (RW.length) h += `<div class="sec"><div class="sech"><h2>This week's aims</h2></div><div class="staff">${RW.map(it => staff(w, it, ws, we)).join('')}</div></div>`;
+        const tyOn = (it, d) => it.src ? cadOn(it.src, d).type : it.cad;
+        const tgOn = (it, d) => it.src ? E.state(w, it, d, d).tg || it.tg : it.tg;
+        const daysOf = (it, ty) => {
+          const o = [];
+          for (let d = Math.max(ws, it.created); d <= Math.min(we, w.today); d++) if (tyOn(it, d) === ty && tgOn(it, d).cmp !== 'none') o.push(d);
+          return o;
+        };
+        const wkP = it => {
+          const L = daysOf(it, 'week');
+          if (!L.length) return null;
+          const [pa, pb] = it.src ? periodOf(it.src, L[0]) : [ws, we];
+          return [Math.max(pa, ws), Math.min(pb, we)];
+        };
+        const RD = R.filter(it => daysOf(it, 'day').length),
+          RW = R.filter(it => wkP(it)),
+          RO = R.filter(it => !RD.includes(it) && !RW.includes(it) && (it.cad === 'none' || it.tg.cmp === 'none'));
+        h += `<div class="sec" style="margin-top:20px"><div class="sech"><h2>Every day</h2></div>${RD.length ? `<div class="staff">${RD.map(it => rail(w, it, ws, d => tyOn(it, d) === 'day')).join('')}</div><p class="note">Bright: at its aim. Part-filled: how far it got. Dashed: nothing recorded, unknown. Teal: set aside.</p>` : '<div class="none">No daily routines.</div>'}</div>`;
+        if (RW.length) h += `<div class="sec"><div class="sech"><h2>This week's aims</h2></div><div class="staff">${RW.map(it => {
+          const [pa, pb] = wkP(it);
+          return staff(w, it, pa, pb, false, pa > ws ? pa : null);
+        }).join('')}</div></div>`;
         if (RO.length) h += `<div class="sec"><div class="sech"><h2>No target</h2></div><p class="say">${RO.map(it => {
           const v = E.val(w, it, ws, Math.min(we, w.today));
           return `${esc(it.short)} <b>${v.n ? plural(v.n, 'time') : 'not this week'}</b>`;
@@ -30439,7 +30503,7 @@ vec3 scene(vec2 p){
       const d = ws + k;
       const n = d <= w.today ? E.dayDone(w, d).n : null;
       const c = w.ctxOn(d);
-      lb += `<button class="wd" style="left:${PAD + k * cw}px;width:${cw}px;top:${base + 8}px" ${d <= w.today ? `data-act="day" data-d="${d}"` : 'disabled'}><b class="${c && c.type !== 'travel' ? 'as' : ''}">${D.DOW[D.dow(d)].slice(0, 3)}</b><span class="tnum">${n == null ? '' : n ? n : '·'}</span></button>`;
+      lb += `<button class="wd" style="left:${PAD + k * cw}px;width:${cw}px;top:${base + 8}px" ${d <= w.today ? `data-act="day" data-d="${d}"` : 'disabled'} aria-label="${D.DOW[D.dow(d)]}${n == null ? ', still ahead' : n ? `, ${n} done` : ', nothing done'}"><b class="${c && c.type !== 'travel' ? 'as' : ''}">${D.DOW[D.dow(d)].slice(0, 3)}</b></button>`;
     }
     host.insertAdjacentHTML('beforeend', lb);
   }
@@ -30847,7 +30911,16 @@ vec3 scene(vec2 p){
       const W = host.clientWidth || 390;
       const gap = +host.dataset.gap,
         H = +host.dataset.h;
-      const X0 = PAD + NAMEW,
+      const NW = (() => {
+        try {
+          const c = document.createElement('canvas').getContext('2d');
+          c.font = `500 ${12 * (parseFloat(getComputedStyle(host).getPropertyValue('--ts')) || 1)}px Geist, system-ui, sans-serif`;
+          return Math.round(Math.min(W * .4, Math.max(NAMEW, 14 + Math.max(...T.map(it => c.measureText(it.short).width)))));
+        } catch (e) {
+          return NAMEW;
+        }
+      })();
+      const X0 = PAD + NW,
         X1 = W - PAD,
         Y0 = 30;
       M.light(host, {
@@ -30918,13 +30991,26 @@ vec3 scene(vec2 p){
         }
       });
       const dw = (X1 - X0) / LOOM_DAYS;
-      let lb = T.map((it, r) => `<span class="lb" style="left:${PAD}px;top:${Y0 + r * gap - 6}px;max-width:${NAMEW - 10}px;overflow:hidden;text-overflow:ellipsis">${esc(it.short)}</span>`).join('');
+      let lb = T.map((it, r) => `<span class="lb" style="left:${PAD}px;top:${Y0 + r * gap - 6}px;max-width:${NW - 10}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.short)}">${esc(it.short)}</span>`).join('');
+      const hr = host.getBoundingClientRect(),
+        hk = hr.width ? host.offsetWidth / hr.width : 1;
+      const mc = document.createElement('canvas').getContext('2d');
+      mc.font = `500 ${12 * (parseFloat(getComputedStyle(host).getPropertyValue('--ts')) || 1)}px Geist, system-ui, sans-serif`;
+      const inG = (x, t) => {
+        const tw = mc.measureText(t).width + 2;
+        const lo = (16 - hr.left) * hk,
+          hi = (innerWidth - 16 - hr.left) * hk;
+        return Math.round(Math.max(lo, Math.min(x - tw / 2, hi - tw)));
+      };
       const a = w.today - LOOM_DAYS + 1;
       for (let k = 0; k < LOOM_DAYS; k++) {
         const d = a + k;
-        if (D.dow(d) === 1) lb += `<span class="lb" style="left:${X0 + (k + .5) * dw}px;top:4px;transform:translateX(${X0 + (k + .5) * dw + 24 > X1 + PAD ? '-100%' : '-50%'})">${D.dom(d)} ${D.MON3[D.monthOf(d)]}</span>`;
+        if (D.dow(d) === 1) {
+          const t = `${D.dom(d)} ${D.MON3[D.monthOf(d)]}`;
+          lb += `<span class="lb" style="left:${inG(X0 + (k + .5) * dw, t)}px;top:4px">${t}</span>`;
+        }
       }
-      lb += `<span class="lb sun" style="left:${X1 - dw / 2}px;top:${H - 14}px;transform:translateX(-50%)">today</span>`;
+      lb += `<span class="lb sun" style="left:${inG(X1 - dw / 2, 'today')}px;top:${H - 14}px">today</span>`;
       w.contexts.filter(c => c.to >= a && c.from <= w.today && c.type !== 'travel').forEach(c => {
         const k0 = Math.max(0, c.from - a),
           k1 = Math.min(LOOM_DAYS - 1, c.to - a);
@@ -31069,7 +31155,7 @@ vec3 scene(vec2 p){
         h += inTime(w, it, L);
         const allE = S.allE === id;
         const R = [...L].reverse().slice(0, allE ? 30 : 4);
-        h += `<div class="sec"><div class="sech"><h2>Recent entries</h2></div><div class="tl">${R.length ? R.map(e => `<button class="li" data-act="entry" data-e="${e.id}"><span class="tm">${D.rel(e.d, w.today) === 'today' ? D.hm(e.t) : D.day(e.d, {
+        h += `<div class="sec"><div class="sech"><h2>Recent entries</h2></div><div class="tl">${R.length ? R.map(e => `<button class="li"${obs ? '' : neuRH(it)} data-act="entry" data-e="${e.id}"><span class="tm">${D.rel(e.d, w.today) === 'today' ? D.hm(e.t) : D.day(e.d, {
           noDow: true
         })}</span><i class="d${obs ? ' q' : ''}"></i><span class="tx">${esc(entryText(it, e))}<small>${[D.rel(e.d, w.today) === 'today' ? '' : D.hm(e.t), e.memo && `“${esc(e.memo)}”`, e.dist && 'from your Watch', !e.watch && e.src && possDup(w.db, e.src) && 'possibly the same as a Watch workout, tap to check'].filter(Boolean).join(', ')}</small></span>${M.icon('chev', 16)}</button>`).join('') : '<div class="none" style="padding-left:0">Nothing yet.</div>'}</div>
       ${L.length > 4 ? `<div class="gos"><button class="go" data-act="allentries" data-id="${id}">${allE ? 'Fewer' : `All ${L.length > 30 ? '30 recent' : L.length} ${(L.length > 30 ? '30 recent' : L.length) === 1 ? 'entry' : 'entries'}`}<span class="ar">${allE ? '↑' : '→'}</span></button></div>` : ''}<p class="note">Tap one to change its time, amount or a line about it. A day with nothing is just a day.</p></div>`;
@@ -31354,6 +31440,8 @@ vec3 scene(vec2 p){
     return `The last ${P.length} ${perP(it, P)} as columns of light, a point for each entry${noTarget(it) ? '' : ', the aim as a dotted line'}. Tap a column to read it.`;
   }
   function perSay(it, P) {
+    P = P.filter(p => !(p.b < p.a) && !(p.end < p.a0));
+    if (!P.length) return 'Nothing recorded yet.';
     const fin = P.filter(p => !p.open);
     const c = k => fin.filter(p => p.st === k).length;
     if (noTarget(it)) {
@@ -31361,7 +31449,7 @@ vec3 scene(vec2 p){
       const one = per(it).replace(/s$/, '');
       return `${n ? `${it.kind === 'observation' ? 'Noted' : 'Logged'} on ${plural(n, one, per(it))}.` : P.some(p => p.open && p.n) ? `${it.kind === 'observation' ? 'Noted' : 'Logged'} this ${it.cad === 'none' || it.cad === 'everyN' ? 'week' : it.cad} so far.` : 'Nothing recorded yet.'}${it.tg.cmp === 'at_most' ? ` Your intention is at most ${it.tg.v}${it.unit ? ' ' + unitN(it.unit, it.tg.v) : ''} a ${it.cad === 'none' || it.cad === 'everyN' ? 'week' : it.cad}; it’s never scored.` : ' No target, so nothing is behind.'}`;
     }
-    const parts = [[c('met'), 'at its aim'], [c('part'), 'partly'], [c('none'), 'with nothing recorded'], [c('didnt'), 'noted as not done'], [c('aside'), 'set aside'], [c('paused'), 'paused']].filter(x => x[0]).map(x => `${x[0]} ${x[1]}`);
+    const parts = [[c('met'), 'at its aim'], [c('part'), 'partly'], [c('none'), 'with nothing recorded'], [c('didnt'), 'noted as not done'], [c('aside'), 'set aside'], [c('paused'), 'paused'], [c('rec'), 'with no target'], [c('pre'), 'before it began']].filter(x => x[0]).map(x => `${x[0]} ${x[1]}`);
     if (!fin.length) return `${E.status(M.w, it) === 'paused' ? 'Paused' : 'Nothing finished yet'}.${P[P.length - 1].open ? ` This ${it.cad === 'everyN' ? 'window' : it.cad === 'none' ? 'week' : it.cad} is still open.` : ''}`;
     return `Of the last ${fin.length === 1 ? 'finished ' + perP(it, fin).replace(/s$/, '') : `${fin.length} finished ${perP(it, fin)}`}: ${parts.join(', ') || 'none yet'}.${P[P.length - 1].open ? ` This ${it.cad === 'everyN' ? 'window' : it.cad === 'none' ? 'week' : it.cad} is still open.` : ''}`;
   }
@@ -31416,7 +31504,10 @@ vec3 scene(vec2 p){
     P.forEach(p => rows.push([p.st === 'met' ? 1 : 0, p.open ? 1 : 0, p.st === 'aside' ? .75 : p.st === 'paused' ? .5 : p.st === 'none' ? .25 : 0, 0]));
     while (rows.length < 512) rows.push([0, 0, 0, 0]);
     const cw = (W - 2 * PAD) / P.length;
-    const FS = `uniform float uNP, uNC, uPad, uCW, uBase, uHH, uNoT, uSel;
+    const s0 = it.src || it;
+    const hh = s0.hue != null && !s0.neutral ? neuHue(s0) : null;
+    const HC = hh == null ? [1, .9, .78] : neuRGB(hh);
+    const FS = `uniform float uNP, uNC, uPad, uCW, uBase, uHH, uNoT, uSel; uniform vec3 uHC;
   vec3 scene(vec2 p){ vec3 c=vec3(0.); float col=floor((p.x-uPad)/uCW); float cx=uPad+(col+.5)*uCW;
     if(col>=0.&&col<uNC){ vec4 s=dat(col,1.); float dx=p.x-cx; float inCol=step(uBase-uHH*1.2,p.y)*step(p.y,uBase);
       if(s.b>.4) c+=(s.b>.6?ASIDE:COOL)*.075*exp(-dx*dx/(2.*pow(uCW*.28,2.)))*inCol;
@@ -31426,7 +31517,7 @@ vec3 scene(vec2 p){
       if(abs(col-uSel)<.5) c+=CREAM*.05*exp(-dx*dx/(2.*pow(uCW*.3,2.)))*step(uBase-uHH*1.25,p.y)*step(p.y,uBase+4.);
     }
     for(int i=0;i<254;i++){ if(float(i)>=uNP) break; vec4 d=dat(float(i),0.); float k=floor(d.r*16.+.5); vec2 ctr=vec2(uPad+(k+.5)*uCW, uBase-d.g*1.25*uHH);
-      if(abs(p.x-ctr.x)>14.) continue; float r=length(p-ctr); vec3 cl=mix(CREAM,mix(CREAM,WARM*1.3,.8),step(.95,d.a)); float b=(d.a>.5?1.:.75)*(abs(k-uSel)<.5?1.25:1.);
+      if(abs(p.x-ctr.x)>14.) continue; float r=length(p-ctr); vec3 cl=mix(uHC,mix(uHC,WARM*1.3,.8),step(.95,d.a)); float b=(d.a>.5?1.:.75)*(abs(k-uSel)<.5?1.25:1.);
       c+=cl*b*(dot2(p,ctr,1.9)*1.15+exp(-r*r/(2.*2.6*2.6))*.25+exp(-r*r/(2.*8.*8.))*.03); }
     c+=vec3(.8,.76,.7)*(1.-smoothstep(.25,.9,abs(p.y-uBase)))*.11;
     if(uNoT<.5){ float da=abs(p.y-(uBase-uHH)); float ph=fract(p.x/5.); c+=CREAM*.2*(1.-smoothstep(.35,.9,length(vec2((ph-.5)*5.,da)))); }
@@ -31445,6 +31536,7 @@ vec3 scene(vec2 p){
         gl.uniform1f(Lc('uHH'), HH);
         gl.uniform1f(Lc('uNoT'), noT ? 1 : 0);
         gl.uniform1f(Lc('uSel'), S.sel[it.id] != null ? S.sel[it.id] : P.length - 1);
+        gl.uniform3f(Lc('uHC'), HC[0], HC[1], HC[2]);
       },
       draw2d(ctx) {
         const sel = S.sel[it.id] != null ? S.sel[it.id] : P.length - 1;
@@ -31483,7 +31575,7 @@ vec3 scene(vec2 p){
         }
         pts.forEach(p => {
           const k = Math.round(p[0] * 16);
-          ctx.fillStyle = p[3] > .95 ? 'rgba(255,150,90,.95)' : `rgba(232,239,248,${p[3] > .5 ? .95 : .72})`;
+          ctx.fillStyle = p[3] > .95 ? 'rgba(255,150,90,.95)' : `rgba(${HC.map(v => Math.round(v * 255)).join(',')},${p[3] > .5 ? .95 : .72})`;
           ctx.beginPath();
           ctx.arc(PAD + (k + .5) * cw, base - p[1] * 1.25 * HH, 1.9, 0, 7);
           ctx.fill();
@@ -32220,6 +32312,7 @@ vec3 scene(vec2 p){
       type: t.cad
     };
     const cadMoved = !!(it.src.cadence && it.src.cadence.type !== 'none' && cadKey(it.src.cadence) !== cadKey(cadence) && cadence.type !== 'none');
+    const madeToday = x => x.set === w.today && x.from <= w.today;
     const pa = cadMoved ? w.today : Math.min(w.today, Math.max(it.src.created || 0, periodOf({
       src: {
         ...it.src,
@@ -32229,6 +32322,7 @@ vec3 scene(vec2 p){
     }, w.today)[0]));
     const nt = {
       from: pa,
+      set: w.today,
       ...(tg.cmp === 'range' ? {
         cmp: 'at_least',
         v: t.v,
@@ -32241,7 +32335,7 @@ vec3 scene(vec2 p){
         v: t.v
       })
     };
-    const targets = [...(it.src.targets || []).filter(x => x.from < pa), nt];
+    const targets = [...(it.src.targets || []).filter(x => x.from < pa && !(cadMoved && madeToday(x))), nt];
     const pw = t.cad === 'everyN' ? 'window' : t.cad;
     const said = E.cadText({
       ...it,
@@ -32253,7 +32347,7 @@ vec3 scene(vec2 p){
     M.patch(it, {
       targets,
       cadence
-    }, 'Saved', it.kind === 'observation' ? tg.cmp === 'none' ? 'No intention now. It’s noted when it happens.' : `${said}, starting ${pw === 'day' ? 'today' : 'this ' + pw}` : tg.cmp === 'none' ? 'No target now. It’s recorded as it happens.' : `${said}, starting ${pw === 'day' || cadMoved ? 'today' : 'this ' + pw}. ${it.src.cadence && cadKey(it.src.cadence) !== cadKey(cadence) ? 'Earlier periods keep the rule and the period they had.' : `Earlier ${pw}s keep the rule they had.`}`);
+    }, 'Saved', it.kind === 'observation' ? tg.cmp === 'none' ? 'No intention now. It’s noted when it happens.' : `${said}, starting ${pw === 'day' || pa === w.today ? 'today' : 'this ' + pw}` : tg.cmp === 'none' ? 'No target now. It’s recorded as it happens.' : `${said}, starting ${pw === 'day' || cadMoved || pa === w.today ? 'today' : 'this ' + pw}. ${it.src.cadence && cadKey(it.src.cadence) !== cadKey(cadence) ? 'Earlier periods keep the rule and the period they had.' : `Earlier ${pw}s keep the rule they had.`}`);
   });
   const remSets = it => {
     const c = it.cad;
@@ -36793,7 +36887,8 @@ const neuAssign = items => {
       return i < 0 ? 4 : i;
     };
   const gone = it => it.retired != null;
-  [...items].sort((a, b) => gone(a) - gone(b) || gi(a) - gi(b)).forEach(it => {
+  const pzd = it => (it.pauses || []).some(p => p.to == null);
+  [...items].sort((a, b) => gone(a) - gone(b) || pzd(a) - pzd(b) || gi(a) - gi(b)).forEach(it => {
     if (!it || it.hue == null || it.neutral || it.id === 'sleep' || it.kind === 'module') return;
     const want = neuNear(it.hue);
     const near = prev.slice(-W);
@@ -37685,7 +37780,7 @@ const CLAY = (() => {
     moat: false,
     pad: 56
   };
-  const RAISED = ['.t3 .zrow', '.t3 .zsug', '.t3 .zdateline', '.t3 .dl-disc', '.t3 .zpanel', '.t3 .ztok', '.list', '.card', '.n7-plate', '.ys-card'];
+  const RAISED = ['.t3 .zrow', '.t3 .zsug', '.t3 .zdateline', '.t3 .dl-disc', '.t3 .zpanel', '.t3 .ztok', '.list:not(.sheet .list)', '.sheet .list > :not(.n7c)', '.card', '.n7-plate', '.ys-card'];
   const WELLS = ['.n7-well'];
   const KEYS = ['.t3 .zk-round', '.t3 .zk-seg', '.t3 .zk-pill', '.t3 .zk-word', '.t3 .zamt .zkey', '.t3 .ztk', '.t3 .zchip', '.t3 .zib', '.t3 .zaddbtn', '.t3 .zsb > button', '.t3 .zx', '.t3 .zfoot button', '.t3 .zmore', '.btn', '.chip', '.preset', '.iconbtn', '.n7-key'];
   const SH_RAISED = ['.n7-plate', '.ledger .ln', '.set .li', '.tl .li', '.kvs', '.staff .sf', '.toc .tc', '.idx .tk', '.pats .pt', '.recs .rec', '.combs .cb', '.figs .fg', '.n7p'];
@@ -38107,7 +38202,9 @@ const CLAY = (() => {
     out: 160,
     rise: 260,
     step: 35,
-    cap: 300
+    cap: 300,
+    max: 8,
+    ext: 1
   };
   let runs = [];
   const SLOW = () => window.__n7slow || 1;
@@ -38170,19 +38267,28 @@ const CLAY = (() => {
       a.onfinish = () => drop(a);
       return;
     }
-    page.style.setProperty('--g', '0');
     let tries = 0;
     const go = () => {
-      const L = formsIn(page);
+      const L = formsIn(page).slice(0, PG.max);
       if (!L.length && tries++ < 6) {
         requestAnimationFrame(go);
         return;
       }
       L.forEach((e, i) => {
-        const a = e.animate([{
-          '--g': 0
+        const a = e.animate(i < PG.ext ? [{
+          '--g': 0,
+          opacity: 0,
+          translate: '0 8px'
         }, {
-          '--g': 1
+          '--g': 1,
+          opacity: 1,
+          translate: '0 0'
+        }] : [{
+          opacity: 0,
+          translate: '0 8px'
+        }, {
+          opacity: 1,
+          translate: '0 0'
         }], {
           duration: PG.rise * SLOW(),
           delay: (delay + Math.min(PG.cap, i * PG.step)) * SLOW(),
@@ -38192,22 +38298,15 @@ const CLAY = (() => {
         runs.push(a);
         a.onfinish = a.oncancel = () => drop(a);
       });
-      page.style.removeProperty('--g');
     };
-    requestAnimationFrame(() => requestAnimationFrame(go));
+    go();
   }
   function leave(el) {
     if (!el || !el.animate) return null;
     const rm = reduced();
-    const a = el.animate(rm ? [{
+    const a = el.animate([{
       opacity: 1
     }, {
-      opacity: 0
-    }] : [{
-      '--g': 1,
-      opacity: 1
-    }, {
-      '--g': 0,
       opacity: 0
     }], {
       duration: (rm ? 120 : PG.out) * SLOW(),
@@ -47767,9 +47866,26 @@ function RouteView0({
       return null;
   }
 }
+const ID_SHEETS = ['target', 'presets', 'measure', 'rename', 'drink', 'itemdet', 'linkw'];
+function GoneSheet() {
+  const S = useStore();
+  return React.createElement(Sheet, {
+    title: "Not here any more",
+    onClose: S.sheet.close,
+    sheetKey: "gone"
+  }, () => React.createElement("p", {
+    className: "t-xs",
+    style: {
+      padding: '0 var(--gut)'
+    },
+    "data-gone": true
+  }, "This routine isn\u2019t in Meridian any more, so there is nothing to change. Nothing was changed."));
+}
 const SheetView = ({
   s
 }) => {
+  const S8 = useStore();
+  if (ID_SHEETS.includes(s.k) && !(S8.db && S8.db.byId[s.id])) return React.createElement(GoneSheet, null);
   switch (s.k) {
     case 'v3':
       return React.createElement(V3Sheet, {

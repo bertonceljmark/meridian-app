@@ -1,0 +1,122 @@
+/* ---------- Today: the dial (v7), screen-wide. The disc is a plateau; the centre a well you tap to open the day ---------- */
+.t3 .hero-dial { position: relative; display: flex; justify-content: center; align-items: flex-start; padding: 0 0 2px; margin-top: 2px; user-select: none; -webkit-user-select: none; }
+.t3 .hero-dial .dl-disc { position: relative; flex: none; border-radius: 50%; touch-action: pan-y; --e: 1.2; box-shadow: var(--nElev); background-color: var(--nTone); outline: none; }
+.t3 .hero-dial .dl-disc:focus-visible { outline: 2px solid var(--sun2); outline-offset: 4px; }
+.t3 .hero-dial .dl-art, .t3 .hero-dial .dl-art svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+.t3 .hero-dial .dl-art svg { pointer-events: auto; }
+.t3 .hero-dial .dl-h { position: absolute; transform: translate(-50%,-50%); font: 600 calc(12px * var(--ts,1))/1 var(--ui); color: var(--t2); text-shadow: var(--deb); pointer-events: none; }
+.t3 .hero-dial .dl-h.m { font-size: calc(13.5px * var(--ts,1)); color: var(--cream); }
+.t3 .hero-dial .dl-well { position: absolute; border-radius: 50%; --e: -.9; box-shadow: var(--nElev); background-color: var(--nTone); display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; cursor: pointer; z-index: 2; transition: --e .3s var(--back); border: 0; color: var(--cream); }
+.t3 .hero-dial .dl-well:active { --e: -1.25; transition: --e .08s var(--press); }
+.t3 .hero-dial [data-dial-centre] { display: flex; flex-direction: column; align-items: center; gap: 5px; max-width: 100%; }
+.t3 .hero-dial .dl-well b { font: 400 calc(34px * var(--tsd,1))/1 var(--disp); letter-spacing: -.02em; color: var(--cream); }
+.t3 .hero-dial .dl-well b.now { color: var(--sun2); font-weight: 450; }
+.t3 .hero-dial .dl-well .s { font: 500 calc(13px * var(--ts,1))/1.2 var(--ui); color: var(--cream); }
+.t3 .hero-dial .dl-well .s.nt { color: var(--nightT); }
+.t3 .hero-dial .dl-well .s.nt.miss { color: var(--t2); }
+.t3 .hero-dial .dl-well .k { display: inline-flex; align-items: center; gap: 6px; font: 600 calc(13px * var(--ts,1))/1 var(--ui); }
+.t3 .hero-dial .dl-well .k i, .t3 .hero-dial .dl-well .li i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.t3 .hero-dial .dl-well .hint { font: 400 calc(11px * var(--ts,1))/1.25 var(--ui); color: var(--t3); max-width: 132px; }
+.t3 .hero-dial .dl-well .ls { display: grid; gap: 5px; margin-top: 2px; }
+.t3 .hero-dial .dl-well .li { display: grid; grid-template-columns: 8px auto auto; align-items: center; gap: 6px; font: 500 calc(13px * var(--ts,1))/1.15 var(--ui); color: var(--cream); white-space: nowrap; }
+.t3 .hero-dial .dl-well .li em { font-style: normal; color: var(--t2); font-weight: 400; }
+.t3 .hero-dial .dgf { stroke: color-mix(in oklab, var(--nSurf), #000 9%); }
+.t3 .hero-dial .dpit { fill: rgba(var(--nTx),.30); }
+.t3 .hero-dial .dpit2 { fill: rgba(var(--nSd),.75); }
+.t3 .hero-dial .dmiss { stroke: rgba(var(--nTx),.42); }
+.t3 .hero-dial .dbed { stroke: rgba(var(--nTx),.42); }
+.t3 .hero-dial .drec { fill: var(--rec); }
+.t3 .hero-dial .db { transition: opacity .25s; pointer-events: none; }
+.t3 .hero-dial .db.dim, .t3 .hero-dial .drec.dim { opacity: .16; }
+.t3 .hero-dial.focused .dlv, .t3 .hero-dial.scrubbing .dlv, .t3 .hero-dial.focused .dn, .t3 .hero-dial.scrubbing .dn { opacity: .45; }
+.t3 .hero-dial.focused .dlvh, .t3 .hero-dial.scrubbing .dlvh { opacity: .05; }
+.t3 .hero-dial .dbn { font: 700 9.5px var(--ui); fill: var(--onHue); pointer-events: none; }
+.t3 .hero-dial .db.new .dbc { animation: n7bead 1.1s var(--back) both; transform-box: fill-box; transform-origin: center; }
+@keyframes n7bead { 0% { transform: scale(.2); } 60% { transform: scale(1.12); } 100% { transform: none; } }
+.t3 .hero-dial .dlk { fill: var(--s9); }
+.t3 .hero-dial .dlkr { stroke: var(--cream); opacity: .85; }
+.t3 .hero-dial .dlkp { fill: var(--sun2); }
+.t3 .hero-dial .dlhour { stroke: rgba(var(--nTx),.15); }
+/* a Now row's groove, on its left: its routine's light rises in it as the period fills */
+.t3 .zrow { position: relative; }
+.t3 .zinl { position: absolute; left: 11px; top: 15px; bottom: 15px; width: 7px; border-radius: 4px; overflow: hidden; pointer-events: none;
+  background: color-mix(in oklab, var(--hd, var(--nSurf)) 80%, var(--nSurf)); box-shadow: inset 1.5px 1.5px 3px rgba(var(--nSd),calc(.75 * var(--nSda))), inset -1px -1px 2px rgba(var(--nSl),calc(.07 * var(--nSla))); }
+.t3 .zinl i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 4px; background: var(--hf, var(--sun)); transition: height .7s var(--ease); }
+.t3 .zrow.neutral .zinl, .t3 .zrow:not(.hue) .zinl { background: var(--nSurf); }
+/* the scrolled top bar: the page itself */
+.t3bar .bg { background: var(--nSurf) !important; }
+/* pressed: a row or panel you open sinks a little under the finger; names and links brighten */
+.t3 .zrow:has(> .zopen:active), .t3 .zrow:has(> .zopen.down) { --e: -.4; transition: --e .08s var(--press); } /* r25 #7: a real neu press, down into the surface */
+.t3 .zrow:has(> .zopen:active) .znm, .t3 .zrow:has(> .zopen.down) .znm { color: var(--cream); }
+.t3 .zpanel:active { --e: -1.3; }
+.t3 .zsug:has(> .zopen:active), .t3 .zsug:has(> .zopen.down) { --e: -.4; transition: --e .08s var(--press); }
+.t3 .ztn:active, .t3 .zmore:active, .t3 .zaside:active, .t3 .zsettled button:active { color: var(--cream) !important; }
+.t3 .ztn, .t3 .zmore, .t3 .zaside { transition: color .15s; }
+.t3 .zib { width: 44px !important; height: 44px !important; }
+.t3 .zaside { position: relative; }
+.t3 .zx::after, .t3 .zaside::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%); }
+/* r25 #2: the strip scrolls sideways only. A rising well's moat used to hang below it and give the strip a vertical
+   scroll range, so a vertical swipe on it moved the strip, not the page. The moat is kept inside a padded box that clips y. */
+.t3 .zstrip { overflow-y: hidden; overscroll-behavior-x: contain; padding-bottom: var(--sp-4); margin-bottom: -16px; /* r28: the moat is gone; this is room for a card's own drop and the focus ring only */ }
+
+/* r25 #4: bead targets are real buttons over the art, one per group, 44 px and never overlapping; a group opens a chooser */
+.t3 .hero-dial .dl-tg { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.t3 .hero-dial .dbt { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: transparent; border: 0; padding: 0; pointer-events: auto; cursor: pointer; transition: background-color .08s; -webkit-tap-highlight-color: transparent; }
+.t3 .hero-dial .dbt:active { background: rgba(var(--nSl),.12); }
+.t3 .hero-dial .dbt:focus-visible { outline: 2px solid var(--sun2); outline-offset: -8px; }
+.t3 .hero-dial .db.grp .dbring { stroke: rgba(var(--nSd),.55); }
+.t3 .hero-dial .dbn.on-grp { fill: #10151D; font-size: 10px; }
+.dlch.neu-pop { position: fixed; z-index: 9500; padding: 0; border-radius: 16px; --e: 3; box-shadow: var(--nElev); background: #252E3C; overflow: hidden; display: flex; }
+.dlch.neu-pop[hidden] { display: none; }
+.dlch.neu-pop .dlch-in { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--sp-1); -webkit-overflow-scrolling: touch; }
+.dlch.neu-pop .dlco { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; color: var(--cream); font: 500 calc(15px * var(--ts, 1)) var(--ui); text-align: left; }
+.dlch.neu-pop .dlco i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.dlch.neu-pop .dlco span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dlch.neu-pop .dlco em { font-style: normal; color: var(--t2); font-size: calc(13px * var(--ts, 1)); }
+.dlch.neu-pop .dlco:active { background: rgba(var(--nSd),.3); }
+.dlch.neu-pop .dlco:focus-visible { outline: 2px solid rgba(255,143,94,.7); outline-offset: -2px; }
+/* r25 polish: a 1 px deboss reads as a doubled letter at 11-13 px; small text is printed plain */
+.t3 .hero-dial .dl-h, .t3 .dl-h, .t3 .zsech h2, .t3 .zsech .zaside, .t3 .zlg .zh, .t3 .zsettled button, .t3 .zhead .zsub { text-shadow: none !important; }
+/* r25 #8: the suggestion's name and the section asides are 44 pt targets of their own (no reach into neighbours) */
+.t3 .zsug .zsn { min-height: 44px; margin: -9px 0 -5px; }
+.t3 .zsech .zaside { min-height: 44px; display: inline-flex; align-items: center; margin: -16px 0 -8px; }
+.t3 .zaside::after { display: none; }
+/* r25 polish: one rhythm on Today: 24 px above every section heading, 8 px under it */
+.t3 .zsec, .t3 .zsec + .zsec, .t3 .zstrip + .zsec, .t3 .zstrip + * { margin-top: 24px !important; }
+.t3 .zsech { margin-bottom: 8px !important; }
+/* r25 #9: card insets on the scale. Plates, panels, suggestions: 16. A Now row: 12 above and below, 16 right, 32 left
+   (its progress groove sits in the first 24) */
+.t3 .zpanel { padding: 12px 16px !important; }
+.t3 .zsug { padding: 16px !important; }
+.t3 .zrow { padding: 12px 16px 12px 32px !important; column-gap: 12px !important; }
+.t3 .zlater { padding: 8px 16px 12px !important; }
+/* r25 polish: each card in the strip is as tall as its own content (the sleep card had ~50 px of empty plate under its text) */
+.t3 .zstrip { align-items: flex-start; }
+.t3 .zpanel .zmini { margin-top: 12px !important; }
+/* r25 #7: the press reaches the clay plate too: its walls and drop sink and the face takes v7's pressed inset (zpanel:active's values) */
+.t3 .zrow > .n7c .fc, .t3 .zsug > .n7c .fc, .t3 .zrow > .n7c .wl, .t3 .zsug > .n7c .wl, .t3 .zrow > .n7c .sh, .t3 .zsug > .n7c .sh { transition: box-shadow .3s var(--back), opacity .3s var(--back); }
+.t3 .zrow:has(> .zopen:active) > .n7c .fc, .t3 .zrow:has(> .zopen.down) > .n7c .fc, .t3 .zsug:has(> .zopen:active) > .n7c .fc, .t3 .zsug:has(> .zopen.down) > .n7c .fc { box-shadow: inset 9px 9px 20px rgba(var(--nSd),calc(.55 * var(--nSda))), inset -6px -6px 14px rgba(var(--nSl),calc(.04 * var(--nSla))) !important; transition: box-shadow .08s var(--press); }
+.t3 .zrow:has(> .zopen:active) > .n7c :is(.wl, .sh), .t3 .zrow:has(> .zopen.down) > .n7c :is(.wl, .sh), .t3 .zsug:has(> .zopen:active) > .n7c :is(.wl, .sh), .t3 .zsug:has(> .zopen.down) > .n7c :is(.wl, .sh) { opacity: .3; transition: opacity .08s var(--press); }
+/* r26 #10: every Later row carries its routine's light in its glyph, key or no key */
+.t3 .ztok.hue:not(.neutral) .ztn > svg, .t3 .ztok.hue:not(.neutral) .ztn .gly { color: var(--ht) !important; }
+/* r26 polish: the strip's height follows the card in view, set frame by frame by NeuStripBox (no transition, so it never lags the finger) */
+.t3 .zstrip { box-sizing: border-box; }
+.t3 .zstrip .zpanel.zcut { -webkit-mask-image: linear-gradient(to bottom, #000 calc(var(--zcut) - 36px), transparent var(--zcut)); mask-image: linear-gradient(to bottom, #000 calc(var(--zcut) - 36px), transparent var(--zcut)); }
+/* r26 polish: every Today section header is one 20 px line, so the same 24 above and 8 below read the same under each header; the aside's 44 pt reach overhangs it */
+.t3 .zsech { height: 20px; align-items: center; }
+.t3 .zsech .zaside { margin: -12px 0 !important; z-index: 1; }
+.dlch.neu-pop .dlco:active { --e: -.4; box-shadow: var(--nElev); background: var(--nTone, #252E3C); }
+/* r26 #7: the strip cards and the dial's well take the same clay press as the rows */
+.t3 .zstrip .zpanel > .n7c .fc, .t3 .zstrip .zpanel > .n7c :is(.wl, .sh) { transition: box-shadow .3s var(--back), opacity .3s var(--back); }
+.t3 .zstrip .zpanel:active > .n7c .fc { box-shadow: inset 9px 9px 20px rgba(var(--nSd),calc(.55 * var(--nSda))), inset -6px -6px 14px rgba(var(--nSl),calc(.04 * var(--nSla))) !important; transition: box-shadow .08s var(--press); }
+.t3 .zstrip .zpanel:active > .n7c :is(.wl, .sh) { opacity: .3; transition: opacity .08s var(--press); }
+.t3 .hero-dial .dl-well:active { transform: scale(.97); transition: --e .08s var(--press), transform .08s var(--press); }
+.t3 .zkey:active { transform: scale(.94); transition: --e .08s var(--press), transform .08s var(--press); }
+/* r26 #7: a well card (Last night) presses by deepening its well and dimming its walls */
+.t3 .zstrip .zpanel:active > .n7c.w .ins { --eI: -1.6; box-shadow: var(--nElev), inset 6px 6px 16px rgba(var(--nSd),calc(.5 * var(--nSda))) !important; transition: box-shadow .08s var(--press); }
+.t3 .zstrip .zpanel:active > .n7c.w .iw { opacity: .4; transition: opacity .08s var(--press); }
+.t3 .zstrip .zpanel:active > :not(.n7c) { transform: translateY(1px); transition: transform .08s var(--press); }
+.t3 .zkey:active { transform: scale(.9); }
+/* r27 polish: a section that ends on a raised suggestion plate casts its drop about 8 px below its box, so the next header
+   (Settled) read 21 px from the shadow's edge against about 28 elsewhere; it takes 32 above instead of 24 */
+.t3 .zsec:has(> .zsug:last-child) + .zsec, .t3 .zsec:has(> :last-child .zsug:last-child) + .zsec { margin-top: var(--sp-6) !important; }

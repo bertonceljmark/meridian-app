@@ -1,0 +1,13 @@
+// pgfps.js <file> [W]: frame rate of page changes, measured in the page with requestAnimationFrame over the 700 ms after each
+// change: tabs (Today>Time>Routines>You>Today), push (an item) and back. fps and the 90th-percentile frame. CPU=n slows the CPU.
+const { chromium } = require('playwright'); const [file, w] = process.argv.slice(2); const W = +(w || 390);
+(async () => { const b = await chromium.launch({ args: ['--enable-gpu-rasterization', '--ignore-gpu-blocklist'] }); const ctx = await b.newContext({ viewport: { width: W, height: W === 430 ? 932 : 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 }); const p = await ctx.newPage();
+  if (process.env.CPU) { const c = await ctx.newCDPSession(p); await c.send('Emulation.setCPUThrottlingRate', { rate: +process.env.CPU }); }
+  await p.goto('http://127.0.0.1:8765/' + file); await p.waitForFunction(() => window.__meridian, null, { timeout: 90000 }); await p.evaluate(() => window.__meridian.setScen('base')); await p.waitForTimeout(2500);
+  const run = (fn) => p.evaluate(async (fn) => { const T = []; let on = true; const f = t => { T.push(t); if (on) requestAnimationFrame(f); }; requestAnimationFrame(f); await new Promise(r => setTimeout(r, 50)); const t0 = performance.now(); (new Function(fn))(); await new Promise(r => setTimeout(r, 700)); on = false; const L = T.filter(t => t >= t0); const d = []; for (let i = 1; i < L.length; i++) d.push(L[i] - L[i - 1]); d.sort((a, b) => a - b); const span = L.length > 1 ? L[L.length - 1] - L[0] : 700; return { fps: Math.round((L.length - 1) / span * 1000), p90: Math.round(d[Math.floor(d.length * .9)] || 0), max: Math.round(d[d.length - 1] || 0) }; }, fn);
+  const out = { tab: [], push: [], back: [] };
+  for (let rep = 0; rep < 2; rep++) for (const t of ['time', 'routines', 'you', 'today']) { out.tab.push(await run(`document.querySelector('[data-tab="${t}"]').click()`)); await p.waitForTimeout(900); }
+  await p.evaluate(() => document.querySelector('[data-tab="routines"]').click()); await p.waitForTimeout(1500);
+  for (let rep = 0; rep < 3; rep++) { out.push.push(await run(`window.__meridian.S().nav.push({ k: 'item', id: 'water' })`)); await p.waitForTimeout(900); out.back.push(await run(`window.__meridian.S().nav.pop()`)); await p.waitForTimeout(900); }
+  const sum = L => { const f = L.map(x => x.fps).sort((a, b) => a - b), q = L.map(x => x.p90).sort((a, b) => a - b); return `fps ${f[0]}-${f[f.length - 1]} (median ${f[Math.floor(f.length / 2)]}), p90 ${q[0]}-${q[q.length - 1]} ms`; };
+  console.log(`${file} ${W}${process.env.CPU ? ' cpu' + process.env.CPU : ''}: tab ${sum(out.tab)} | push ${sum(out.push)} | back ${sum(out.back)}`); await b.close(); })();
