@@ -47435,7 +47435,7 @@ const emptyUser = () => ({
   evPatch: {},
   prefs: {}
 });
-const PKEY = 'meridian.state.v1';
+const PKEY = 'meridian.next.state.v1';
 const P0 = (() => {
   try {
     const s = JSON.parse(localStorage.getItem(PKEY) || 'null');
@@ -47624,7 +47624,7 @@ function App() {
   }, [tab]);
   const hintN = useRef((() => {
     try {
-      return +(localStorage.getItem('meridian.holdHint') || 0);
+      return +(localStorage.getItem('meridian.next.holdHint') || 0);
     } catch (e) {
       return 0;
     }
@@ -47642,7 +47642,7 @@ function App() {
     if (t.hint && hintN.current < 3) {
       hintN.current++;
       try {
-        localStorage.setItem('meridian.holdHint', String(hintN.current));
+        localStorage.setItem('meridian.next.holdHint', String(hintN.current));
       } catch (e) {}
     } else if (t.hint) t = {
       ...t,
