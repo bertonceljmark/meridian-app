@@ -524,8 +524,8 @@ body{background:#141414}
 </head>
 <body>
 <div class="app" id="app">
-  <div class="ctlbar"><div class="seg f" id="modeseg" style="--h:.7"><span class="sw2 f" style="--h:-1"></span><button data-m="board">Board</button><button data-m="fold">Fold</button><button data-m="focus">Focus</button><button data-m="reshape">Pages</button><button data-m="clay">Clay</button></div><button class="surfk fk" id="surfk" aria-label="Surface"><i></i></button><button class="mn fk" id="mn" aria-label="Hide the switcher"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>
-  <button class="pillmode fk" id="pillmode">Fold</button>
+  <div class="ctlbar"><div class="seg f" id="modeseg" style="--h:.7"><span class="sw2 f" style="--h:-1"></span><button data-m="board">Board</button><button data-m="fold">Fold</button><button data-m="focus">Focus</button><button data-m="reshape">Pages</button><button data-m="clay">Clay</button><button data-m="pane">Pane</button></div><button class="surfk fk" id="surfk" aria-label="Surface"><i></i></button><button class="mn fk" id="mn" aria-label="Hide the switcher"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>
+  <button class="pillmode fk" id="pillmode">Pane</button>
   <section class="exp" id="x-board"><div class="board" id="board"></div></section>
   <section class="exp" id="x-fold"><div class="clay" id="e1c"></div></section>
   <section class="exp" id="x-focus"><div class="clay" id="e2c" style="top:0"></div></section>
@@ -621,7 +621,7 @@ function e1Build(){const c=$('#e1c');
 function e1Measure(){let y=8;E1.blocks.forEach(b=>{b.cnt.style.transform='none';b.H=b.cnt.offsetHeight;b.y=y;y+=b.H+12});E1.total=y+30;E1.measured=true}
 /* g(): natural position in the window -> position on the clay. Identity in the middle; exponential banks at both edges. */
 function g(u,V,Z,Zb){Zb=Zb??Z;if(Z>.5&&u<Z)return Z*Math.exp((u-Z)/Z);if(Zb>.5&&u>V-Zb)return V-Zb*Math.exp(-(u-(V-Zb))/Zb);return u}
-function e1Layout(){const V=$('#e1c').clientHeight;if(!V)return;E1.V=V;if(!E1.measured)e1Measure();const max=Math.max(0,E1.total-V);
+function e1Layout(){const V=$('#e1c').clientHeight;if(!V)return;E1.V=V;if(!E1.measured)e1Measure();if(E1.pane)return paneLayout(V);const max=Math.max(0,E1.total-V);
   /* a bank only forms at an edge that has material past it, so the top of Today sits undistorted */
   const Zt=E1.Z*ss(0,E1.Z*1.4,E1.p),Zb=E1.Z*ss(0,E1.Z*1.4,max-E1.p);
   for(const b of E1.blocks){const t=b.y-E1.p;const top=g(t,V,Zt,Zb),bot=g(t+b.H,V,Zt,Zb);const h=Math.max(0,bot-top),r=h/b.H;
@@ -632,15 +632,35 @@ function e1Layout(){const V=$('#e1c').clientHeight;if(!V)return;E1.V=V;if(!E1.me
     b.shape.style.setProperty('--h',depth.toFixed(3));
     b.line.style.opacity=b.rest===0?0:(1-ss(.2,.55,r)).toFixed(2);
     b.el.style.visibility=h<.6?'hidden':'visible'}}
+/* ===================== PANE =====================
+   Mark's question: a fixed pane of clay, and more content than fits. The pane never moves and never
+   reveals "more page": its frame clamps the clay, so nothing can stand up near the edge. The content
+   is a relief pressed up from beneath; scrolling slides that relief under the sheet. A form swells up
+   out of flat clay as it leaves the frame and sinks back flat before it reaches the other side, and
+   the still grain of the clay shows the material itself stays put. Fast moves leave the clay behind:
+   forms soften while the relief is moving quickly and firm up as it settles. */
+const PANE={F:70,vel:0,soft:0};
+function paneLayout(V){const soft=PANE.soft;const max=Math.max(0,E1.total-V);
+  /* the frame only holds the clay down at an edge that has content beyond it */
+  const Ft=PANE.F*ss(0,PANE.F,E1.p),Fb=PANE.F*ss(0,PANE.F,max-E1.p);
+  for(const b of E1.blocks){const t=b.y-E1.p,bt=t+b.H;
+    const f=(Ft>1?ss(2,2+Ft,t):(t>=-1?1:0))*(Fb>1?ss(V-2,V-2-Fb,bt):(bt<=V+1?1:0));
+    const inset=(1-f)*9;
+    b.el.style.transform=`translateY(${t.toFixed(2)}px)`;b.el.style.height=b.H+'px';b.el.style.left=`calc(var(--gut) + ${inset.toFixed(1)}px)`;b.el.style.right=`calc(var(--gut) + ${inset.toFixed(1)}px)`;
+    b.cnt.style.transform='none';b.cnt.style.opacity=ss(.12,.7,f).toFixed(3);
+    b.shape.style.setProperty('--h',(b.rest*f*(1-soft)).toFixed(3));
+    b.line.style.opacity=0;b.el.style.visibility=(bt<-2||t>V+2||f<.002)?'hidden':'visible'}}
+function paneVel(v){if(!E1.pane)return;PANE.vel=v;const target=.42*ss(250,2600,Math.abs(v));PANE.soft+= (target-PANE.soft)*.35;
+  cancelAnimationFrame(PANE.raf);const settle=()=>{PANE.soft*=.86;if(PANE.soft<.004)PANE.soft=0;e1Layout();if(PANE.soft)PANE.raf=requestAnimationFrame(settle)};PANE.raf=requestAnimationFrame(settle)}
 let e1s=null,e1mom=0;
 function e1Init(){const c=$('#e1c');let p0=0;
   dragOn(c,{start(){e1s&&e1s.stop();cancelAnimationFrame(e1mom);p0=E1.p},
     move(dy,v,wheel){const max=Math.max(0,E1.total-E1.V);let p=(wheel?E1.p:p0)-(wheel?-dy:dy);if(wheel){p=E1.p+(-dy)}
-      if(p<0)p=p*.45;if(p>max)p=max+(p-max)*.45;E1.p=p;if(wheel)p0=p;e1Layout()},
+      if(p<0)p=p*.45;if(p>max)p=max+(p-max)*.45;E1.p=p;if(wheel)p0=p;paneVel(v||0);e1Layout()},
     end(v){if(v===null)return;const max=Math.max(0,E1.total-E1.V);
       if(E1.p<0||E1.p>max){e1Snap(E1.p<0?0:max,v);return}
       let vel=-(v||0);let last=performance.now();
-      const step=now=>{const dt=Math.min(.034,(now-last)/1000);last=now;vel*=Math.exp(-dt*3.2);E1.p+=vel*dt;
+      const step=now=>{const dt=Math.min(.034,(now-last)/1000);last=now;vel*=Math.exp(-dt*3.2);E1.p+=vel*dt;paneVel(vel);
         if(E1.p<0||E1.p>max){e1Snap(E1.p<0?0:max,-vel);return}e1Layout();if(Math.abs(vel)>8)e1mom=requestAnimationFrame(step)};
       if(!RM)e1mom=requestAnimationFrame(step)}})}
 function e1Snap(to,v){const c=sp(.45,.85);c.v=v||0;e1s=spring(E1.p,to,c,x=>{E1.p=x;e1Layout()})}
@@ -728,10 +748,13 @@ const VS='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
 const FS=`precision highp float;
 uniform vec2 R;uniform float dpr;uniform int N;uniform vec4 rc[48];uniform vec4 md[48];
 uniform vec3 surf;uniform vec3 dk;uniform vec3 lt;uniform vec2 L;uniform float kL,kD;
+uniform float grain;
+float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1,0)),f.x),mix(hs(i+vec2(0,1)),hs(i+vec2(1,1)),f.x),f.y);}
 float sdRB(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
 float H(vec2 p){float h=0.;for(int i=0;i<48;i++){if(i>=N)break;vec4 r=rc[i];vec4 m=md[i];
   vec2 c=r.xy+r.zw*.5;float d=sdRB(p-c,r.zw*.5,m.y);if(d>m.z*1.2)continue;
-  float t=clamp((d+m.z)/(m.z*1.9),0.,1.);float b=1.-t*t*(3.-2.*t);h+=m.x*b;}return h;}
+  float t=clamp((d+m.z)/(m.z*1.9),0.,1.);float b=1.-t*t*(3.-2.*t);h+=m.x*b;}return h+grain*(vn(p*.09)*.05+vn(p*.31)*.022+vn(p*1.1)*.007);}
 void main(){vec2 p=vec2(gl_FragCoord.x,R.y*dpr-gl_FragCoord.y)/dpr;
   float h0=H(p);float hx=H(p+vec2(1.,0.))-h0;float hy=H(p+vec2(0.,1.))-h0;
   float K=6.5;vec3 n=normalize(vec3(-hx*K,-hy*K,1.));
@@ -747,7 +770,7 @@ function hfInit(){const host=$('#x-fold');const c=document.createElement('canvas
   const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
   const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
   const a=gl.getAttribLocation(pr,'a');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
-  const U={};['R','dpr','N','rc','md','surf','dk','lt','L','kL','kD'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
+  const U={};['R','dpr','N','rc','md','surf','dk','lt','L','kL','kD','grain'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
   Object.assign(HF,{gl,c,U});return true}
 const rgb=s=>{const m=s.match(/\d+(\.\d+)?/g)||[0,0,0];return m.slice(0,3).map(x=>+x/255)};
 function hfColors(){const cs=getComputedStyle(app);const tmp=document.createElement('i');tmp.style.color=cs.getPropertyValue('--surf');app.appendChild(tmp);const surf=rgb(getComputedStyle(tmp).color);tmp.remove();
@@ -762,7 +785,7 @@ function hfFrame(){HF.raf=0;if(!HF.on)return;const {gl,c,U}=HF;const host=$('#x-
     const h=parseFloat(getComputedStyle(k).getPropertyValue('--h'))||0;push(r,h*.85*op,Math.min(r.width,r.height)/2,5)}
   const n=rc.length/4;while(rc.length<HF.N*4){rc.push(0,0,0,0);md.push(0,0,1,0)}
   gl.viewport(0,0,c.width,c.height);gl.uniform2f(U.R,W,Hh);gl.uniform1f(U.dpr,dpr);gl.uniform1i(U.N,n);gl.uniform4fv(U.rc,rc);gl.uniform4fv(U.md,md);
-  const C=HF.col;gl.uniform3fv(U.surf,C.surf);gl.uniform3fv(U.dk,C.dk);gl.uniform3fv(U.lt,C.lt);gl.uniform1f(U.kL,C.gl);gl.uniform1f(U.kD,C.gd);
+  const C=HF.col;gl.uniform3fv(U.surf,C.surf);gl.uniform3fv(U.dk,C.dk);gl.uniform3fv(U.lt,C.lt);gl.uniform1f(U.kL,C.gl);gl.uniform1f(U.kD,C.gd);gl.uniform1f(U.grain,E1.pane?1:0);
   const cs=getComputedStyle(app);gl.uniform2f(U.L,+cs.getPropertyValue('--lx')||1,+cs.getPropertyValue('--ly')||1);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);HF.raf=requestAnimationFrame(hfFrame)}
 function hfSet(on){HF.on=on;$('#x-fold').classList.toggle('hf',on);if(on){if(!HF.gl&&!hfInit()){HF.on=false;$('#x-fold').classList.remove('hf');return}hfColors();if(!HF.raf)HF.raf=requestAnimationFrame(hfFrame)}}
@@ -841,9 +864,9 @@ function boardBuild(){const b=$('#board');
   requestAnimationFrame(()=>{segS(0);tabS(0);foldMini()})}
 
 /* ===================== modes ===================== */
-const CAPS={clay:'<b>Clay.</b> The whole screen is one lit surface: forms are bumps and hollows in it, and they blend into each other. Drag like Fold.',board:'<b>Storyboard.</b> Every element, all its states, and what it should do in clay.',fold:'<b>Fold.</b> Drag. Nothing leaves the screen: what is past an edge is squeezed into ridges against it.',focus:'<b>Focus.</b> Drag or tap a ridge. The section you are in swells; the rest shrink to ridges.',reshape:'<b>Reshape.</b> Swipe up or down. The clay sinks flat, flows into the next arrangement and rises again.'};
+const CAPS={pane:'<b>Pane.</b> The clay never moves. Drag: the content slides underneath it, so each form swells up out of the clay and sinks flat again before the edge.',clay:'<b>Clay.</b> The whole screen is one lit surface: forms are bumps and hollows in it, and they blend into each other. Drag like Fold.',board:'<b>Storyboard.</b> Every element, all its states, and what it should do in clay.',fold:'<b>Fold.</b> Drag. Nothing leaves the screen: what is past an edge is squeezed into ridges against it.',focus:'<b>Focus.</b> Drag or tap a ridge. The section you are in swells; the rest shrink to ridges.',reshape:'<b>Reshape.</b> Swipe up or down. The clay sinks flat, flows into the next arrangement and rises again.'};
 let mode='fold',capT=0;
-function setMode(m,instant){mode=m;const ex=m==='clay'?'fold':m;$$('.exp').forEach(e=>e.classList.toggle('on',e.id==='x-'+ex));hfSet(m==='clay');const s=$('#modeseg');const btn=$(`[data-m="${m}"]`,s);segTo(s,btn,instant);$('#pillmode').textContent=btn.textContent;
+function setMode(m,instant){mode=m;const ex=(m==='clay'||m==='pane')?'fold':m;const was=E1.pane;E1.pane=m==='pane';if(was!==E1.pane){E1.p=Math.min(E1.p,Math.max(0,(E1.total||0)-(E1.V||0)));PANE.soft=0}$$('.exp').forEach(e=>e.classList.toggle('on',e.id==='x-'+ex));hfSet(m==='clay'||m==='pane');const s=$('#modeseg');const btn=$(`[data-m="${m}"]`,s);segTo(s,btn,instant);$('#pillmode').textContent=btn.textContent;
   if(ex==='fold')e1Layout();if(m==='focus')e2Layout();
   const cap=$('#cap');cap.innerHTML=CAPS[m];cap.classList.remove('off');clearTimeout(capT);capT=setTimeout(()=>cap.classList.add('off'),4200);try{history.replaceState(null,'','#'+m)}catch(e){}}
 function segTo(seg,btn,instant){const w=$('.sw2',seg),sr=seg.getBoundingClientRect(),br=btn.getBoundingClientRect();$$('button',seg).forEach(b=>b.classList.toggle('on',b===btn));const L=br.left-sr.left,R=br.right-sr.left;
@@ -855,11 +878,11 @@ function boot(){e1Build();e1Init();e2Build();e2Init();e3Build();e3Init();boardBu
   $('#pillmode').addEventListener('click',()=>{tick();$('.ctlbar').classList.remove('min');$('#pillmode').classList.remove('on')});
   const h=location.hash.slice(1);let sv='ink';try{sv=localStorage.getItem('clay-surf2')||'ink'}catch(e){}setSurf(Math.max(0,SURFS.findIndex(x=>x[0]===sv)));
   $('#surfk').addEventListener('click',()=>{tick();setSurf(surfI+1);const cap=$('#cap');cap.innerHTML='Surface: <b>'+SURFS[surfI][2]+'</b>';cap.classList.remove('off');clearTimeout(capT);capT=setTimeout(()=>cap.classList.add('off'),1800)});
-  setMode(['board','fold','focus','reshape','clay'].includes(h)?h:'clay',true);
+  setMode(['board','fold','focus','reshape','clay','pane'].includes(h)?h:'pane',true);
   window.addEventListener('resize',()=>{e1Layout();e2Layout()});
   if(document.fonts)document.fonts.ready.then(()=>{e1Build();e2Build();setMode(mode,true)})}
 boot();
-window.__clay={E1,E2,E3,e1Layout,e2To,e3Go,setMode,setSurf,HF};
+window.__clay={PANE,E1,E2,E3,e1Layout,e2To,e3Go,setMode,setSurf,HF};
 
 </script>
 </body>
