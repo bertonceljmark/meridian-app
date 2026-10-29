@@ -1,0 +1,81 @@
+/* ---------- the shared forms: heights (v7 table) and the one recipe ---------- */
+.n7f { box-shadow: var(--nElev) !important; background-color: var(--nTone) !important; }
+/* every form springs back on release and sinks fast on press */
+.n7k { transition: --e .3s var(--back), transform .3s var(--back), color .2s, opacity .2s !important; }
+.n7k:active, .n7k.down { transition: --e .08s var(--press), transform .08s var(--press), color .2s !important; }
+
+/* ---------- chrome: bars are the page itself, solid, divided by one groove (no blur, no glass) ---------- */
+.screen .navbar .bg, .screen .rootbar .bg, .screen .v3bar { background: var(--nSurf) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border-bottom: 0 !important; }
+.screen .navbar .bg::after, .screen .rootbar .bg::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--groove); }
+.screen .v3bar { border-bottom: 0 !important; box-shadow: none !important; }
+.screen .v3bar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--groove); }
+.screen .navbar .ttl, .screen .rootbar .ttl, .screen .v3bar { color: var(--cream) !important; text-shadow: var(--deb); }
+.screen .navbar .back { color: var(--t2) !important; text-shadow: var(--deb); border-radius: 14px; min-height: 44px; }
+.screen .navbar .back:active { color: var(--cream) !important; box-shadow: var(--p1); }
+.screen .status { color: var(--cream) !important; }
+.screen .status .ddata { --e: .85; box-shadow: var(--nElev) !important; background: var(--nTone) !important; border: 0 !important; color: var(--t2) !important; text-shadow: var(--deb); }
+.screen .status .ddata:active { --e: -.36; }
+.screen .homebar, .screen .homebar.on-deep { background: rgba(232,239,248,.55) !important; }
+
+/* the dock: a plateau formed from the page; engraved tabs; the current one pressed in and lit; + risen from a carved collar */
+.screen .tabbar { left: 12px !important; right: 12px !important; bottom: 14px !important; height: 68px !important; border-radius: 26px !important; padding: 7px 6px !important; border: 0 !important;
+  display: grid !important; grid-template-columns: 1fr 1fr 78px 1fr 1fr !important; align-items: center !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  --e: 2.3; box-shadow: var(--nElev) !important; background: var(--nTone) !important; }
+.screen .tabbar::before { content: ""; position: absolute; left: -12px; right: -12px; bottom: -14px; height: 118px; z-index: -1; pointer-events: none; border-radius: 0;
+  background: linear-gradient(rgba(var(--nSurfRGB),0), var(--nSurf) 52%); }
+.screen .tabbar .tab { height: 54px !important; margin: 0 3px; padding-top: 4px; gap: 5px !important; border-radius: 19px; color: var(--t3) !important; text-shadow: var(--deb);
+  font: 550 calc(11px * var(--ts,1))/1 var(--ui) !important; background: transparent !important; --e: 0; box-shadow: var(--nElev) !important; transition: --e .3s var(--back), color .2s !important; min-width: 0; }
+.screen .tabbar .tab:active, .screen .tabbar .tab.down { --e: -.36; transition: --e .08s var(--press) !important; }
+.screen .tabbar .tab.on { --e: -.55; color: var(--cream) !important; text-shadow: none; }
+.screen .tabbar .tab.on svg { color: var(--sun2); }
+.screen .tabbar .tab svg { transition: transform .08s var(--press); }
+.screen .tabbar .tab:active svg, .screen .tabbar .tab.down svg { transform: scale(.88); }
+.screen .tabbar .logbtn { position: relative; width: 58px !important; height: 58px !important; border-radius: 50% !important; margin-top: -30px !important; color: var(--sun2) !important; border: 0 !important;
+  --e: 3.3; box-shadow: var(--nElev) !important; background: var(--nTone) !important; transition: --e .34s var(--back), transform .34s var(--back) !important; }
+.screen .tabbar .logbtn::before { content: "" !important; display: block !important; position: absolute; inset: -8px; border-radius: 50%; z-index: -1; pointer-events: none; --e: -.55; box-shadow: var(--nElev); background: var(--nTone); }
+.screen .tabbar .logbtn::after { display: none !important; }
+.screen .tabbar .logbtn:active, .screen .tabbar .logbtn.down, .screen .tabbar .logbtn.held { --e: -.64; transform: scale(.95) !important; transition: --e .08s var(--press), transform .08s var(--press) !important; }
+.screen.has-sheet .tabbar .logbtn { --e: -.64; }
+.screen .tabbar .mi-tabind { display: none !important; }
+
+/* the live bar: higher than the dock; the toast: the highest thing on the page */
+.screen .livebar { --e: 3; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--cream) !important; border: 0 !important; border-radius: 22px !important; bottom: 96px; }
+.screen .livebar .lsub { color: var(--t2) !important; }
+.screen .livebar .pulse { background: var(--hf, var(--sun)) !important; }
+.screen .livebar .iconbtn { --e: .85; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--cream) !important; }
+.screen .livebar .iconbtn:active { --e: -.36; }
+.screen .livebar .btn[data-liveend] { --e: 1.5; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--ht, var(--cream)) !important; font-weight: 650; min-height: 44px; border-radius: 15px; }
+.screen .livebar .btn[data-liveend]:active { --e: -.64; }
+.screen .toast { --e: 5.7; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--cream) !important; border: 0 !important; border-radius: 22px !important; }
+.screen .toast .t2 { color: var(--t2); opacity: 1 !important; }
+.screen .toast .undo { --e: .85; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--ht, var(--sun2)) !important; border-radius: 14px !important; min-height: 44px; }
+.screen .toast .undo:active { --e: -.36; }
+.screen .toast .tdot { --e: -.36; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--ht, var(--cream)) !important; }
+.screen .toast .mi-hair { background: var(--hf, var(--sun2)) !important; }
+
+/* sheets: the same surface, risen, as raised slabs. The grab is a groove */
+.screen .sheet { --nBase: #252E3C; --e: 0; background: #252E3C !important; color: var(--cream) !important; border: 0 !important;
+  box-shadow: 0 -12px 44px rgba(var(--nSd),calc(.55 * var(--nSda))), 0 -2px 8px rgba(var(--nSd),calc(.35 * var(--nSda))), inset 0 1px 0 rgba(var(--nSl),calc(.12 * var(--nSla))) !important; }
+.screen .sheet::after { background: #252E3C !important; }
+.screen .sheet .grabber i { --e: -.36; width: 40px; height: 6px; border-radius: 3px; box-shadow: var(--nElev) !important; background: var(--nTone) !important; }
+.screen .sheet-h h3 { color: var(--cream); text-shadow: var(--deb); }
+.screen .sheet-foot { background: #252E3C !important; border-top: 0 !important; position: relative; }
+.screen .sheet-foot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--groove); }
+.screen .sheet-scrim { background: rgba(5,8,14,.55) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.screen .iconbtn { color: var(--t2); }
+.screen .iconbtn.filled, .screen .navbar .iconbtn.filled, .screen .navbar.deep .iconbtn.filled { --e: .85; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--t2) !important; border: 0 !important; }
+.screen .iconbtn:active { --e: -.36; box-shadow: var(--nElev) !important; }
+.screen .iconbtn.filled:active { color: var(--cream) !important; }
+/* under a sheet the page recedes without colour: a dimmed accent would read brown */
+:is(.screen,#n7a) > .zw > .stage, :is(.screen,#n7a) > .zw > .tabbar { transition: filter .3s; }
+:is(.screen,#n7a).has-sheet > .zw > .stage, :is(.screen,#n7a).has-sheet > .zw > .tabbar { filter: saturate(.2); }
+.screen .toast .mi-hair { opacity: .9 !important; }
+/* r25 #7: the current tab answers a press too: one clear step deeper, its icon pressed in */
+.screen .tabbar .tab.on:active, .screen .tabbar .tab.on.down { --e: -1.15; color: var(--t2) !important; }
+/* r25 polish: no deboss on small text (tab labels, the eyebrow, asides) */
+.screen .tabbar .tab, .screen .eyebrow, .screen .sec-h h2, .screen .sec-h .aside, .screen .status .ddata, .screen .navbar .back { text-shadow: none !important; }
+/* r25 polish: a long title in the scrolled bar stops short of the back label and ends in an ellipsis */
+.screen .v3bar { display: block !important; padding: 62px 112px 0 !important; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.screen .navbar .ttl { overflow: hidden; } 
+/* r25 polish: a toast may take three lines before it clips */
+.screen .toast .t2 { -webkit-line-clamp: 3 !important; }

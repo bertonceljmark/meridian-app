@@ -1,0 +1,103 @@
+/* ---------- the app's own components (sheets, full reports, settings), formed from the one surface ---------- */
+/* plateaus: lists of things to act on, cards. Rows inside are divided by grooves, never hairlines */
+.screen .list { --e: 1; box-shadow: var(--nElev) !important; background: var(--nTone) !important; border-radius: 22px !important; overflow: visible !important; display: block !important; gap: 0 !important; }
+.screen .list > .row, .screen .list > div > .row { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; border: 0 !important; position: relative; }
+.screen .list > .row + .row::before, .screen .list > div:not(.n7c) + div > .row::before, .screen .list > .row + div > .row::before, .screen .list > div:not(.n7c) + .row::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 2px; background: var(--groove); pointer-events: none; }
+.screen .list > .row:active, .screen .list > div > .row:active { background: rgba(var(--nSd),.18) !important; }
+.screen .list > .row .chev, .screen .list > div > .row .chev { --e: .85; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--t2) !important; }
+.screen .card:not(.n7-keep) { --e: 1; box-shadow: var(--nElev) !important; background-color: var(--nTone) !important; border: 0 !important; border-radius: 22px !important; }
+.screen .card.flush { overflow: hidden; }
+.screen .feelfield, .screen .hero.deepbg, .screen .weekfig, .screen .card:has(.chart) { --e: -1; box-shadow: var(--nElev) !important; background-color: var(--nTone) !important; border: 0 !important; }
+.screen .kv, .screen .row.indent { border-top: 0 !important; border-bottom: 0 !important; position: relative; }
+.screen .kv + .kv::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--groove); }
+.screen details.aboutnote, .screen details.howcalc { border: 0 !important; box-shadow: none !important; }
+.screen details.howcalc summary, .screen details.aboutnote summary { min-height: 44px; }
+
+/* keys: buttons. Raised; pressed in when chosen, done or held down */
+.screen .btn { --e: 1.5; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--cream) !important; border: 0 !important; transition: --e .3s var(--back), transform .3s var(--back), opacity .2s !important; }
+.screen .btn:active, .screen .btn.down { --e: -.64; transform: scale(.98); transition: --e .08s var(--press), transform .08s var(--press) !important; }
+.screen .btn.acc, .screen .btn.primary { color: var(--ht, var(--cream)) !important; font-weight: 650 !important; }
+.screen .btn.acc svg, .screen .btn.primary svg { color: var(--hf, var(--sun2)); }
+.screen .btn.sec2, .screen .btn.sec { --e: .85; color: var(--t2) !important; }
+.screen .btn.ghost { --e: 0; background: transparent !important; color: var(--t2) !important; }
+.screen .btn.ghost:active { --e: -.36; }
+.screen .btn.danger, .screen .btn.del, .screen .btn.warn { color: #FF9C86 !important; }
+.screen .btn:disabled, .screen .btn[disabled] { --e: 0; opacity: .5; }
+.screen .chip, .screen .hchip, .screen .lchip { --e: .85; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--t2) !important; border: 0 !important; transition: --e .3s var(--back), color .2s !important; }
+.screen .chip svg, .screen .lchip svg { color: var(--t2) !important; }
+.screen .chip:active, .screen .chip.down, .screen .hchip:active, .screen .lchip:active { --e: -.36; transform: none; transition: --e .08s var(--press) !important; }
+.screen .chip.on, .screen .chip.small.on, .screen .hchip.ctx-on { --e: -.36; color: var(--ht, var(--cream)) !important; font-weight: 600; }
+.screen .chip.on svg, .screen .chip.small.on svg { color: var(--hf, var(--sun2)) !important; }
+.screen .chip:disabled { --e: 0; opacity: .45; }
+.screen .preset, .screen .opt, .screen .act.quick44, .screen .lchip.lkey, .screen .qrow .act, .screen .stepper button, .screen .wkday, .screen .swatch { --e: 1.5; box-shadow: var(--nElev) !important; background: var(--nTone) !important; color: var(--cream) !important; border: 0 !important; transition: --e .3s var(--back), transform .3s var(--back) !important; }
+.screen .preset:active, .screen .opt:active, .screen .act.quick44:active, .screen .lchip.lkey:active, .screen .qrow .act:active, .screen .stepper button:active, .screen .wkday:active, .screen .swatch:active { --e: -.64; transform: scale(.97) !important; transition: --e .08s var(--press), transform .08s var(--press) !important; }
+.screen .preset.on, .screen .opt.on, .screen .wkday.on, .screen .swatch.on, .screen .qrow .act.seated { --e: -.64; color: var(--ht, var(--sun2)) !important; transform: none !important; }
+.screen .act.quick44.word { --e: .85; color: var(--t2) !important; }
+.screen .opt .o2 { color: var(--t3) !important; }
+/* carved: fields, searches, tracks */
+.screen .search, .screen .field-in, .screen textarea.field-in, .screen .stepper, .screen .sheet input:not([type]), .screen .sheet input[type="text"], .screen .sheet input[type="number"], .screen .sheet input[type="time"], .screen .sheet input[type="date"], .screen .sheet textarea {
+  --e: -.64; box-shadow: var(--nElev) !important; background: var(--nTone) !important; border: 0 !important; color: var(--cream) !important; }
+.screen .field-in:focus, .screen .search:focus-within { box-shadow: var(--nElev), 0 0 0 2px rgba(255,143,94,.55) !important; outline: none; }
+.screen .field-in::placeholder, .screen .search input::placeholder { color: var(--t3); }
+.screen .seg { --e: -.64; box-shadow: var(--nElev) !important; background: var(--nTone) !important; border: 0 !important; }
+.screen .seg button { background: transparent !important; color: var(--t2) !important; }
+.screen .seg button.on { color: var(--cream) !important; font-weight: 600; }
+.screen .seg button:active { color: var(--cream) !important; }
+.screen .seg .thumb, .screen .stagebox .seg .thumb, .screen .hero .seg .thumb { --e: .85; box-shadow: var(--nElev) !important; background: var(--nTone) !important; border: 0 !important; }
+/* a switch: a carved track; the knob a raised key that travels; on, the track takes light */
+.screen .switch { --e: -.64; box-shadow: var(--nElev) !important; background: var(--nTone) !important; border: 0 !important; }
+.screen .switch::after { --e: 1.5; box-shadow: var(--nElev) !important; background: var(--nTone) !important; }
+.screen .switch.on { background: color-mix(in oklab, var(--hf, var(--sun)) 55%, var(--nSurf)) !important; }
+.screen .switch:active::after { --e: .85; }
+/* the amount slider: a carved groove, a raised knob */
+.screen input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent !important; height: 44px; accent-color: auto; }
+.screen input[type="range"]::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; background: #1A232F; box-shadow: var(--p1); }
+.screen input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: -10px; border-radius: 50%; background: #252F3D; box-shadow: var(--r2); border: 0; }
+.screen input[type="range"]:active::-webkit-slider-thumb { box-shadow: var(--r1); background: #222B39; }
+.screen input[type="range"]::-moz-range-track { height: 8px; border-radius: 4px; background: var(--s-w); }
+.screen input[type="range"]::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; border: 0; background: var(--s9); }
+/* type: engraved labels; never a soft shadow */
+.screen .eyebrow, .screen .sec-h h2, .screen .sec-h .aside { text-shadow: var(--deb); }
+.screen .tok, .screen .row .tok, .screen .lrow .tok { background: transparent !important; box-shadow: none !important; }
+/* every other thing you can press (rows, days, links, summaries) sinks: a shade of the page's own shadow under the finger */
+:where(button, summary, [role="button"], a[href], [tabindex="0"]):not(.btn, .chip, .hchip, .lchip, .preset, .opt, .quick44, .act, .iconbtn, .tab, .logbtn, .zkey, .zib, .zchip, .zx, .zaddbtn, .zprimary, .zsec2, .zdots, .zfoot button, .switch, .seg button, .wkday, .swatch, .dl-well, .dl-disc, .undo, .db, .zopen, .ddata, .back):active { background-color: rgba(var(--nSd),.24); border-radius: 12px; }
+/* pressed response for keys already sitting in their "on" well, and the plain text buttons: one step deeper / dimmer */
+.screen .chip.on:active, .screen .chip.small.on:active { --e: -.64; }
+.screen .preset.on:active, .screen .opt.on:active, .screen .wkday.on:active, .screen .swatch.on:active { --e: -.95; }
+.screen .seg button:active { transform: scale(.96); transition: transform .08s var(--press); }
+.screen .switch:active { --e: -.95; }
+.screen .row:active { background: rgba(var(--nSd),.18) !important; border-radius: 12px; }
+.screen .back:active, .screen .t-xs:active { opacity: .62; }
+
+/* r25 polish: the app's own hairline between indented rows never draws on a plate's first row (the plate layer is a sibling) */
+.screen .list > .n7c + .row.indent::before, .screen .list > .n7c + div > .row.indent::before { display: none !important; }
+/* r25 #8: presets and options are 44 pt keys, so no expander has to reach past them */
+.screen .preset, .screen .opt { min-height: 44px; }
+.screen .sheet .eyebrow + button.t-xs, .screen button.t-xs { min-height: 44px; }
+/* r25 polish: disabled keys keep their form; the label dims */
+.screen .btn[disabled], .screen .btn:disabled, .screen .chip:disabled { --e: .5 !important; opacity: 1 !important; color: rgba(232,239,248,.4) !important; }
+/* r25 polish: a search is carved once; the input inside it sits flat in that carving */
+.screen .search input, .screen .sheet .search input:not([type]) { box-shadow: none !important; background: transparent !important; border: 0 !important; padding-left: 0; padding-right: 0; }
+/* r26 #9: the light-DOM sheets' lists sit on the 16 gutter like their headers, and every row's text starts on one column */
+.screen .sheet .sheet-body > .list { margin-left: var(--sp-4) !important; margin-right: var(--sp-4) !important; }
+/* a list inside a padded block (Delete everything) already sits on the 16 px gutter: it lines up with the buttons under it */
+.screen .sheet .sheet-body > div[style*="padding"] > .list, .screen .sheet .sheet-body > div > .list { margin-left: 0 !important; margin-right: 0 !important; }
+.screen .sheet .row.indent > button:first-child:has(> .tok) { gap: var(--sp-3) !important; }
+.screen .unit { margin-left: var(--sp-1); }
+/* r26 #7: the same sink in the light DOM (rows, days, links); grabbers dim, the ring is dragged, not pressed */
+:where(button, summary, [role="button"], a[href], [tabindex="0"]):not(.btn, .chip, .hchip, .lchip, .preset, .opt, .quick44, .act, .iconbtn, .tab, .logbtn, .zkey, .zib, .zchip, .zx, .zaddbtn, .zprimary, .zsec2, .zdots, .zfoot button, .switch, .seg button, .wkday, .swatch, .dl-well, .dl-disc, .undo, .db, .zopen, .ddata, .back, .grabber, .dbt, .zpanel):active,
+.screen .row:active {
+  --e: -.5; box-shadow: var(--nElev) !important; background: rgba(var(--nSd),.16) padding-box !important; border-radius: 12px; transition: --e .08s var(--press);
+}
+.screen .grabber:active { opacity: .55; }
+/* r26 polish: a diagonal drag never navigates back or forward */
+html, body, #root { overscroll-behavior-x: none; }
+/* r26 #7: keys that already sit in a well, switches and small chips press visibly too: one step deeper and a slight give */
+.screen .opt.on:active, .screen .preset.on:active, .screen .wkday.on:active, .screen .swatch.on:active { transform: scale(.94) !important; transition: --e .08s var(--press), transform .08s var(--press); }
+.screen .chip:active, .screen .switch:active, .screen .iconbtn:active, .screen .btn:active, .screen .seg button.on:active, .screen button.on:active { transform: scale(.95); transition: --e .08s var(--press), transform .08s var(--press); }
+.screen .sheet .grabber:active i { --e: 0; width: 96px; height: 8px; margin-top: -1px; box-shadow: none !important; background: rgba(var(--nSl),.46) !important; transition: width .08s var(--press); }
+
+.screen .iconbtn:active { transform: scale(.9); background: rgba(var(--nSd),.2) !important; }
+.screen .seg button:active, .screen button.on:active { background: rgba(var(--nSd),.3) !important; border-radius: 10px; }
+.screen .switch:active { transform: scale(.9); }
+.screen .seg button.on:active, .screen button.on:active { transform: scale(.9) !important; }

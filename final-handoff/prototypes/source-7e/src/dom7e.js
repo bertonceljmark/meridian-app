@@ -1,0 +1,7 @@
+const { chromium } = require('playwright'); const [file, js, sel] = process.argv.slice(2);
+(async () => { const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, deviceScaleFactor: 1 }); const p = await ctx.newPage();
+  await p.goto('http://127.0.0.1:8765/' + file); await p.waitForFunction(() => window.__meridian, null, { timeout: 60000 }); await p.evaluate(() => window.__meridian.setScen('base')); await p.waitForTimeout(900);
+  await p.evaluate(js => { const M = window.__meridian; (new Function('M', js))(M); }, js); await p.waitForTimeout(1500);
+  console.log(await p.evaluate(sel => { const out = []; const dump = (e, d) => { if (d > 7) return; const cs = getComputedStyle(e); const t = [...e.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ').slice(0, 30); if (e.tagName === 'svg' || e.tagName === 'I' && e.classList.contains('n7c')) return; out.push('  '.repeat(d) + e.tagName.toLowerCase() + (e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).join('.') : '') + ` [${cs.fontSize} r${cs.borderRadius} sh${cs.boxShadow === 'none' ? 0 : 1} p${cs.padding}]` + (t ? ' "' + t + '"' : '')); [...e.children].forEach(c => dump(c, d + 1)); };
+    let root = null; const find = r => { if (root) return; root = r.querySelector(sel); r.querySelectorAll('*').forEach(x => x.shadowRoot && find(x.shadowRoot)); }; find(document); if (!root) return 'none'; dump(root, 0); return out.slice(0, 140).join('\n'); }, sel));
+  await b.close(); })();

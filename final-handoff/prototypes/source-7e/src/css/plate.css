@@ -1,0 +1,82 @@
+/* ---------- r28: the plate, one spec for every card, row and tile (COMPONENTS.md, "Plate") ----------
+   v7's recipe: one raised form (--e: 1, the broad soft drop and the cool top-left rim from --nElev), 26 px corners,
+   20 px insets, big type. One raised plate per item; a group is spacing and an engraved label, never a plate of plates.
+   A routine's colour is a lit dot before its name (v7's accent), not a bar down its side. Keys are v7 keys: 48 px,
+   raised 1.5, round or pill; amounts sit on one line and scroll sideways when they don't fit. */
+:root:root:root, :root:root:root[data-theme] {
+  --pR: 26px; --pX: 20px; --pY: 18px; --pGap: 12px;
+  --pT: calc(20px * var(--ts, 1)); --pTL: calc(24px * var(--ts, 1)); --pS: calc(15px * var(--ts, 1)); --pM: calc(13px * var(--ts, 1));
+  --kH: 48px; --kR: 16px;
+}
+
+/* ---- Today ---- */
+.t3 .zrows { gap: var(--pGap) !important; }
+.t3 .zrow { padding: var(--pY) 14px var(--pY) var(--pX) !important; border-radius: var(--pR) !important; min-height: 76px; column-gap: var(--sp-3) !important; }
+.t3 .zrow .zopen { border-radius: var(--pR) !important; }
+.t3 .zinl { display: none !important; }
+.t3 .zrow .znm { display: flex; align-items: center; gap: 10px; font-size: var(--pT) !important; font-weight: 600 !important; line-height: 1.2 !important; letter-spacing: -.01em; }
+.t3 .zrow.lead .znm { font-size: var(--pTL) !important; }
+.t3 .zrow .znm .zgly, .t3 .ztok .ztn .zgly { display: none !important; }
+.t3 .zrow.hue:not(.neutral) .znm::before, .t3 .ztok.hue:not(.neutral) .ztn::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--hf); box-shadow: 0 0 8px var(--hf); }
+.t3 .zrow .zst { font-size: var(--pS) !important; line-height: 1.35 !important; margin-top: var(--sp-1); }
+.t3 .zrow .zfirst { font-size: var(--pS) !important; line-height: 1.4 !important; margin-top: var(--sp-2) !important; color: var(--t2) !important; }
+.t3 .zrow .zlevel { margin-top: var(--sp-3) !important; }
+/* the familiar amounts: one line of v7 keys, scrolling when they don't fit */
+.t3 .zrow.full .zamt { display: flex !important; flex-wrap: nowrap !important; gap: var(--sp-2) !important; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: var(--sp-3) -14px -14px calc(-1 * var(--pX)) !important; padding: 2px 14px 14px var(--pX); }
+.t3 .zrow.full .zamt::-webkit-scrollbar { display: none; }
+.t3 .zrow.full .zopen { bottom: 74px !important; }
+.t3 .zamt .zkey { flex: 1 0 60px !important; min-width: 60px; height: var(--kH) !important; border-radius: var(--kR) !important; }
+.t3 .zamt .zkey span:not(.zfill) { font-size: calc(16px * var(--ts, 1)) !important; font-weight: 600 !important; }
+.t3 .zk-round { width: var(--kH) !important; height: var(--kH) !important; }
+.t3 .zk-pill, .t3 .zk-seg, .t3 .zk-word { height: var(--kH) !important; border-radius: var(--kR) !important; }
+.t3 .zk-pill, .t3 .zk-word { font-size: calc(16px * var(--ts, 1)) !important; font-weight: 600 !important; }
+
+/* the strip: each panel is a plate of its own, like every other item */
+.t3 .zpanel { --e: 1 !important; border-radius: var(--pR) !important; padding: var(--pY) var(--pX) !important; }
+.t3 .zpanel .zk { font-size: var(--pM) !important; font-weight: 600 !important; }
+.t3 .zpanel .zttl { font-size: var(--pT) !important; font-weight: 600 !important; line-height: 1.2 !important; }
+.t3 .zpanel .zln { font-size: var(--pS) !important; line-height: 1.35 !important; color: var(--t2) !important; }
+.t3 .zpanel:has(.zx) .zk, .t3 .zpanel:has(.zx) .zttl, .t3 .zpanel:has(.zx) .zbig { padding-right: 40px; }
+.t3 .zpanel .zx { width: 40px !important; height: 40px !important; top: 10px !important; right: 10px !important; }
+.t3 .zpanel:active { --e: -.36 !important; }
+
+/* moments */
+.t3 .zsug { border-radius: var(--pR) !important; padding: var(--pY) var(--pX) !important; }
+.t3 .zsug .zsn { font-size: var(--pT) !important; font-weight: 600 !important; }
+.t3 .zsug .zsr, .t3 .zsug .zsr * { font-size: var(--pS) !important; line-height: 1.35; }
+.t3 .zsug .zsb .zprimary, .t3 .zsug .zsb .zsec2, .t3 .zsug .zsb .zdots { height: var(--kH) !important; border-radius: var(--kR) !important; font-size: calc(16px * var(--ts, 1)) !important; }
+.t3 .zdateline { border-radius: var(--pR) !important; min-height: 64px !important; padding: 0 var(--pX) !important; font-size: var(--pS) !important; }
+
+/* Later: no well holding rows. A group is an engraved label and spacing; each routine is its own plate */
+.t3 .zlater { --e: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 var(--gut) !important; border-radius: 0 !important; }
+.t3 .zlg { padding: 0 !important; }
+.t3 .zlg + .zlg { margin-top: var(--sp-5); }
+.t3 .zlg .zh { font: 600 calc(13px * var(--ts, 1))/1 var(--ui) !important; color: var(--t3) !important; margin: 0 0 var(--sp-3) var(--sp-1) !important; text-shadow: var(--deb) !important; }
+.t3 .zpara { display: grid !important; gap: var(--pGap) !important; }
+.t3 .ztok { display: flex !important; align-items: center; gap: var(--sp-3) !important; min-height: 72px; padding: var(--sp-3) 14px var(--sp-3) var(--pX); border-radius: var(--pR); --e: 1; box-shadow: var(--nElev); background-color: var(--nTone); position: relative; }
+.t3 .ztok .ztn { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; font: 600 var(--pT)/1.2 var(--ui) !important; font-variation-settings: normal !important; color: var(--cream) !important; padding: var(--sp-2) 0 !important; min-height: 44px; overflow-wrap: anywhere; }
+.t3 .ztok .ztf { flex: 0 1 auto; font: 400 var(--pS)/1.3 var(--ui) !important; color: var(--t2) !important; margin: 0 !important; text-align: right; }
+.t3 .ztok .ztk { flex: none; width: var(--kH) !important; height: var(--kH) !important; border-radius: 50% !important; --e: 1.5 !important; }
+.t3 .ztok .ztk.w { width: auto !important; border-radius: var(--kR) !important; padding: 0 var(--sp-4) !important; font-size: calc(16px * var(--ts, 1)) !important; font-weight: 600 !important; }
+.t3 .ztok .ztk.down, .t3 .ztok.done .ztk { --e: -.64 !important; }
+.t3 .zmore { min-height: 48px; margin-top: var(--sp-3); }
+
+/* ---- app chrome: sheets and the older pages ---- */
+.screen .card { border-radius: var(--pR) !important; padding: var(--pY) var(--pX) !important; }
+.screen .list { border-radius: var(--pR) !important; }
+.screen .chip, .screen .chip.small { min-height: 44px; font-size: calc(15px * var(--ts, 1)) !important; border-radius: var(--kR) !important; padding: 0 var(--sp-4) !important; }
+.screen .lchip.lkey { height: var(--kH) !important; min-height: var(--kH); border-radius: var(--kR) !important; font-size: calc(15px * var(--ts, 1)) !important; }
+.screen .lchip.lkey .nm, .screen .lchip.lkey .amt { font-size: calc(15px * var(--ts, 1)) !important; }
+.screen .lchip.lkey .st { font-size: var(--pM) !important; }
+.screen .btn { min-height: var(--kH); border-radius: var(--kR) !important; font-size: calc(16px * var(--ts, 1)) !important; }
+.screen .btn.big { min-height: 56px; border-radius: 18px !important; }
+/* the log sheet's amounts: one line of keys that scrolls */
+.screen .optgrid { display: flex !important; flex-wrap: nowrap !important; gap: var(--sp-2) !important; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 calc(-1 * var(--gut)); padding: 2px var(--gut) 16px; grid-template-columns: none !important; }
+.screen .optgrid::-webkit-scrollbar { display: none; }
+.screen .opt { flex: 0 0 auto !important; min-width: 96px; min-height: 56px !important; border-radius: 18px !important; }
+.screen .opt .o1 { font-size: calc(16px * var(--ts, 1)) !important; font-weight: 600 !important; }
+.screen .opt .o2 { font-size: var(--pM) !important; }
+/* the time offsets under a log: one line too */
+.screen [data-timechips] > .chips { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin-left: calc(-1 * var(--gut)); margin-right: calc(-1 * var(--gut)); padding: 2px var(--gut) 14px; }
+.screen [data-timechips] > .chips::-webkit-scrollbar { display: none; }
+.screen [data-timechips] > .chips > * { flex: none; }

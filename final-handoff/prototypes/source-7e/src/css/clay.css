@@ -1,0 +1,27 @@
+/* the clay rise (tilt-scroll v8): plates the engine puts under a form; JS writes only custom properties on them.
+   A plate sits behind the form's content (the form is its own stacking context) and draws its shadow, contact shadow,
+   walls, face, cover and moat, each masked per point by the form's height along it */
+.n7cl { isolation: isolate; box-shadow: none !important; background-color: transparent !important; --eI: var(--e); }
+.n7cl.n7rel { position: relative; }
+.n7cl > :not(.n7c) { opacity: var(--ta, 1); }
+.n7c { position: absolute !important; inset: 0 !important; z-index: -1 !important; border-radius: inherit; pointer-events: none; padding: 0 !important; margin: 0 !important; background: none !important; box-shadow: none !important; opacity: 1 !important;
+  --m: none; --mc: linear-gradient(transparent,transparent); --mf: linear-gradient(transparent,transparent); --mm: linear-gradient(transparent,transparent); --pop: 0; }
+.n7c > i { position: absolute; border-radius: inherit; display: block; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; pointer-events: none; }
+.n7c .sh { inset: -56px; -webkit-mask-image: var(--m); mask-image: var(--m); }
+.n7c .sh::before { content: ""; position: absolute; inset: 56px; border-radius: inherit; --e: calc(var(--eI) * (1 + var(--pop) * 2)); box-shadow: var(--nElev); }
+.n7c .shc { inset: -56px; -webkit-mask-image: var(--mc); mask-image: var(--mc); }
+.n7c .shc::before { content: ""; position: absolute; inset: 56px; border-radius: inherit; box-shadow: 2px 3px 4px rgba(var(--nSd),.62), -1px -1px 2px rgba(var(--nSl),.08); }
+.n7c .wl0 { display: none; }
+.n7c .wl { background: var(--nWall); }
+.n7c .fc { inset: 0; --e: var(--eI); background: var(--nTone); box-shadow: inset calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0 rgba(var(--nSl),calc(.06 * var(--nSla))), inset calc(var(--lx) * 1px) calc(var(--ly) * 1px) 1px rgba(var(--nSd),calc(.16 * var(--nSda))); }
+.n7c .fl { inset: -1px; background: var(--nBase, var(--nSurf)); -webkit-mask-image: var(--mf); mask-image: var(--mf); }
+.n7c .mt { inset: -40px; -webkit-mask-image: var(--mm); mask-image: var(--mm); }
+.n7c .mt::before { content: ""; position: absolute; inset: 40px; border-radius: inherit; box-shadow: 0 0 10px 7px rgba(var(--nSd),.5), -1px -1px 3px 14px rgba(var(--nSl),.05); }
+.n7c.w .mt::before { box-shadow: -3px -3px 6px 1px rgba(var(--nSl),.07), 3px 3px 6px 1px rgba(var(--nSd),.5); }
+.n7c.w .ins { inset: 0; --e: var(--eI); -webkit-mask-image: var(--m); mask-image: var(--m); background: var(--nTone); box-shadow: var(--nElev); }
+.n7c.w .iw { inset: 0; }
+/* fully up and clear of the edges: one plain shadow, no masks to composite */
+.n7c.full .sh, .n7c.full .shc, .n7c.full .mt, .n7c.full .fl { -webkit-mask-image: none; mask-image: none; }
+.n7c.full .shc, .n7c.full .mt, .n7c.full .fl { display: none; }
+/* r28: a page change flattens and raises the walls with the forms (--g, inherited); layer i shows from g = (i - 1) / 7 */
+.n7c .wl, .n7c.w .iw { opacity: clamp(0, calc(var(--g, 1) * 7 - var(--i, 1) + 1), 1); }

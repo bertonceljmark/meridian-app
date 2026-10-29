@@ -1,0 +1,105 @@
+/* ---------- r28: the plate in the v3 screens (Time, Routines, You and every page under them). Same spec as Today:
+   one raised plate per item (--e: 1, 26 px, 20 px insets, title 20/600, sub 15); the old plateaus that held rows are now
+   plain stacks with 12 px between plates; a group is spacing and its engraved label. Settings-style rows keep the same
+   plate with list type (17/600) so long lists stay readable. ---------- */
+:host { --pR: 26px; --pX: 20px; --pY: 18px; --pGap: 12px; --pT: calc(20px * var(--ts, 1)); --pTL: calc(17px * var(--ts, 1)); --pS: calc(15px * var(--ts, 1)); --pM: calc(13px * var(--ts, 1)); --kH: 48px; --kR: 16px; }
+:host :is(.ledger, .set, .tl, .staff, .toc, .idx, .pats, .recs, .combs) { --e: 0 !important; box-shadow: none !important; background: none !important; border-radius: 0 !important; padding: 0 !important; margin-left: var(--gut) !important; margin-right: var(--gut) !important; display: grid !important; gap: var(--pGap) !important; }
+:host .idx { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+:host .figs { gap: var(--pGap) !important; }
+/* every row, tile and figure is a plate */
+:host :is(.ledger .ln, .set .li, .tl .li, .staff .sf, .toc .tc, .idx .tk, .pats .pt, .recs .rec, .combs .cb, .figs .fg, .kvs) { --e: 1; box-shadow: var(--nElev); background-color: var(--nTone); border: 0 !important; border-radius: var(--pR) !important; position: relative; isolation: isolate; transition: --e .3s var(--back); }
+:host :is(.ledger .ln, .staff .sf, .toc .tc, .idx .tk, .pats .pt, .recs .rec, .combs .cb, .figs .fg) { padding: var(--pY) var(--pX) !important; }
+:host :is(.set .li, .tl .li) { padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--pX) !important; min-height: 64px !important; }
+:host .kvs { padding: var(--sp-2) var(--pX) !important; }
+:host :is(.ledger .ln, .set .li, .tl .li, .kv)::before { display: none !important; }
+:host .kv + .kv { background-image: var(--groove); background-repeat: no-repeat; background-size: 100% 2px; background-position: 0 0; }
+/* a press sinks the plate itself (no well drawn under it any more) */
+:host :is(.ledger .ln, .set .li, .tl .li, .staff .sf, .toc .tc, .idx .tk, .pats .pt, .recs .rec, .combs .cb, .figs .fg):active { --e: -.4 !important; transform: none !important; transition: --e .08s var(--press); }
+:host :is(.ledger .ln, .set .li, .tl .li, .staff .sf, .toc .tc, .idx .tk, .pats .pt, .recs .rec, .combs .cb, .figs .fg):active::before,
+:host :is(.ledger .ln, .set .li, .tl .li, .staff .sf, .toc .tc, .idx .tk, .pats .pt, .recs .rec, .combs .cb, .figs .fg):active::after { display: none !important; }
+:host :is(.set .li, .tl .li):active { background: none !important; }
+/* the press is Today's row press, so one plate presses one way everywhere: the face carves in, the walls and drop go down to .3 */
+:host :is(.ledger .ln, .set .li, .tl .li, .staff .sf, .toc .tc, .idx .tk, .pats .pt, .recs .rec, .combs .cb, .figs .fg):active > .n7c .fc { box-shadow: inset 9px 9px 20px rgba(var(--nSd),calc(.55 * var(--nSda))), inset -6px -6px 14px rgba(var(--nSl),calc(.04 * var(--nSla))) !important; transition: box-shadow .08s var(--press); }
+:host :is(.ledger .ln, .set .li, .tl .li, .staff .sf, .toc .tc, .idx .tk, .pats .pt, .recs .rec, .combs .cb, .figs .fg):active > .n7c :is(.wl, .sh) { opacity: .3 !important; transition: opacity .08s var(--press); }
+/* the routine's accent: a lit dot before its name, in its hue */
+:host [data-rh] :is(.tn, .sl b, .ch b, .pn, .rn, .n)::before { content: ""; display: inline-block; flex: none; width: 8px; height: 8px; margin-right: 10px; border-radius: 50%; background: var(--rc); box-shadow: 0 0 8px var(--rcg); vertical-align: 3px; }
+:host [data-rh] .tn .gly, :host [data-rh] .tn > svg, :host .cb[data-rh] .ch > svg, :host .sf[data-rh] .sl > svg { display: none !important; }
+
+/* type, plate by plate */
+:host .idx .tk { min-height: 96px; justify-content: flex-start; gap: var(--sp-2) !important; }
+:host .idx .tk .tn { font: 600 var(--pT)/1.2 var(--ui) !important; font-variation-settings: normal !important; letter-spacing: -.01em !important; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+:host .idx .tk .tf { font: 400 var(--pS)/1.3 var(--ui) !important; color: var(--t2) !important; }
+:host .idx .tk.met .tf { color: var(--rc, var(--sun2)) !important; }
+:host .idx.q .tk .tn { font-size: var(--pTL) !important; color: var(--t2) !important; }
+:host .staff .sf .sl { font-size: var(--pS) !important; flex-wrap: wrap; }
+:host .staff .sf .sl b { font: 600 var(--pT)/1.2 var(--ui) !important; }
+:host .staff .sf .sl span { font-size: var(--pS) !important; }
+:host .toc .tc { grid-template-columns: minmax(96px, auto) 1fr auto !important; }
+:host .toc .tc .mn { font: 600 var(--pT)/1.2 var(--ui) !important; font-variation-settings: normal !important; }
+:host .toc .tc .mn i { font-size: var(--pM) !important; }
+:host .toc .tc .ms { font-size: var(--pS) !important; line-height: 1.35 !important; }
+:host .pats .pt .pk { font-size: var(--pM) !important; color: var(--t3) !important; font-weight: 600 !important; }
+:host .pats .pt .pn { font: 600 var(--pT)/1.2 var(--ui) !important; }
+:host .pats .pt .ps { font-size: var(--pS) !important; line-height: 1.4 !important; }
+:host .recs .rec .rn { font: 600 var(--pT)/1.2 var(--ui) !important; font-variation-settings: normal !important; }
+:host .recs .rec :is(.rs, .rv, .rt, small) { font-size: var(--pS) !important; }
+:host .combs .cb .ch b { font: 600 var(--pT)/1.2 var(--ui) !important; }
+:host .combs .cb .ch .f { font-size: calc(24px * var(--ts, 1)) !important; }
+:host .combs .cb .ch .f small { font-size: var(--pM) !important; }
+:host .combs .cb .s { font-size: var(--pS) !important; color: var(--t2) !important; }
+:host .figs .fg .n { font: 600 var(--pT)/1.2 var(--ui) !important; }
+:host .figs .fg .s { font-size: var(--pS) !important; line-height: 1.35 !important; }
+:host .ledger .ln .n { font: 600 var(--pT)/1.2 var(--ui) !important; font-variation-settings: normal !important; }
+:host .ledger .ln .s { font-size: var(--pS) !important; }
+:host .set .li .tx b { font: 600 var(--pTL)/1.25 var(--ui) !important; }
+:host .set .li .tx span { font-size: var(--pS) !important; line-height: 1.35 !important; }
+:host .set .li .v { font-size: var(--pS) !important; }
+:host .tl .li { font-size: var(--pTL) !important; font-weight: 500; }
+:host .tl .li .tm { font-size: var(--pS) !important; width: 56px !important; }
+:host .tl .li .tx small { font-size: var(--pM) !important; }
+:host .tl .li .rm { font-size: var(--pS) !important; min-height: 44px; }
+:host .kv { font-size: var(--pS) !important; min-height: 48px; align-items: center; }
+
+/* keys: v7 keys, 48 px, and the amounts on one line that scrolls */
+:host .key { height: var(--kH) !important; min-height: var(--kH); border-radius: var(--kR) !important; padding: 0 var(--sp-4) !important; font-size: calc(16px * var(--ts, 1)) !important; font-weight: 600 !important; flex: none; }
+:host .key.num { min-width: 64px; }
+:host .logrow { flex-wrap: nowrap !important; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; gap: var(--sp-2) !important; padding: 20px var(--gut) 16px !important; margin-bottom: -12px; }
+:host .logrow::-webkit-scrollbar { display: none; }
+:host .logrow .kn { flex: none; }
+:host .chip, :host .chip.sm { min-height: 44px; font-size: calc(15px * var(--ts, 1)) !important; border-radius: var(--kR) !important; padding: 0 var(--sp-4) !important; }
+:host .btn { min-height: var(--kH); border-radius: var(--kR) !important; font-size: calc(16px * var(--ts, 1)) !important; }
+
+/* ---------- r28, Mark: "great looking, clear structure". Every screen: one hero, clearly labelled sections, one plate per
+   item in one order (name, then its state), fewer parts per plate, big type, room. ---------- */
+/* section labels read as labels: 22/600 in full cream, the side note quiet; 16 px to the first plate */
+:host .sec > .sech { align-items: baseline !important; margin-bottom: var(--sp-4) !important; min-height: 0 !important; }
+:host .sec > .sech h2 { font: 600 calc(22px * var(--ts, 1))/1.2 var(--ui) !important; letter-spacing: -.012em !important; color: var(--cream) !important; text-transform: none !important; }
+:host .sec > .sech .aside { font: 400 var(--pS)/1.3 var(--ui) !important; color: var(--t3) !important; }
+:host .sec.grp > .sech h2 { font-size: calc(19px * var(--ts, 1)) !important; color: var(--t2) !important; }
+/* the Routines index: one column of plates, each a row — the name, then its state on the right; long names wrap */
+:host .idx { grid-template-columns: minmax(0, 1fr) !important; }
+:host .idx .tk { min-height: 72px !important; display: grid !important; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--sp-3); justify-content: stretch !important; }
+:host .idx .tk .tn { -webkit-line-clamp: 3 !important; }
+:host .idx .tk .tf { text-align: right; max-width: 52vw; }
+/* Months: the name and its one reading; the month's distance is in Workouts, not on every plate */
+:host .toc .tc { grid-template-columns: minmax(0, 1fr) !important; row-gap: var(--sp-1) !important; text-align: left; }
+:host .toc .tc .mk { display: none !important; }
+:host .toc .tc .mn { display: flex; align-items: baseline; gap: var(--sp-2); }
+:host .toc .tc .ms { color: var(--t2) !important; }
+/* reports: a grid with no hole: an odd last plate takes the full row */
+:host .figs .fg:last-child:nth-child(even) { grid-column: 1 / -1; }
+:host .idx .tk .tn { display: flex !important; align-items: center; gap: 10px; }
+:host .idx .tk .tn::before { margin-right: 0 !important; vertical-align: 0 !important; }
+:host .idx .tk .tn > span, :host .idx .tk .tn { overflow-wrap: anywhere; }
+:host .idx .tk { grid-template-columns: minmax(0, 1fr) minmax(0, max-content) !important; }
+:host .idx .tk .tf { max-width: 18ch !important; }
+:host .idx .tk .tn, :host .idx .tk .tn > span { overflow-wrap: break-word !important; }
+/* an item's head sits clear of the bar; the amounts' unit leads its row of keys as a label, not trailing off the edge */
+:host .phead { padding-top: var(--sp-3) !important; }
+:host .logrow .kn { order: -1; align-self: center; margin-right: var(--sp-1); color: var(--t3) !important; font-size: var(--pS) !important; }
+/* a switch that is on is lit in Ink blue, never a dimmed orange (it read as brown) */
+:host .sw.on { background: oklch(.60 .11 232) !important; }
+/* a Totals plate names its routine in cream, the colour in its dot, as every other plate does */
+:host .combs .cb .ch b { color: var(--cream) !important; }
+/* a stepper's − and + press like keys: carved in and darker while held */
+:host .stepper > button:active { background: rgba(var(--nSd), .38) !important; box-shadow: inset 2px 3px 6px rgba(var(--nSd), .6), inset -1px -1px 2px rgba(var(--nSl), .06) !important; transition: background-color .08s var(--press), box-shadow .08s var(--press); }

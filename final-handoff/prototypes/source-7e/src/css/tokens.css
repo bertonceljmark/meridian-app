@@ -1,0 +1,30 @@
+/* pass 7a: Ink, the approved neumorphic surface (today-neu v7), app-wide. One surface, formed: nothing is a card laid on it.
+   Every form has one height (--e); its shadow, rim and tone come from the recipe below. Colour is light inside the surface. */
+@property --e { syntax: '<number>'; inherits: false; initial-value: 0; }
+@property --lx { syntax: '<number>'; inherits: true; initial-value: .6; }
+@property --ly { syntax: '<number>'; inherits: true; initial-value: .8; }
+@property --g { syntax: '<number>'; inherits: true; initial-value: 1; } /* r28: a page change: every form's height times this (0 flat, printed only; 1 full) */
+:root:root:root, :root:root:root[data-theme] {
+  /* r25 #9: the spacing scale. Every padding, margin and gap sits on the 4 px grid; these are the steps used by name */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+  color-scheme: dark;
+  --nSurf: #1D2633; --nSurfRGB: 29,38,51; --nTx: 232,239,248; --nSd: 0,3,9; --nSda: 1.3; --nSl: 196,220,255; --nSla: 1.9; --nLift: #E6F0FF; --nDeep: #000;
+  --nWall: #151C27; --nWallIn: #121923; --lx: .6; --ly: .8;
+  --cream: #E8EFF8; --t2: rgba(232,239,248,.70); --t3: rgba(232,239,248,.62); --t4: rgba(232,239,248,.30);
+  --night: #98A2FC; --nightT: #B3BDFF; --rec: #9AA3B2; --onHue: #0E1219; --sun: #FF6B3D; --sun2: #FF8F5E; --sunInk: #2A0E04; --lv0: #E8EEF8;
+  --gut: 16px;
+  --press: cubic-bezier(.3,.7,.4,1); --back: cubic-bezier(.34,1.45,.55,1);
+  --deb: -1px -1px 0 rgba(var(--nSd),calc(.45 * var(--nSda))), 1px 1px 0 rgba(var(--nSl),calc(.06 * var(--nSla)));
+  --emb: 1px 1px 0 rgba(var(--nSd),calc(.6 * var(--nSda))), 2px 2px 0 rgba(var(--nSd),calc(.25 * var(--nSda))), -1px -1px 0 rgba(var(--nSl),calc(.07 * var(--nSla)));
+  --groove: linear-gradient(rgba(var(--nSd),calc(.5 * var(--nSda))) 0 1px, rgba(var(--nSl),calc(.06 * var(--nSla))) 1px 2px);
+  --s-w: #1A232F; --s5: #1F2835; --s6: #202936; --s9: #212A37; --s14: #222B39; --s18: #232C39; --s20: #242D3A; --s28: #252E3C; --s34: #27303E;
+  /* the app's own tokens, on Ink */
+  --bg: #1D2633; --stage: #1D2633; --surface: #1D2633; --surface-2: #202936; --surface-3: #242D3A; --sheet-bg: #252E3C; --toast-bg: #27303E; --toast-ink: #E8EFF8;
+  --ink: #E8EFF8; --ink-2: rgba(232,239,248,.70); --ink-3: rgba(232,239,248,.58); --ink-4: rgba(232,239,248,.30);
+  --line: rgba(0,3,9,.36); --line-2: rgba(232,239,248,.12); --chip: rgba(232,239,248,.06); --chip-2: rgba(232,239,248,.14);
+  --tab-bg: #222B39; --bar-bg: #1D2633; --plate: #202936; --plate-edge: transparent; --plate-mat: none;
+  --on-deep: #E8EFF8; --on-deep-2: rgba(232,239,248,.70); --on-deep-3: rgba(232,239,248,.58); --on-deep-line: rgba(232,239,248,.12);
+  --on-acc: #0E1219; --desk: #131923; --desk-2: #171E29; --frame: #1F2836;
+}
+.screen { --v3-ink: #1D2633; --v3-sheet: #252E3C; --v3-cream: #E8EFF8; --v3-line: rgba(0,3,9,.36); --v3-line2: rgba(232,239,248,.12); --v3-bar: #1D2633; --v3-grab: rgba(232,239,248,.22); }
+.screen, .screen .page, .screen .scroll, .v3scroll, .page[data-root] { background-color: var(--nSurf); }

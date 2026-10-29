@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meridian Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist:wght@300..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E0D0C; --ink2:#161513; --ink3:#1F1D1A; --line:rgba(243,237,228,.09); --line2:rgba(243,237,228,.16);
+  --cream:#F3EDE4; --t2:rgba(243,237,228,.62); --t3:rgba(243,237,228,.40); --t4:rgba(243,237,228,.22);
+  --sun:#FF6B3D; --sun2:#FF8F5E; --sunInk:#2A0E04; --night:#8E93E8; --rec:#8F887E;
+  --sky:#FF8A5B;
+  --disp:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --ui:"Geist", ui-sans-serif, system-ui, sans-serif;
+  --gut:20px; --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;color:var(--cream);font-family:var(--ui);-webkit-font-smoothing:antialiased}
+body{display:flex;justify-content:center}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+.app{position:relative;width:100%;max-width:430px;height:100dvh;overflow:hidden;background:var(--ink)}
+.scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:180px;scroll-padding:100px 0 170px}
+.scroll::-webkit-scrollbar{display:none}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* status bar + scrolled bar */
+.sbar{position:absolute;top:0;left:0;right:0;height:50px;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:6px 22px 0 34px;pointer-events:none}
+.sbar .clk{font:600 16px/1 var(--ui);letter-spacing:-.01em}
+.sbar .ddata{pointer-events:auto;font:500 12px/1 var(--ui);color:var(--t2);padding:7px 10px;border-radius:99px;background:rgba(243,237,228,.07);border:1px solid var(--line)}
+.sbar .ddata b{color:var(--cream);font-weight:600}
+.topbar{position:absolute;top:0;left:0;right:0;height:92px;z-index:20;background:rgba(14,13,12,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;font:600 16px/1 var(--disp);opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .25s var(--ease);pointer-events:none}
+.topbar.on{opacity:1;transform:none}
+
+/* sky: a flat light at the sun's place, coloured by the hour */
+.sky{position:absolute;left:0;right:0;top:0;height:520px;pointer-events:none;opacity:.9;transition:background .6s}
+
+/* header */
+.head{position:relative;padding:58px var(--gut) 0;display:flex;align-items:flex-start;justify-content:space-between}
+.head h1{font:600 34px/1 var(--disp);font-variation-settings:"wdth" 88;letter-spacing:-.02em}
+.head .sub{margin-top:6px;font:400 15px/1.2 var(--ui);color:var(--t2)}
+.head .sub .ctx{color:var(--cream)}
+.hicons{display:flex;gap:2px;margin-top:-4px;margin-right:-10px}
+.ib{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;color:var(--t2)}
+.ib:active{background:rgba(243,237,228,.06)}
+.ib.on{color:var(--cream)}
+.ib .n{position:absolute;top:6px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--cream);color:var(--ink);font:700 10px/16px var(--ui);text-align:center}
+.ctxchip{display:inline-flex;align-items:center;gap:6px;margin-top:10px;height:30px;padding:0 12px;border-radius:99px;border:1px solid var(--line2);font:500 13px/1 var(--ui);color:var(--cream)}
+.ctxchip i{width:6px;height:6px;border-radius:50%;background:var(--night)}
+
+/* the day arc */
+.arc{position:relative;margin-top:0;height:160px;cursor:pointer}
+.arc svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.arc .cap{position:absolute;left:var(--gut);right:var(--gut);bottom:2px;display:flex;justify-content:space-between;font:400 12px/1 var(--ui);color:var(--t3)}
+.arc .lbl{font:500 11.5px var(--ui);fill:var(--t3)}
+.arc .lbl.now{fill:var(--sun2);font-weight:600}
+.arc .lbl.nt{fill:var(--night)}
+.arc .lbl.miss{fill:var(--t3)}
+.arc .ray{stroke:var(--cream);stroke-linecap:round;stroke-width:3.6}
+.arc .ray.new{stroke:var(--sun2);animation:ray .7s var(--spring) both, rayc 2.2s .7s ease forwards}
+@keyframes ray{from{stroke-dashoffset:var(--L)}to{stroke-dashoffset:0}}
+@keyframes rayc{to{stroke:var(--cream)}}
+.arc .sess{stroke:var(--cream);stroke-width:6;stroke-linecap:round;fill:none}
+.arc .rec{fill:var(--rec)}
+.arc .halo{fill:var(--sun);opacity:.16;transform-box:fill-box;transform-origin:center}
+.arc .halo.pulse{animation:halo .9s var(--ease)}
+@keyframes halo{0%{transform:scale(1);opacity:.16}35%{transform:scale(1.9);opacity:.3}100%{transform:scale(1);opacity:.16}}
+.arc.is3d svg > :not(text){display:none}
+.arc .arc3d{position:absolute;left:0;top:-64px;display:block;pointer-events:none;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 40px,#000 calc(100% - 20px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 40px,#000 calc(100% - 20px),transparent 100%)}
+.l3{position:absolute;left:0;top:0;pointer-events:none;white-space:nowrap;font:500 11.5px var(--ui);color:var(--t3);will-change:transform}
+.l3.now{color:var(--sun2);font-weight:600}
+.l3.nt{color:var(--night)}
+.arcnote{position:absolute;right:var(--gut);top:132px;text-align:right;font:400 14px/1.35 var(--ui);color:var(--t3);pointer-events:none}
+
+/* results strip */
+.strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:10px;padding:0 0 4px}
+.strip::-webkit-scrollbar{display:none}
+.panel{position:relative;flex:0 0 78%;scroll-snap-align:start;padding:2px 22px 4px var(--gut);border-right:1px solid var(--line);text-align:left;min-height:0;display:flex;flex-direction:column}
+.panel:last-child{border-right:0;flex-basis:86%}
+.panel.solo{flex-basis:100%}
+.panel .k{font:500 13px/1 var(--ui);color:var(--t2);display:flex;gap:6px;align-items:center}
+.panel .k .just{color:var(--sun2)}
+.panel .big{margin-top:8px;font:300 40px/1 var(--disp);font-variation-settings:"wdth" 90;letter-spacing:-.03em}
+.panel .big small.u{margin:0 6px 0 3px;font-size:16px}
+.panel .big small{font:400 17px var(--ui);letter-spacing:0;color:var(--t2);margin-left:6px}
+.panel .ttl{margin-top:8px;font:500 21px/1.15 var(--disp);letter-spacing:-.01em}
+.panel .ln{margin-top:8px;font:400 14px/1.35 var(--ui);color:var(--t2)}
+.panel .ln b{color:var(--cream);font-weight:500}
+.panel .mini{margin-top:auto;padding-top:10px}
+.panel .x{position:absolute;top:-8px;right:4px;width:36px;height:36px;display:grid;place-items:center;color:var(--t4);border-radius:12px}
+.nights{display:flex;align-items:flex-end;gap:5px;height:34px}
+.nights i{width:7px;border-radius:2px;background:rgba(243,237,228,.22)}
+.nights i.on{background:var(--night)}
+.nights i.gap{height:6px!important;background:none;border:1px dashed var(--t4)}
+.splits{display:flex;align-items:flex-end;gap:5px;height:30px}
+.splits i{width:9px;border-radius:2px 2px 0 0;background:rgba(243,237,228,.22)}
+.splits i.best{background:var(--cream)}
+.prange{display:grid;gap:7px}
+.prange .r{display:grid;grid-template-columns:96px 1fr 52px;align-items:center;gap:8px;font:400 12.5px var(--ui);color:var(--t2)}
+.prange .t{position:relative;height:10px}
+.prange .t:before{content:"";position:absolute;left:0;right:0;top:4.5px;height:1px;background:var(--line)}
+.prange .t .s{position:absolute;top:3px;height:4px;border-radius:2px;background:rgba(243,237,228,.3)}
+.prange .t .m{position:absolute;top:0;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--cream)}
+.prange .r.b .t .m{background:var(--sun2)}
+.prange .v{text-align:right;color:var(--cream)}
+.weekd{display:flex;gap:10px;align-items:flex-end;height:40px}
+.weekd .c{display:flex;flex-direction:column-reverse;gap:2px;align-items:center;width:18px}
+.weekd .c i{width:6px;height:3px;border-radius:1px;background:rgba(243,237,228,.5)}
+.weekd .c span{font:500 10px var(--ui);color:var(--t3);margin-top:3px}
+.weekd .c.sick span{color:var(--night)}
+.weekd .c.now i{background:var(--sun2)}
+.panel .act{margin-top:12px;align-self:flex-start;height:40px;padding:0 16px;border-radius:12px;background:var(--cream);color:var(--ink);font:600 14px var(--ui)}
+
+/* sections */
+.welcome{margin:22px var(--gut) 0;font:400 15px/1.4 var(--ui);color:var(--t2)}
+.welcome b{color:var(--cream);font-weight:500}
+.sec{margin-top:24px}
+.sech{display:flex;align-items:baseline;justify-content:space-between;padding:0 var(--gut);margin-bottom:4px}
+.sech h2{font:600 15px/1 var(--disp);color:var(--t2);letter-spacing:.005em}
+.sech .aside{font:500 13px var(--ui);color:var(--t2);padding:10px 0 10px 12px;margin:-10px 0}
+.none{padding:10px var(--gut) 0;font:400 15px/1.4 var(--ui);color:var(--t3)}
+
+/* Now rows */
+.rows{padding:0 var(--gut)}
+.row{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:14px;padding:15px 0 15px;border-top:1px solid var(--line);transition:opacity .3s}
+.row:first-child{border-top:0}
+.row .open{position:absolute;inset:0 76px 0 0;border-radius:6px}
+.row .nm{position:relative;pointer-events:none;font:500 21px/1.1 var(--disp);font-variation-settings:"wdth" 94;letter-spacing:-.012em}
+.row.lead .nm{font-size:27px;font-weight:500}
+.row .st{position:relative;pointer-events:none;margin-top:5px;font:400 14px/1.35 var(--ui);color:var(--t2)}
+.row .st b{color:var(--cream);font-weight:500}
+.row .st .pv{color:var(--sun2);font-weight:500}
+.row .first{position:relative;pointer-events:none;margin-top:8px;font:400 13.5px/1.4 var(--ui);color:var(--t3);max-width:30ch}
+.row .first em{font-style:normal;color:var(--t2)}
+.row.full{grid-template-columns:1fr}
+.row.full .open{right:0;bottom:56px}
+.row .tag{font:500 12px var(--ui);color:var(--sun2)}
+.row.completing .nm{color:var(--sun2);transition:color .25s}
+.row.leaving{animation:leave .42s var(--ease) forwards;overflow:hidden}
+@keyframes leave{0%{max-height:160px;opacity:1}100%{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-color:transparent}}
+.row.arrive{animation:arrive .5s var(--ease) both}
+@keyframes arrive{from{opacity:0;transform:translateY(8px)}}
+.rows.locked .keyw{pointer-events:none}
+.more{display:block;margin:6px var(--gut) 0;height:44px;font:500 14px var(--ui);color:var(--t2);text-align:left}
+.more b{color:var(--cream);font-weight:500}
+
+/* keys: flat forms; the feel is in the motion */
+.keyw{position:relative;display:flex;align-items:center;justify-content:flex-end;min-width:56px;min-height:52px}
+.key{position:relative;display:grid;place-items:center;transition:transform .07s ease-out}
+.key.down{transform:translateY(2px) scale(.93)}
+.key.rel{animation:rel .38s var(--spring)}
+@keyframes rel{0%{transform:translateY(2px) scale(.93)}100%{transform:none}}
+.k-round{width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(243,237,228,.34);overflow:hidden}
+.k-round .fill{position:absolute;left:-2px;right:-2px;bottom:-2px;height:0;background:var(--sun)}
+.k-round.done{border-color:var(--sun)}
+.k-round.done .fill{height:calc(100% + 4px)}
+.k-round.done.anim .fill{animation:rise .55s var(--ease)}
+@keyframes rise{0%{height:0;border-radius:50% 50% 0 0/14px 14px 0 0}70%{border-radius:50% 50% 0 0/6px 6px 0 0}100%{height:calc(100% + 4px);border-radius:0}}
+.k-round svg{position:relative;z-index:1}
+.k-round .ck{stroke:var(--sunInk);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22;stroke-dashoffset:22}
+.k-round.done .ck{stroke-dashoffset:0}
+.k-round .ck.ghost{stroke:rgba(243,237,228,.28);stroke-dashoffset:0}
+.k-round.done.anim .ck{animation:ck .35s .32s var(--ease) both}
+@keyframes ck{from{stroke-dashoffset:22}to{stroke-dashoffset:0}}
+.k-round .pl{stroke:var(--cream);stroke-width:2;stroke-linecap:round}
+.k-seg{height:46px;padding:0 9px;gap:4px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(243,237,228,.34)}
+.k-seg i{position:relative;width:9px;height:22px;border-radius:3px;background:rgba(243,237,228,.13);overflow:hidden}
+.k-seg i.on:after{content:"";position:absolute;inset:0;background:var(--sun);border-radius:3px}
+.k-seg i.on.anim:after{animation:segrise .5s var(--ease) both}
+@keyframes segrise{from{transform:translateY(100%)}to{transform:none}}
+.k-pill{height:46px;padding:0 16px 0 13px;gap:7px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(243,237,228,.34);font:600 15px var(--ui)}
+.k-pill.on{border-color:var(--sun);color:var(--sun2)}
+.k-pill .tm{font-variant-numeric:tabular-nums}
+.livedot{width:7px;height:7px;border-radius:50%;background:var(--sun);animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{50%{opacity:.35}}
+.k-word{height:46px;padding:0 14px;display:flex;align-items:center;border-radius:15px;border:1.5px solid rgba(243,237,228,.34);font:600 14px var(--ui);margin-right:8px}
+
+/* amount row */
+.amt{margin-top:12px;display:flex;gap:7px;grid-column:1/-1}
+.amt .key{flex:1;height:44px;border-radius:13px;background:rgba(243,237,228,.07);font:500 16px/1 var(--disp);font-variant-numeric:tabular-nums;overflow:hidden}
+.amt .key span{position:relative;z-index:1}
+.amt .key.last{box-shadow:inset 0 0 0 1.5px rgba(243,237,228,.28)}
+.amt .key .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--sun);opacity:0}
+.amt .key.pour .fill{animation:pour .7s var(--ease)}
+@keyframes pour{0%{height:0;opacity:.95}45%{height:100%;opacity:.95}100%{height:100%;opacity:0}}
+.amt .key.pour span{animation:pourtx .7s var(--ease)}
+@keyframes pourtx{0%,45%{color:var(--sunInk)}100%{color:var(--cream)}}
+.level{position:relative;margin-top:9px;height:2px;border-radius:2px;background:rgba(243,237,228,.1);max-width:220px;pointer-events:none}
+.level i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--sun);transition:width .7s var(--ease)}
+.roll{display:inline-block;animation:roll .45s var(--spring)}
+@keyframes roll{from{transform:translateY(.45em);opacity:0}}
+
+/* Later as set type */
+.later{padding:0 var(--gut)}
+.lg{padding:10px 0 4px}
+.lg .h{font:400 13px/1 var(--ui);color:var(--t3);margin-bottom:6px}
+.para{display:flex;flex-wrap:wrap;column-gap:20px;row-gap:2px;align-items:center}
+.tok{display:inline-flex;align-items:center;gap:4px;min-height:48px}
+.tok .tn{font:400 19px/1.1 var(--disp);font-variation-settings:"wdth" 92;color:rgba(243,237,228,.86);padding:12px 0;text-align:left}
+.tok .tf{font:400 13.5px/1 var(--ui);color:var(--t3);margin-left:5px;pointer-events:none}
+.tok .tk{width:36px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(243,237,228,.08);color:var(--cream);font:600 12px var(--ui);margin-left:4px;position:relative}
+.tok .tk:before{content:"";position:absolute;inset:-6px}
+.tok .tk.w{width:auto;padding:0 10px}
+.tok .tk.down{background:rgba(255,107,61,.25)}
+.tok.done .tn{color:var(--sun2)}
+
+/* By a date, tonight, settled */
+.dateline{display:flex;align-items:center;gap:12px;margin:8px var(--gut) 0;min-height:48px;text-align:left;font:400 15px/1.3 var(--ui);color:var(--t2);width:calc(100% - 40px)}
+.dateline b{color:var(--cream);font-weight:500}
+.dateline svg{flex:none;color:var(--t2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:6px var(--gut) 0}
+.chip{height:40px;padding:0 15px;border-radius:13px;border:1px solid var(--line2);font:500 14px var(--ui);color:var(--cream)}
+.chip.on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+.chip.sm{height:34px;padding:0 12px;font-size:13px;border-radius:11px}
+.settled{padding:4px var(--gut) 0;display:flex;flex-wrap:wrap;column-gap:16px;row-gap:0}
+.settled button{display:inline-flex;align-items:center;gap:8px;min-height:40px;font:400 16px var(--disp);color:var(--t2)}
+.settled button i{width:7px;height:7px;border-radius:50%;background:var(--sun)}
+.settled button.pop{animation:pop .6s var(--spring)}
+@keyframes pop{0%{transform:scale(.6);opacity:0;color:var(--sun2)}60%{color:var(--sun2)}100%{transform:none;opacity:1}}
+
+/* suggestion */
+.sug{margin:6px var(--gut) 0;padding:16px 16px 14px;border-radius:22px;background:rgba(243,237,228,.045)}
+.sug .sn{font:500 21px/1.15 var(--disp);letter-spacing:-.01em;text-align:left;display:block}
+.sug .sr{margin-top:5px;font:400 14px var(--ui);color:var(--t2)}
+.sug .sb{display:flex;gap:8px;margin-top:14px}
+.sug .sb .primary{flex:1;height:44px;border-radius:13px;background:var(--cream);color:var(--ink);font:600 14.5px var(--ui)}
+.sug .sb .sec2{height:44px;padding:0 16px;border-radius:13px;background:rgba(243,237,228,.08);font:500 14.5px var(--ui)}
+.sug .sb .dots{width:44px;height:44px;border-radius:13px;background:rgba(243,237,228,.08);display:grid;place-items:center}
+.sughold{padding:2px var(--gut) 0;font:400 14.5px/1.45 var(--ui);color:var(--t3)}
+.addbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px var(--gut) 0;height:52px;width:calc(100% - 40px);border-radius:16px;background:var(--cream);color:var(--ink);font:600 15.5px var(--ui)}
+.foot{margin:36px var(--gut) 0;display:flex;justify-content:center}
+.foot button{font:500 13px var(--ui);color:var(--t3);height:40px;padding:0 14px;border:1px solid var(--line);border-radius:12px}
+
+/* tab bar, live bar, toast */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:86px;z-index:25;background:rgba(14,13,12,.86);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 76px 1fr 1fr;padding:6px 6px 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:6px;font:500 10.5px var(--ui);color:var(--t3);height:50px}
+.tab.on{color:var(--cream)}
+.logkey{justify-self:center;width:58px;height:58px;margin-top:-4px;border-radius:50%;background:var(--cream);color:var(--ink);display:grid;place-items:center;transition:transform .08s}
+.logkey:active{transform:scale(.92)}
+.livebar{position:absolute;left:10px;right:10px;bottom:94px;z-index:24;height:62px;border-radius:20px;background:#22201D;border:1px solid var(--line2);display:flex;align-items:center;gap:12px;padding:0 8px 0 16px;transform:translateY(130%);opacity:0;transition:transform .45s var(--spring),opacity .25s}
+.livebar.on{transform:none;opacity:1}
+.livebar .lt{flex:1;min-width:0}
+.livebar .lt .a{font:500 16px var(--disp)}
+.livebar .lt .b{font:400 13px var(--ui);color:var(--t2);margin-top:2px}
+.livebar .lp{position:absolute;left:16px;right:16px;bottom:0;height:2px;background:rgba(243,237,228,.08);border-radius:2px;overflow:hidden}
+.livebar .lp i{position:absolute;left:0;top:0;bottom:0;background:var(--sun)}
+.livebar button{height:44px;padding:0 14px;border-radius:13px;background:rgba(243,237,228,.08);font:600 14px var(--ui)}
+.livebar button.end{background:var(--cream);color:var(--ink)}
+.toast{position:absolute;left:10px;right:10px;top:8px;z-index:35;min-height:58px;border-radius:24px;background:#26231F;border:1px solid var(--line2);box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;align-items:center;gap:10px;padding:8px 8px 8px 18px;transform:translateY(-130%) scale(.9);opacity:0;transition:transform .45s var(--spring),opacity .2s;transform-origin:top center}
+.toast.on{transform:none;opacity:1}
+.toast .tt{flex:1;min-width:0}
+.toast .a{font:500 16px/1.2 var(--disp)}
+.toast .b{font:400 13px/1.3 var(--ui);color:var(--t2);margin-top:2px}
+.toast .undo{height:44px;padding:0 16px;border-radius:16px;font:600 14.5px var(--ui);color:var(--sun2);background:rgba(255,107,61,.1)}
+.toast .bar{position:absolute;left:24px;right:24px;bottom:0;height:2px;background:var(--sun);transform-origin:left;opacity:.5}
+.toast.on .bar{animation:tbar 5s linear forwards}
+@keyframes tbar{to{transform:scaleX(0)}}
+
+/* sheets */
+.scrim{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;max-height:88%;overflow-y:auto;scrollbar-width:none;background:#191816;border-radius:28px 28px 0 0;border-top:1px solid var(--line2);padding:10px 0 40px;transform:translateY(105%);transition:transform .45s var(--spring)}
+.sheet.on{transform:none}
+.sheet::-webkit-scrollbar{display:none}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--t4);margin:0 auto 14px}
+.sh{display:flex;justify-content:space-between;align-items:flex-start;padding:0 var(--gut)}
+.sh h3{font:600 26px/1.1 var(--disp);letter-spacing:-.015em;font-variation-settings:"wdth" 92}
+.sh .k{font:500 13px var(--ui);color:var(--t2);margin-bottom:6px}
+.sh .close{width:44px;height:44px;margin:-8px -10px 0 0;display:grid;place-items:center;color:var(--t2)}
+.sp{padding:0 var(--gut)}
+.sp p,.sline{font:400 15px/1.45 var(--ui);color:var(--t2)}
+.sline b{color:var(--cream);font-weight:500}
+.slab{margin:24px var(--gut) 8px;font:600 14px var(--disp);color:var(--t2)}
+.slist{padding:0 var(--gut)}
+.slist .li{display:flex;align-items:center;gap:12px;min-height:52px;border-top:1px solid var(--line);font:400 15.5px var(--ui);width:100%;text-align:left}
+.slist .li:first-child{border-top:0}
+.slist .li .tm{width:48px;color:var(--t3);font-variant-numeric:tabular-nums;font-size:14px}
+.slist .li .tx{flex:1}
+.slist .li .tx small{display:block;color:var(--t3);font-size:13px;margin-top:2px}
+.slist .li .rm{font:500 13.5px var(--ui);color:var(--t2);padding:10px 0 10px 10px}
+.slist .li .dot{width:7px;height:7px;border-radius:50%;background:var(--cream)}
+.slist .li .dot.q{background:var(--rec)}
+.bigfig{font:300 56px/1 var(--disp);letter-spacing:-.03em;font-variation-settings:"wdth" 90;margin-top:6px}
+.bigfig small{font:400 18px var(--ui);color:var(--t2);margin-left:6px;letter-spacing:0}
+.btns{display:grid;gap:8px;padding:0 var(--gut)}
+.btn{height:52px;border-radius:16px;background:rgba(243,237,228,.08);font:500 15.5px var(--ui);width:100%}
+.btn.primary{background:var(--cream);color:var(--ink);font-weight:600}
+.btn.ghost{background:none;color:var(--t2)}
+.scrub{display:flex;gap:8px;padding:6px var(--gut) 0;overflow-x:auto;scrollbar-width:none}
+.scrub button{flex:0 0 auto;min-width:72px;height:72px;border-radius:18px;background:rgba(243,237,228,.07);font:400 22px/1 var(--disp);font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.scrub button small{font:400 11.5px var(--ui);color:var(--t3)}
+.stepper{display:flex;align-items:center;justify-content:space-between;margin:14px var(--gut) 0;padding:8px;border-radius:18px;background:rgba(243,237,228,.05)}
+.stepper button{width:52px;height:52px;border-radius:14px;background:rgba(243,237,228,.08);font:400 24px var(--ui)}
+.stepper .v{font:400 30px var(--disp);font-variant-numeric:tabular-nums}
+.hyp{position:relative;height:96px;margin:10px var(--gut) 0}
+.hyp i{position:absolute;height:14px;border-radius:3px;background:var(--night)}
+.hyp .lb{position:absolute;left:0;font:400 11px var(--ui);color:var(--t3)}
+.bars7{display:flex;gap:12px;align-items:flex-end;height:90px;padding:0 var(--gut)}
+.bars7 .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bars7 .c i{width:100%;max-width:28px;border-radius:4px;background:rgba(243,237,228,.2)}
+.bars7 .c.on i{background:var(--night)}
+.bars7 .c.gap i{background:none;border:1px dashed var(--t4);height:10px!important}
+.bars7 .c span{font:400 11px var(--ui);color:var(--t3)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;padding:4px var(--gut) 0}
+.stats .s .l{font:400 13px var(--ui);color:var(--t3)}
+.stats .s .v{font:400 24px var(--disp);margin-top:4px;font-variant-numeric:tabular-nums}
+.splitrows{padding:0 var(--gut)}
+.splitrows .r{display:grid;grid-template-columns:34px 1fr 52px;gap:10px;align-items:center;height:30px;font:400 13.5px var(--ui);color:var(--t2)}
+.splitrows .r i{height:8px;border-radius:4px;background:rgba(243,237,228,.25)}
+.splitrows .r.best i{background:var(--cream)}
+.splitrows .r .v{text-align:right;color:var(--cream);font-variant-numeric:tabular-nums}
+.search{display:flex;align-items:center;gap:10px;margin:0 var(--gut);height:48px;border-radius:15px;background:rgba(243,237,228,.07);padding:0 14px;color:var(--t3)}
+.search input{flex:1;background:none;border:0;outline:0;color:var(--cream);font:400 16px var(--ui)}
+.note{margin:14px var(--gut) 0;font:400 13px/1.45 var(--ui);color:var(--t3)}
+textarea.field,input.field{display:block;width:calc(100% - 40px);margin:0 var(--gut);background:rgba(243,237,228,.07);border:0;border-radius:15px;padding:14px;color:var(--cream);font:400 15.5px var(--ui);outline:0;resize:none}
+
+@media (prefers-reduced-motion: reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="sky" id="sky"></div>
+  <div class="scroll" id="scroll"></div>
+  <div class="topbar" id="topbar"></div>
+  <div class="sbar"><span class="clk tnum" id="clk">08:40</span><button class="ddata" id="ddata" data-act="next-sample" aria-label="Show different data">Different data <b id="dnum">1/7</b></button></div>
+  <div class="livebar" id="livebar"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <nav class="tabbar" aria-label="Tabs">
+    <button class="tab on" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15.5h18"/><path d="M5.5 15.5a6.5 6.5 0 0 1 13 0"/><circle cx="15.6" cy="10.4" r="1.6" fill="currentColor" stroke="none"/></svg>Today</button>
+    <button class="tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18V9M9 18V5M14 18v-7M19 18V8"/></svg>Time</button>
+    <button class="logkey" data-act="logsheet" aria-label="Log anything"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Routines</button>
+    <button class="tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c1-3.6 3.8-5.4 7.2-5.4s6.2 1.8 7.2 5.4"/></svg>You</button>
+  </nav>
+  <div class="scrim" id="scrim" data-act="close"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div>
+<script>
+// Meridian Today v3: sample days. Every visual on the page is drawn from these records.
+// Times are minutes after midnight of the shown day (negative = the evening before).
+const P = [150, 250, 330, 500, 750];
+const I = {
+  meals:  { id: 'meals', name: 'Meals', m: 'count', aim: 3, unit: 'meal', every: true },
+  water:  { id: 'water', name: 'Water', m: 'amount', aim: 2000, unit: 'ml', presets: P, lastAmt: 250 },
+  stretch:{ id: 'stretch', name: 'Stretch', m: 'tap' },
+  vitd:   { id: 'vitd', name: 'Vitamin D', m: 'tap' },
+  push:   { id: 'push', name: 'Push-ups', m: 'reps', aim: 100, step: 20 },
+  date:   { id: 'date', name: 'Date night', m: 'event', aim: 2, per: 'month' },
+  sketch: { id: 'sketch', name: 'Sketching', m: 'dur', per: 'window', usual: 40, first: 'Open the sketchbook and draw whatever is in front of you.' },
+  reading:{ id: 'reading', name: 'Reading', m: 'dur', per: 'day', usual: 35 },
+  guitar: { id: 'guitar', name: 'Guitar', m: 'dur', per: 'week', aim: 2, usual: 20 },
+  friends:{ id: 'friends', name: 'Friends', m: 'event', aim: 1, per: 'week' },
+  run:    { id: 'run', name: 'Running', m: 'watch', aim: 2, per: 'week' },
+  day:    { id: 'day', name: 'Daylight', m: 'passive' },
+  floss:  { id: 'floss', name: 'Floss', m: 'tap' },
+  walk:   { id: 'walk', name: 'Morning walk', m: 'dur', per: 'day', usual: 25 },
+  spanish:{ id: 'spanish', name: 'Spanish', m: 'dur', per: 'day', usual: 15 },
+  journal:{ id: 'journal', name: 'Journal', m: 'tap' },
+};
+const it = (base, o) => Object.assign({ v: 0 }, JSON.parse(JSON.stringify(I[base])), o);
+const stages = (onset, wake) => { const out = []; let t = onset, k = 0; const seq = ['light', 'deep', 'light', 'rem', 'light', 'deep', 'light', 'rem', 'awake', 'light', 'rem', 'light', 'rem']; while (t < wake) { const s = seq[k % seq.length]; const d = s === 'awake' ? 6 : s === 'deep' ? 38 : s === 'rem' ? 26 : 44; out.push([s, t, Math.min(wake, t + d)]); t += d; k++; } return out; };
+
+const SAMPLES = [
+  { // 0 — an ordinary Tuesday morning
+    key: 'ordinary', label: 'Tuesday morning',
+    dow: 'Tuesday', date: '27 October', short: 'Tue 27 Oct', now: 520, bed: 1410,
+    sleep: { onset: -19, wake: 432, asleep: 424, head: 'Your usual night', line: '23:41 to 07:12', nights: [410, 455, 380, null, 440, 398, 424], days: ['W', 'T', 'F', 'S', 'S', 'M', 'T'] },
+    held: 1,
+    items: [
+      it('meals', { v: 1, lastT: 500, group: 'now' }),
+      it('water', { v: 580, group: 'now' }),
+      it('stretch', { group: 'now', sub: 'Last yesterday, 21:40' }),
+      it('push', { v: 40, group: 'now' }),
+      it('date', { v: 1, group: 'now', period: 'October', left: 5, last: '10 Oct' }),
+      it('sketch', { group: 'now', sub: 'Good day for it, last 20 Oct' }),
+      it('reading', { group: 'later', when: 'evening' }),
+      it('friends', { group: 'later', when: 'evening', last: '24 Oct' }),
+      it('run', { v: 1, group: 'later', when: 'any' }),
+      it('day', { v: 6, group: 'later', when: 'any' }),
+      it('vitd', { v: 1, group: 'settled' }),
+    ],
+    intents: [
+      { id: 'bins', kind: 'deadline', title: 'Bins out', when: 'Thursday', repeat: 'every week', place: 'now' },
+      { id: 'rent', kind: 'deadline', title: 'Pay rent', when: 'by Fri 30 Oct', place: 'date' },
+    ],
+    order: ['meals', 'bins', 'water', 'stretch', 'push', 'date', 'sketch'],
+    entries: [[438, 'water', 330], [450, 'dose', 'Cetirizine 10 mg'], [465, 'vitd', 1], [485, 'push', 20], [492, 'push', 20], [500, 'meals', 1], [512, 'water', 250], [515, 'obs', 'Espresso']],
+    moments: [
+      { id: 'night', kind: 'night' },
+      { id: 'run26', kind: 'run', kick: 'Yesterday', dist: 6.2, time: '33:35', pace: '5:25', hr: 145, fact: '2nd fastest of 39 at 5–7 km', splits: [338, 331, 324, 320, 318, 312] },
+    ],
+    sug: { id: 'guitar', name: 'Guitar', reason: 'Last 19 Oct, 0 of 2 this week. About 20 min.', verb: 'Start 20 min', mins: 20 },
+    sugAlt: { name: 'Stretch, the short one', reason: 'About 10 min, fits the morning.', verb: 'Done it' },
+  },
+  { // 1 — a busy Thursday
+    key: 'busy', label: 'Busy Thursday',
+    dow: 'Thursday', date: '29 October', short: 'Thu 29 Oct', now: 1050, bed: 1410,
+    sleep: { onset: 30, wake: 402, asleep: 352, head: 'Asleep 50 min later than usual', line: '00:30 to 06:42, up at the usual time', nights: [455, 380, 440, 398, 424, 431, 352], days: ['F', 'S', 'S', 'M', 'T', 'W', 'T'], short: true },
+    held: 2,
+    items: [
+      it('water', { v: 1310, group: 'now' }),
+      it('guitar', { v: 1, group: 'now', live: 12 }),
+      it('meals', { v: 2, lastT: 700, group: 'now' }),
+      it('push', { v: 80, group: 'now' }),
+      it('stretch', { group: 'now', sub: 'Any time today' }),
+      it('date', { v: 1, group: 'now', period: 'October', left: 3, last: '10 Oct' }),
+      it('friends', { group: 'later', when: 'evening', last: '24 Oct' }),
+      it('floss', { group: 'later', when: 'evening' }),
+      it('day', { v: 48, group: 'later', when: 'any' }),
+      it('vitd', { v: 1, group: 'settled' }), it('walk', { v: 1, group: 'settled' }), it('spanish', { v: 1, group: 'settled' }), it('journal', { v: 1, group: 'settled' }), it('run', { v: 2, group: 'settled' }),
+    ],
+    intents: [
+      { id: 'bins', kind: 'deadline', title: 'Bins out', when: 'Today, by 20:00', repeat: 'every week', place: 'now' },
+      { id: 'dentist', kind: 'held', title: 'Call the dentist', when: 'Back, as you asked', est: 10, place: 'now' },
+      { id: 'car', kind: 'deadline', title: 'Car service booked', when: 'by Tue 3 Nov', place: 'date' },
+    ],
+    order: ['bins', 'water', 'dentist', 'guitar', 'meals', 'push', 'stretch', 'date'],
+    entries: [[410, 'water', 250], [418, 'vitd', 1], [425, 'dose', 'Cetirizine 10 mg'], [440, 'walk', 25, 25], [455, 'push', 20], [470, 'meals', 1], [505, 'obs', 'Espresso'], [540, 'water', 330], [560, 'push', 20], [600, 'spanish', 15, 15], [640, 'water', 250], [700, 'meals', 1], [730, 'obs', 'Espresso'], [760, 'push', 20], [790, 'water', 150], [840, 'journal', 1], [905, 'push', 20], [960, 'water', 330], [1022, 'run', 32, 32]],
+    moments: [
+      { id: 'run29', kind: 'run', kick: 'Just in, from your Watch', just: true, dist: 5.1, time: '27:41', pace: '5:26', hr: 151, fact: 'Longest this week', splits: [341, 330, 326, 322, 316] },
+      { id: 'night', kind: 'night' },
+    ],
+    sug: { id: 'reading', name: 'Reading, a short one', reason: 'After a short night. About 15 min.', verb: 'Start 15 min', mins: 15 },
+  },
+  { // 2 — empty early morning
+    key: 'early', label: 'Early morning, nothing yet',
+    dow: 'Wednesday', date: '28 October', short: 'Wed 28 Oct', now: 350, bed: 1410,
+    sleep: { missing: true, onset: -20, wake: 425, nights: [380, 440, 398, 424, 431, 424, null], days: ['T', 'F', 'S', 'S', 'M', 'T', 'W'] },
+    held: 1,
+    items: [
+      it('vitd', { group: 'later', when: 'morning' }),
+      it('stretch', { group: 'later', when: 'morning' }),
+      it('water', { group: 'later', when: 'morning' }),
+      it('meals', { group: 'later', when: 'morning' }),
+      it('push', { group: 'later', when: 'morning' }),
+      it('reading', { group: 'later', when: 'evening' }),
+      it('date', { v: 1, group: 'later', when: 'evening', period: 'October', left: 4, last: '10 Oct' }),
+      it('run', { v: 1, group: 'later', when: 'any' }),
+      it('day', { v: 0, group: 'later', when: 'any', yest: '34 min yesterday' }),
+    ],
+    intents: [{ id: 'bins', kind: 'deadline', title: 'Bins out', when: 'Tomorrow', repeat: 'every Thursday', place: 'now' }],
+    order: ['bins'],
+    entries: [],
+    moments: [{ id: 'nightmiss', kind: 'nightmiss' }],
+    sug: null, quietSug: true,
+  },
+  { // 3 — brand-new user, day one
+    key: 'new', label: 'Day one',
+    dow: 'Friday', date: '23 October', short: 'Fri 23 Oct', now: 615, bed: 1440, dayOne: true,
+    sleep: { none: true, onset: -60, wake: 420 },
+    held: 0,
+    items: [
+      it('water', { group: 'now', fresh: true }),
+      it('stretch', { group: 'now', fresh: true }),
+      it('reading', { group: 'now', fresh: true }),
+    ],
+    intents: [],
+    order: ['stretch', 'water', 'reading'],
+    entries: [],
+    moments: [{ id: 'day1', kind: 'day1' }],
+    sug: null, noSug: true,
+  },
+  { // 4 — sick day
+    key: 'sick', label: 'Sick day',
+    dow: 'Monday', date: '2 November', short: 'Mon 2 Nov', now: 660, bed: 1410, calm: true,
+    ctx: { label: 'Sick', to: 'to Wed' },
+    sleep: { onset: -75, wake: 600, asleep: 560, head: 'A long night, 2 h 20 more than usual', line: '22:45 to 10:00', nights: [431, 424, 401, 452, 418, 470, 560], days: ['T', 'W', 'T', 'F', 'S', 'S', 'M'] },
+    held: 1,
+    items: [
+      it('water', { v: 500, group: 'now' }),
+      it('stretch', { group: 'later', when: 'any' }),
+      it('meals', { v: 1, lastT: 630, group: 'later', when: 'any' }),
+      it('push', { group: 'later', when: 'any' }),
+      it('reading', { group: 'later', when: 'any' }),
+      it('vitd', { group: 'later', when: 'any' }),
+      it('day', { v: 0, group: 'later', when: 'any', yest: '9 min yesterday' }),
+    ],
+    intents: [{ id: 'rent', kind: 'deadline', title: 'Pay rent', when: 'Tomorrow, by Tue 3 Nov', place: 'now' }],
+    order: ['rent', 'water'],
+    entries: [[612, 'water', 250], [620, 'dose', 'Paracetamol 500 mg'], [630, 'meals', 1], [655, 'water', 250]],
+    moments: [{ id: 'sick', kind: 'sick' }, { id: 'night', kind: 'night' }],
+    sug: null, hold: 'You’re sick: nothing is suggested until you’re better.',
+  },
+  { // 5 — Sunday evening
+    key: 'evening', label: 'Sunday evening',
+    dow: 'Sunday', date: '1 November', short: 'Sun 1 Nov', now: 1300, bed: 1410,
+    sleep: { onset: -24, wake: 467, asleep: 451, head: 'Your usual night', line: '23:36 to 07:47', nights: [398, 424, 431, 352, 470, 418, 451], days: ['M', 'T', 'W', 'T', 'F', 'S', 'S'] },
+    held: 0,
+    items: [
+      it('water', { v: 1650, group: 'now' }),
+      it('reading', { group: 'now' }),
+      it('floss', { group: 'now', sub: 'Any time tonight' }),
+      it('day', { v: 72, group: 'later', when: 'any' }),
+      it('vitd', { v: 1, group: 'settled' }), it('stretch', { v: 1, group: 'settled' }), it('meals', { v: 3, group: 'settled' }), it('push', { v: 100, group: 'settled' }), it('spanish', { v: 1, group: 'settled' }), it('guitar', { v: 2, group: 'settled' }), it('friends', { v: 1, group: 'settled' }),
+    ],
+    intents: [{ id: 'rent', kind: 'deadline', title: 'Pay rent', when: 'by Tue 3 Nov', place: 'now' }],
+    order: ['rent', 'water', 'reading', 'floss'],
+    entries: [[480, 'water', 330], [490, 'vitd', 1], [505, 'obs', 'Turkish coffee'], [520, 'stretch', 1], [540, 'meals', 1], [600, 'spanish', 15, 15], [660, 'push', 20], [690, 'push', 20], [720, 'water', 500], [760, 'meals', 1], [780, 'push', 20], [840, 'push', 20], [870, 'water', 330], [905, 'guitar', 25, 25], [990, 'push', 20], [1080, 'friends', 150, 150], [1180, 'meals', 1], [1210, 'water', 250], [1235, 'water', 240]],
+    tonight: [{ id: 'alc', label: 'No alcohol' }],
+    moments: [
+      { id: 'wk', kind: 'week', title: 'This week so far, played back', range: '26 Oct to 1 Nov', days: [['M', 9], ['T', 12], ['W', 7], ['T', 16], ['F', 11], ['S', 8], ['S', 15]] },
+      { id: 'pat', kind: 'pattern', to: 'Sleep', title: 'After a day you move, you sleep about 24 min longer', a: ['Days you moved', 445, 410, 468], b: ['Other days', 421, 392, 440], n: 34 },
+      { id: 'night', kind: 'night' },
+    ],
+    sug: null, sugEmpty: true,
+  },
+  { // 6 — back after three weeks away
+    key: 'back', label: 'Back after three weeks',
+    dow: 'Tuesday', date: '24 November', short: 'Tue 24 Nov', now: 550, bed: 1410,
+    welcome: 'Back after three weeks. <b>Nothing piled up.</b>',
+    sleep: { onset: -10, wake: 450, asleep: 440, head: 'Your usual night', line: '23:50 to 07:30', nights: [452, 401, 430, 418, 425, 441, 440], days: ['W', 'T', 'F', 'S', 'S', 'M', 'T'] },
+    held: 0,
+    items: [
+      it('meals', { group: 'now', sub: 'Any time today' }),
+      it('water', { v: 580, group: 'now' }),
+      it('vitd', { group: 'now', sub: 'Last 31 Oct' }),
+      it('push', { group: 'now' }),
+      it('reading', { group: 'later', when: 'evening' }),
+      it('date', { group: 'later', when: 'any', period: 'November', left: 7 }),
+      it('guitar', { group: 'later', when: 'any' }),
+      it('run', { group: 'later', when: 'any' }),
+      it('stretch', { v: 1, group: 'settled' }),
+    ],
+    intents: [],
+    order: ['meals', 'water', 'vitd', 'push'],
+    entries: [[440, 'water', 330], [470, 'stretch', 1], [520, 'water', 250]],
+    moments: [{ id: 'back', kind: 'back' }, { id: 'night', kind: 'night' }],
+    sug: null, hold: 'Ideas stay quiet for your first days back.',
+  },
+];
+
+</script>
+<script>
+// Meridian Today v3 — the day arc. Vanilla JS prototype; see NOTE.md for the SwiftUI route.
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const scrollEl = $('#scroll'), sheetEl = $('#sheet'), scrimEl = $('#scrim'), toastEl = $('#toast'), liveEl = $('#livebar');
+const params = new URLSearchParams(location.search);
+const STILL = params.has('still') || params.has('shot');
+let si = Math.max(0, Math.min(SAMPLES.length - 1, +(params.get('sample') || 0)));
+let S, U; // S: the sample's state; U: ui state
+
+const hm = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+const dur = m => m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${String(Math.round(m % 60)).padStart(2, '0')}`;
+const amt = v => v >= 1000 ? `${(v / 1000).toFixed(2).replace(/0+$/, '').replace(/\.$/, '')} L` : `${v} ml`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const byId = id => S.items.find(x => x.id === id);
+const intent = id => S.intents.find(x => x.id === id);
+const haptic = (ms = 8) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+let uid = 1;
+
+function load(i) {
+  si = (i + SAMPLES.length) % SAMPLES.length;
+  S = JSON.parse(JSON.stringify(SAMPLES[si]));
+  S.entries = S.entries.map(e => ({ id: 'e' + uid++, t: e[0], k: ['dose', 'obs'].includes(e[1]) ? e[1] : 'b', item: ['dose', 'obs'].includes(e[1]) ? null : e[1], name: ['dose', 'obs'].includes(e[1]) ? e[2] : null, v: ['dose', 'obs'].includes(e[1]) ? 0 : e[2], dur: e[3] || 0 }));
+  S.items.forEach(x => { if (x.live) { S.live = { id: x.id, start: Date.now() - x.live * 60000 - 4000 }; delete x.live; } });
+  U = { more: false, dismissed: new Set(), fx: {}, lock: 0, sugState: S.sug ? 'show' : null, mins: null, tonight: {} };
+  closeSheet(true); hideToast(true);
+  render(); scrollEl.scrollTop = 0;
+  $('#dnum').textContent = `${si + 1}/${SAMPLES.length}`;
+  $('#clk').textContent = hm(S.now);
+  try { history.replaceState(null, '', `?sample=${si}${STILL ? '&still' : ''}`); } catch (e) {}
+}
+
+// ---------- states in words ----------
+function isDone(x) {
+  if (x.m === 'tap' || (x.m === 'dur' && x.per === 'day')) return x.v >= 1;
+  if (x.m === 'passive') return false;
+  if (x.m === 'dur' && x.per === 'window') return x.v >= 1;
+  return x.aim ? x.v >= x.aim : x.v >= 1;
+}
+function stateLine(x) {
+  const lv = S.live && S.live.id === x.id;
+  if (lv) return `<span class="tag">Live</span>, <b class="tnum" data-livetxt>${liveTxt()}</b>${x.usual ? `, usually ${x.usual} min` : ''}`;
+  if (x.fresh) return x.m === 'amount' ? `Aim <b>${amt(x.aim)}</b>` : 'Any time today';
+  switch (x.m) {
+    case 'tap': return x.v ? '<b>Done today</b>' : esc(x.sub || 'Any time today');
+    case 'count': return x.v ? `<b>${roll(x, `${x.v} of ${x.aim}`)}</b>, last ${hm(x.lastT)}` : `Aim <b>${x.aim}</b> today`;
+    case 'reps': return x.v ? `<b>${roll(x, `${x.v} of ${x.aim}`)}</b> reps today` : `Aim <b>${x.aim}</b> reps`;
+    case 'amount': if (!x.v) return `Aim <b>${amt(x.aim)}</b>`; return S.now >= 1080 && x.v < x.aim ? `<b>${roll(x, amt(x.v))}</b> today` : `<b>${roll(x, amt(x.v))}</b> of ${amt(x.aim)}`;
+    case 'event': return x.v ? `<b>${roll(x, `${x.v} of ${x.aim}`)}</b> ${x.per === 'week' ? 'this week' : `in ${x.period}`}${x.left && x.left <= 7 ? `, ${x.left} days left` : ''}` : `${x.last ? `Last ${x.last}` : 'Any day'}${x.left && x.left <= 7 ? `, ${x.left} days left in ${x.period}` : x.period ? ` this month` : ''}`;
+    case 'dur': if (x.per === 'week') return x.v ? `<b>${roll(x, `${x.v} of ${x.aim}`)}</b> this week` : `Aim <b>${x.aim}</b> this week, usually ${x.usual} min`; if (x.v) return `<b>Done today</b>`; return esc(x.sub || (x.usual ? `Usually ${x.usual} min` : 'Any time today'));
+    case 'watch': return `<b>${x.v} of ${x.aim}</b> this week`;
+    case 'passive': return x.v ? `<b>${dur(x.v)}</b> so far, from your Watch` : `${x.yest || 'Nothing'} from your Watch`;
+  }
+  return '';
+}
+const roll = (x, t) => U.fx.roll === x.id ? `<span class="roll">${t}</span>` : t;
+function shortFig(x) { // Later: the figure beside the name
+  switch (x.m) {
+    case 'amount': return x.v ? amt(x.v) : `aim ${amt(x.aim)}`;
+    case 'count': return x.v ? `${x.v} of ${x.aim}` : `aim ${x.aim}`;
+    case 'reps': return x.v ? `${x.v} of ${x.aim}` : `aim ${x.aim} reps`;
+    case 'event': return x.v ? `${x.v} of ${x.aim}${x.per === 'week' ? '' : ` in ${(x.period || '').slice(0, 3)}`}` : x.last ? `last ${x.last}` : x.left ? `${x.left} days left` : '';
+    case 'watch': return x.v ? `${x.v} of ${x.aim} this week` : `aim ${x.aim} this week`;
+    case 'dur': return x.per === 'week' ? (x.v ? `${x.v} of ${x.aim}` : `aim ${x.aim} a week`) : x.usual ? `usually ${x.usual} min` : '';
+    case 'passive': return x.v ? `${dur(x.v)} so far, Watch` : `${x.yest || 'nothing yet'}, Watch`;
+  }
+  return '';
+}
+function previewTxt(x) {
+  if (S.live && S.live.id === x.id) return 'Ends and saves';
+  if (x.m === 'dur') return 'Starts the clock';
+  if (x.m === 'reps') return `${x.v + x.step} of ${x.aim} reps`;
+  if (x.m === 'count' || x.m === 'event') return x.v + 1 >= x.aim ? `${x.v + 1} of ${x.aim}, settles ${x.m === 'event' ? x.period || 'the week' : 'today'}` : `${x.v + 1} of ${x.aim}`;
+  return 'Logs it now';
+}
+function liveTxt() { if (!S.live) return ''; const s = Math.floor(((S.live.pausedAt || Date.now()) - S.live.start) / 1000); return s < 60 ? 'under a minute' : dur(Math.floor(s / 60)); }
+function liveClock() { if (!S.live) return ''; const s = Math.floor(((S.live.pausedAt || Date.now()) - S.live.start) / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+
+// ---------- keys ----------
+const CK = '<svg width="22" height="22" viewBox="0 0 22 22"><path class="ck" d="M6 11.5l3.3 3.3L16 8"/></svg>';
+const PLUS = '<svg width="18" height="18" viewBox="0 0 18 18"><path class="pl" d="M9 3v12M3 9h12"/></svg>';
+const PLAY = '<svg width="12" height="13" viewBox="0 0 12 13" fill="currentColor"><path d="M1.5 1.2v10.6c0 .5.5.8.9.5l8.4-5.3a.6.6 0 0 0 0-1L2.4.7c-.4-.3-.9 0-.9.5z"/></svg>';
+function keyHtml(x) {
+  const a = U.fx.key === x.id ? ' anim' : '';
+  const lv = S.live && S.live.id === x.id;
+  const lab = `aria-label="${esc(keyLabel(x))}"`;
+  if (x.m === 'tap' || (x.m === 'event' && x.aim === 1) || (x.m === 'dur' && x.per === 'window' && false)) return `<div class="keyw"><button class="key k-round${x.v ? ' done' : ''}${a}" data-key="${x.id}" ${lab}><span class="fill"></span>${x.v ? CK : x.m === 'event' ? PLUS : CK.replace('class="ck"', 'class="ck ghost"')}</button></div>`;
+  if (x.m === 'count' || x.m === 'reps' || x.m === 'event') {
+    const n = x.m === 'reps' ? x.aim / x.step : x.aim, on = x.m === 'reps' ? Math.floor(x.v / x.step) : x.v;
+    let segs = ''; for (let i = 0; i < n; i++) segs += `<i class="${i < on ? 'on' : ''}${i === on - 1 && a ? ' anim' : ''}"></i>`;
+    return `<div class="keyw"><button class="key k-seg" data-key="${x.id}" ${lab}>${segs}</button></div>`;
+  }
+  if (x.m === 'dur') return `<div class="keyw"><button class="key k-pill${lv ? ' on' : ''}" data-key="${x.id}" ${lab}>${lv ? `<span class="livedot"></span><span class="tm" data-liveclock>${liveClock()}</span>` : `${PLAY}Start`}</button></div>`;
+  if (x.m === 'watch') return `<div class="keyw"><button class="key k-pill" data-key="${x.id}" ${lab}>Log…</button></div>`;
+  return '';
+}
+function keyLabel(x) {
+  if (S.live && S.live.id === x.id) return `End ${x.name}`;
+  if (x.m === 'dur') return `Start ${x.name}`;
+  if (x.m === 'reps') return `Log ${x.step} ${x.name}. Hold for more`;
+  return `Log ${x.name}. Hold for more`;
+}
+
+// ---------- the day arc ----------
+function arcModel(W) {
+  const H = 160, pad = 18, hz = 118, amp = 86, dep = 22;
+  const sl = S.sleep, start = sl.onset;
+  const wake = sl.wake, bed = Math.max(wake + 600, S.bed), end = bed + 40;
+  // the night is a fixed lead-in (its length is written under it); the waking day gets the rest of the width, at one scale
+  const NW = .2 * (W - 2 * pad), DW = W - 2 * pad - NW;
+  const X = t => { t = Math.max(start, Math.min(end, t)); return t <= wake ? pad + (t - start) / (wake - start) * NW : pad + NW + (t - wake) / (end - wake) * DW; };
+  const T = x => x <= pad + NW ? start + (x - pad) / NW * (wake - start) : wake + (x - pad - NW) / DW * (end - wake);
+  const Y = t => t <= wake ? hz + dep * Math.sin(Math.PI * (t - start) / (wake - start)) : t <= bed ? hz - amp * Math.sin(Math.PI * (t - wake) / (bed - wake)) : hz + 10 * Math.sin(Math.PI * .5 * Math.min(1, (t - bed) / (end - bed)));
+  const N = t => { const e = 1.5, dx = X(t + e) - X(t - e), dy = Y(t + e) - Y(t - e), L = Math.hypot(dx, dy) || 1; return [dy / L, -dx / L]; }; // outward (up) normal
+  return { H, pad, hz, amp, dep, start, end, wake, bed, X, Y, N, T };
+}
+function pathOf(A, a, b, step = 6) { if (b <= a) return 'M0 0'; let d = ''; for (let t = a; t <= b; t += step) d += (d ? 'L' : 'M') + A.X(t).toFixed(1) + ' ' + A.Y(t).toFixed(1); d += 'L' + A.X(b).toFixed(1) + ' ' + A.Y(b).toFixed(1); return d; }
+function arcSvg() {
+  const W = scrollEl.clientWidth || 390, A = arcModel(W), sl = S.sleep, now = S.now;
+  const noData = sl.missing || sl.none;
+  let g = '';
+  // horizon
+  g += `<line x1="0" x2="${W}" y1="${A.hz}" y2="${A.hz}" stroke="rgba(243,237,228,.13)" stroke-width="1"/>`;
+  // the meridian: midpoint of the waking day
+  const mid = (A.wake + A.bed) / 2; g += `<line x1="${A.X(mid)}" x2="${A.X(mid)}" y1="${A.Y(mid) + 10}" y2="${A.hz}" stroke="rgba(243,237,228,.10)" stroke-dasharray="1 4"/>`;
+  // last night: the trough under the horizon
+  const tr = pathOf(A, A.start, A.wake, 4);
+  if (!noData) g += `<path d="${tr} L${A.X(A.wake)} ${A.hz} L${A.X(A.start)} ${A.hz}Z" fill="rgba(142,147,232,.14)"/><path d="${tr}" stroke="var(--night)" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  else g += `<path d="${tr}" stroke="rgba(243,237,228,.28)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+  // the day: lived part solid, the rest dashed
+  const nowC = Math.max(A.start, Math.min(A.end, now));
+  if (nowC > A.wake) g += `<path d="${pathOf(A, A.wake, Math.min(nowC, A.bed))}" stroke="rgba(243,237,228,.58)" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  g += `<path d="${pathOf(A, Math.max(A.wake, nowC), A.bed)}" stroke="rgba(243,237,228,.24)" stroke-width="1.3" fill="none" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+  g += `<path d="${pathOf(A, A.bed, A.end)}" stroke="rgba(243,237,228,.16)" stroke-width="1.3" fill="none" stroke-dasharray="2 5"/>`;
+  // sessions thicken the arc over their span
+  S.entries.filter(e => e.k === 'b' && e.dur).forEach(e => { g += `<path class="sess" d="${pathOf(A, e.t - e.dur, e.t, 3)}" opacity=".9"/>`; });
+  // rays: every log of something done, stacked outward where they share a place
+  // each log stands on the arc at its own time as a short mark; logs that share a 7 px slice of the day stack upward, so a busy hour stands taller
+  const bs = S.entries.filter(e => e.k === 'b').sort((a, b) => b.t - a.t); // latest first, so the newest stand nearest the sun
+  const sxNow = A.X(Math.max(A.start, Math.min(A.end, now))); const BW = 6, CAP = 4; const col = {}, cnt = {}; const marks = [];
+  const bMin = Math.ceil(A.X(A.wake) / BW);
+  bs.forEach(e => {
+    const x = byId(e.item); const t = e.dur ? e.t - e.dur / 2 : e.t;
+    let b = Math.round(A.X(t) / BW); while (b * BW > sxNow - 8) b--;
+    while ((cnt[b] || 0) >= CAP && b > bMin) b--; // a full slice passes the mark back along the arc
+    const bx = b * BW, bt = A.T(bx);
+    const size = !x ? .6 : x.m === 'amount' ? Math.min(1, e.v / 600) : x.m === 'reps' ? .5 : x.m === 'event' ? 1 : e.dur ? .5 : .6;
+    const L = 5 + 12 * size; const base = col[b] != null ? col[b] : A.Y(bt) - (e.dur ? 7 : 5);
+    const y0 = base, y1 = base - L; col[b] = y1 - 3.5; cnt[b] = (cnt[b] || 0) + 1;
+    const nw = U.fx.ray === e.id; marks.push({ x: bx, y0, y1, isNew: nw, n: cnt[b] - 1, t: e.t, size, dur: e.dur || 0, id: e.id });
+    g += `<line class="ray${nw ? ' new' : ''}" x1="${bx}" y1="${y0.toFixed(1)}" x2="${bx}" y2="${y1.toFixed(1)}" style="--L:${L.toFixed(1)};stroke-dasharray:${L.toFixed(1)}"/>`;
+  });
+  // records (doses, observations): quiet marks on the horizon, never rays
+  S.entries.filter(e => e.k !== 'b').forEach(e => { g += `<circle class="rec" cx="${A.X(e.t).toFixed(1)}" cy="${A.hz + 9}" r="2.6" opacity="${U.fx.ray === e.id ? 1 : .85}"/>`; });
+  // the sun: now
+  const sx = A.X(nowC), sy = noData && nowC < A.wake ? A.Y(nowC) : A.Y(nowC);
+  g += `<circle class="halo${U.fx.sun ? ' pulse' : ''}" cx="${sx}" cy="${sy}" r="19"/><circle cx="${sx}" cy="${sy}" r="7" fill="var(--sun)"/>`;
+  // labels
+  const lbl = [];
+  if (!noData) {
+    lbl.push(`<text class="lbl nt" x="${A.X((A.start + A.wake) / 2)}" y="${A.hz + A.dep + 17}" text-anchor="middle">${dur(sl.asleep)} asleep</text>`);
+    if (Math.abs(A.X(A.wake) - sx) > 70) lbl.push(`<text class="lbl" x="${A.X(A.wake) + 4}" y="${A.hz + 22}">woke ${hm(A.wake)}</text>`);
+  } else lbl.push(`<text class="lbl miss" x="${A.pad}" y="${A.hz + A.dep + 17}">${sl.none ? 'No sleep record' : 'Last night not in yet'}</text>`);
+  lbl.push(sx > W - 70 ? `<text class="lbl now" x="${sx + 4}" y="${sy + 30}" text-anchor="middle">${hm(now)}</text>` : `<text class="lbl now" x="${sx + 15}" y="${sy - 12}">${hm(now)}</text>`);
+  const data = { sample: si, W, A, now: nowC, noData, sleep: sl, marks, sess: S.entries.filter(e => e.k === 'b' && e.dur).map(e => [e.t - e.dur, e.t]),
+    recs: S.entries.filter(e => e.k !== 'b').map(e => ({ t: e.t, isNew: U.fx.ray === e.id })), pulse: !!U.fx.sun, mid,
+    labels: { now: hm(now), night: noData ? (sl.none ? 'No sleep record' : 'Last night not in yet') : `${dur(sl.asleep)} asleep`, woke: !noData && Math.abs(A.X(A.wake) - sx) > 70 ? `woke ${hm(A.wake)}` : '' } };
+  return { svg: `<svg viewBox="0 0 ${W} ${A.H}" aria-hidden="true">${g}${lbl.join('')}</svg>`, A, sx, sy, W, data };
+}
+function skyTint() {
+  const n = S.now; const c = n < 360 ? '91,104,255' : n < 600 ? '255,138,91' : n < 1020 ? '255,184,120' : n < 1200 ? '255,107,61' : '140,110,255';
+  const a = arcModel(scrollEl.clientWidth || 390); const x = a.X(Math.max(a.start, Math.min(a.end, n))), y = a.Y(Math.max(a.start, Math.min(a.end, n)));
+  $('#sky').style.background = `radial-gradient(260px 220px at ${x}px ${y + 100}px, rgba(${c},.17), rgba(${c},0) 70%)`;
+}
+
+// ---------- results strip ----------
+function panels() {
+  const out = [];
+  S.moments.filter(m => !U.dismissed.has(m.id)).forEach(m => {
+    const x = `<span class="x" role="button" tabindex="0" data-act="dismiss" data-id="${m.id}" aria-label="Hide for now"><svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.6"><path d="M2 2l8 8M10 2l-8 8"/></svg></span>`;
+    if (m.kind === 'night') { const sl = S.sleep; const mx = Math.max(480, ...sl.nights.filter(Boolean));
+      out.push(`<button class="panel" data-act="sheet" data-s="sleep" aria-label="Last night, ${dur(sl.asleep)} asleep. Open the night">${x}<span class="k">Last night, ${dur(sl.asleep)}</span><span class="ttl">${esc(sl.head)}</span><span class="ln">${esc(sl.line)}</span><span class="mini"><span class="nights">${sl.nights.map((v, i) => `<i class="${v == null ? 'gap' : i === sl.nights.length - 1 ? 'on' : ''}" style="height:${v ? Math.max(8, 30 * v / mx) : 6}px"></i>`).join('')}</span></span></button>`); }
+    if (m.kind === 'nightmiss') out.push(`<div class="panel solo"><span class="k">Last night</span><span class="ttl" style="color:var(--t2)">Not in yet</span><span class="ln">It arrives from your Watch once you’re up. Nothing is counted until it does.</span></div>`);
+    if (m.kind === 'run') { const mx = Math.max(...m.splits), mn = Math.min(...m.splits);
+      out.push(`<button class="panel" data-act="sheet" data-s="run" data-id="${m.id}" aria-label="${esc(m.kick)}: ${m.dist} km run. Open the report">${x}<span class="k">${m.just ? `<span class="just">${esc(m.kick)}</span>` : esc(m.kick)}</span><span class="big tnum">${m.dist}<small>km run</small></span><span class="ln"><b>${m.pace} /km</b>. ${esc(m.fact)}.</span><span class="mini"><span class="splits">${m.splits.map(s => `<i class="${s === mn ? 'best' : ''}" style="height:${10 + 24 * (mx - s) / Math.max(1, mx - mn)}px"></i>`).join('')}</span></span></button>`); }
+    if (m.kind === 'pattern') { const lo = Math.min(m.a[2], m.b[2]) - 10, hi = Math.max(m.a[3], m.b[3]) + 10, p = v => (v - lo) / (hi - lo) * 100;
+      const r = (q, c) => `<span class="r ${c}"><span>${q[0]}</span><span class="t"><i class="s" style="left:${p(q[2])}%;width:${p(q[3]) - p(q[2])}%"></i><i class="m" style="left:${p(q[1])}%"></i></span><span class="v tnum">${dur(q[1])}</span></span>`;
+      out.push(`<button class="panel" data-act="sheet" data-s="pattern" aria-label="Observation about sleep. Open">${x}<span class="k">An observation, ${m.to.toLowerCase()}</span><span class="ttl">${esc(m.title)}</span><span class="mini"><span class="prange">${r(m.a, 'b')}${r(m.b, 'a')}</span><span class="ln" style="margin-top:8px">From ${m.n} days on record. A hint, not proof.</span></span></button>`); }
+    if (m.kind === 'week') { out.push(`<button class="panel" data-act="sheet" data-s="week" aria-label="Play this week back">${x}<span class="k">${m.range}, so far</span><span class="ttl">${esc(m.title)}</span><span class="mini"><span class="weekd">${m.days.map((d, i) => `<span class="c${i === 6 ? ' now' : ''}">${'<i></i>'.repeat(Math.round(d[1] / 1.5))}<span>${d[0]}</span></span>`).join('')}</span></span></button>`); }
+    if (m.kind === 'sick') out.push(`<div class="panel"><span class="k">Sick, since yesterday</span><span class="ttl">Routines rest. Nothing is expected of you.</span><span class="ln">Dates you set still show. Everything else waits, and nothing counts against you.</span></div>`);
+    if (m.kind === 'day1') out.push(`<div class="panel solo"><span class="k">Day one</span><span class="ttl">Start with one thing</span><span class="ln">Log anything below and it gathers on the arc above. Last night appears here once sleep is connected.</span></div>`);
+    if (m.kind === 'back') out.push(`<button class="panel" data-act="sheet" data-s="back">${x}<span class="k">Since you’re back</span><span class="ttl">Water and Stretch, already</span><span class="ln">1 to 21 Nov is set aside, not missed. Your totals are where you left them.</span></button>`);
+  });
+  if (!out.length) return '';
+  if (out.length === 1) out[0] = out[0].replace('class="panel"', 'class="panel solo"');
+  return `<div class="strip" aria-label="Since last time">${out.join('')}</div>`;
+}
+
+// ---------- rows ----------
+function rowHtml(id, i, leadId, firstId) {
+  const n = intent(id);
+  if (n) {
+    const done = U.fx.key === n.id ? ' done anim' : '';
+    return `<div class="row" data-row="${n.id}"><button class="open" data-act="sheet" data-s="intent" data-id="${n.id}" aria-label="${esc(n.title)}: done, start or a new date"></button><div><div class="nm">${esc(n.title)}</div><div class="st"><b>${esc(n.when)}</b>${n.repeat ? `, ${esc(n.repeat)}` : ''}${n.started ? ', started' : ''}</div></div>
+      <div class="keyw"><button class="key k-word" data-act="onit" data-id="${n.id}">${n.est ? `${n.est} min` : 'On it'}</button><button class="key k-round${done}" data-act="idone" data-id="${n.id}" aria-label="Mark done: ${esc(n.title)}"><span class="fill"></span>${done ? CK : CK.replace('class="ck"', 'class="ck ghost"')}</button></div></div>`;
+  }
+  const x = byId(id); if (!x) return '';
+  const cls = ['row', x.id === leadId ? 'lead' : '', U.completing === x.id ? 'completing' : '', U.leaving === x.id ? 'leaving' : '', x.m === 'amount' ? 'full' : ''].filter(Boolean).join(' ');
+  let body = `<div><div class="nm">${esc(x.name)}</div><div class="st" data-st="${x.id}">${stateLine(x)}</div>`;
+  if (x.m === 'amount') body += `<div class="level"><i style="width:${Math.min(100, 100 * x.v / x.aim)}%"></i></div>`;
+  if (firstId === x.id && x.first) body += `<div class="first"><em>First step:</em> ${esc(x.first)}</div>`;
+  body += '</div>';
+  let tail = x.m === 'amount' ? `<div class="amt" role="group" aria-label="Log a familiar amount of water">${x.presets.map(p => `<button class="key${p === x.lastAmt ? ' last' : ''}${U.fx.pour === x.id + p ? ' pour' : ''}" data-key="${x.id}" data-amt="${p}" aria-label="Log ${p} ml of water"><span class="fill"></span><span>${p}</span></button>`).join('')}</div>` : keyHtml(x);
+  return `<div class="${cls}" data-row="${x.id}"><button class="open" data-act="sheet" data-s="item" data-id="${x.id}" aria-label="Open ${esc(x.name)}"></button>${body}${tail}</div>`;
+}
+function nowList() {
+  const ids = S.order.filter(id => { const n = intent(id); if (n) return n.place === 'now' && !n.done; const x = byId(id); return x && (x.group === 'now' || U.completing === id || U.leaving === id); });
+  // water is never the lead: an amount row gives the first place to the next one (rule 6)
+  if (ids.length > 1 && byId(ids[0]) && byId(ids[0]).m === 'amount') { const j = ids.findIndex(id => !(byId(id) && byId(id).m === 'amount')); if (j > 0) ids.unshift(ids.splice(j, 1)[0]); }
+  return ids;
+}
+
+// ---------- Later as set type ----------
+const WHEN = [['morning', 'Later this morning'], ['afternoon', 'This afternoon'], ['evening', 'This evening'], ['any', 'Any time']];
+function tokKey(x) {
+  if (x.m === 'passive') return '';
+  const lv = S.live && S.live.id === x.id;
+  const t = x.m === 'amount' ? `+${x.lastAmt}` : x.m === 'reps' ? `+${x.step}` : x.m === 'dur' ? (lv ? 'End' : PLAY) : x.m === 'watch' ? 'Log…' : x.m === 'count' || x.m === 'event' ? '+1' : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.3l2.6 2.6L11 4.6"/></svg>';
+  return `<button class="key tk${/^[+L]|End/.test(t) ? ' w' : ''}" data-key="${x.id}"${x.m === 'amount' ? ` data-amt="${x.lastAmt}"` : ''} aria-label="${esc(keyLabel(x))}">${t}</button>`;
+}
+function laterHtml() {
+  const L = S.items.filter(x => x.group === 'later' && !(U.sugState === 'show' && S.sug && S.sug.id === x.id));
+  if (!L.length) return '';
+  const groups = WHEN.map(([k, h]) => [h, L.filter(x => (S.calm ? 'any' : x.when || 'any') === k)]).filter(g => g[1].length);
+  return `<section class="sec" data-later><div class="sech"><h2>${S.calm ? 'Whenever you like' : 'Later'}</h2></div><div class="later">${groups.map(([h, l]) => `<div class="lg">${S.calm ? '' : `<div class="h">${h}</div>`}<div class="para">${l.map(x => `<span class="tok${U.fx.tok === x.id ? ' done' : ''}" data-row="${x.id}"><button class="tn" data-act="sheet" data-s="item" data-id="${x.id}">${esc(x.name)}</button><span class="tf">${esc(shortFig(x))}</span>${tokKey(x)}</span>`).join('')}</div></div>`).join('')}</div></section>`;
+}
+
+// ---------- render ----------
+function render() {
+  const sv = scrollEl.scrollTop;
+  const a = arcSvg();
+  const nowIds = nowList();
+  const leadId = nowIds.find(id => byId(id) && byId(id).m !== 'amount');
+  const MAX = 4; const shown = U.more || nowIds.length <= MAX + 1 ? nowIds : nowIds.slice(0, Math.max(MAX, ...nowIds.map((id, i) => (intent(id) || (S.live && S.live.id === id)) ? i + 1 : 0)));
+  const firstId = shown.find(id => { const x = byId(id); return x && x.first && !x.v && !(S.live && S.live.id === id); });
+  const dates = S.intents.filter(n => n.place === 'date' && !n.done);
+  const settled = S.items.filter(x => x.group === 'settled');
+  const heldN = S.intents.filter(n => !n.done).length ? S.held : 0;
+  let h = '';
+  h += `<header class="head"><div><h1>${S.dow}</h1><div class="sub">${S.date}${S.dayOne ? ', day one' : ''}</div>${S.ctx ? `<button class="ctxchip" data-act="sheet" data-s="context" aria-label="Context: ${S.ctx.label}, ${S.ctx.to}. Change"><i></i>${S.ctx.label}, ${S.ctx.to}</button>` : ''}</div>
+    <div class="hicons">
+      <button class="ib${S.ctx ? ' on' : ''}" data-act="sheet" data-s="context" aria-label="Context"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7.5"/><path d="M11 3.5v15M3.5 11h15" opacity=".55"/></svg></button>
+      <button class="ib" data-act="sheet" data-s="feel" aria-label="How you feel"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 12c2.2-4 4.4-4 6.6 0s4.4 4 6.6 0c.9-1.6 1.8-2.4 2.8-2.6"/></svg></button>
+      ${heldN ? `<button class="ib" data-act="sheet" data-s="held" aria-label="Held, ${heldN}"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M5 19V3.5h11l-2.5 4 2.5 4H5"/></svg><span class="n">${heldN}</span></button>` : ''}
+      <button class="ib" data-act="logsheet" aria-label="Search everything"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l4.5 4.5"/></svg></button>
+    </div></header>`;
+  h += `<div class="arc" data-act="sheet" data-s="day" role="button" aria-label="Your day so far: ${S.entries.length} entries. Open the day">${a.svg}${!S.entries.length && S.dayOne ? '<div class="arcnote">What you log gathers on the day.</div>' : ''}</div>`;
+  h += panels();
+  if (S.welcome) h += `<p class="welcome">${S.welcome}</p>`;
+  // Now
+  h += `<section class="sec" data-now><div class="sech"><h2>${S.calm ? 'Still open' : 'Now'}</h2></div>`;
+  if (shown.length) h += `<div class="rows${Date.now() < U.lock ? ' locked' : ''}" id="rows">${shown.map((id, i) => rowHtml(id, i, leadId, firstId)).join('')}</div>`;
+  else h += `<p class="none">${S.calm ? 'Nothing is expected today.' : 'Nothing open right now.'}</p>`;
+  if (shown.length < nowIds.length) h += `<button class="more" data-act="more"><b>${nowIds.length - shown.length} more</b> open now: ${nowIds.slice(shown.length).map(id => esc((byId(id) || intent(id)).name || intent(id).title)).join(', ')}</button>`;
+  h += `</section>`;
+  if (dates.length) h += dates.map(n => `<button class="dateline" data-act="sheet" data-s="intent" data-id="${n.id}"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3.5" width="13" height="12" rx="2.5"/><path d="M2.5 7.5h13M6 2v3M12 2v3"/></svg><span><b>${esc(n.title)}</b>, ${esc(n.when)}</span></button>`).join('');
+  if (S.tonight) h += `<section class="sec" style="margin-top:22px"><div class="sech"><h2>Tonight</h2></div><div class="chips">${S.tonight.map(t => `<button class="chip${U.tonight[t.id] ? ' on' : ''}" data-act="tonight" data-id="${t.id}" aria-pressed="${!!U.tonight[t.id]}">${U.tonight[t.id] ? 'Noted: ' + t.label.toLowerCase() : t.label}</button>`).join('')}</div></section>`;
+  h += laterHtml();
+  h += sugHtml();
+  if (settled.length) h += `<section class="sec"><div class="sech"><h2>Settled</h2></div><div class="settled">${settled.map(x => `<button data-act="sheet" data-s="item" data-id="${x.id}" class="${U.fx.settled === x.id ? 'pop' : ''}"><i></i>${esc(x.name)}</button>`).join('')}</div></section>`;
+  if (S.dayOne) h += `<button class="addbtn" data-act="toast-add"><svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>Add a routine</button>`;
+  h += `<div class="foot"><button data-act="next-sample">Different data, ${si + 1} of ${SAMPLES.length}: ${esc(S.label)}</button></div>`;
+  scrollEl.innerHTML = h;
+  if (window.Arc3D) { try { window.Arc3D.attach(scrollEl.querySelector('.arc'), a.data, STILL); } catch (err) { window.Arc3D = null; } }
+  scrollEl.scrollTop = sv;
+  $('#topbar').textContent = S.short;
+  skyTint(); renderLive();
+  const fx = U.fx; U.fx = {}; if (fx.ray || fx.key) clearTimeout(U.fxT);
+}
+
+function sugHtml() {
+  if (S.hold) return `<section class="sec"><div class="sech"><h2>If you have a moment</h2></div><p class="sughold">${esc(S.hold)}</p></section>`;
+  if (S.noSug || (!S.sug && !S.sugEmpty)) return '';
+  let body;
+  const c = U.mins && S.sugAlt ? S.sugAlt : S.sug;
+  if (U.sugState === 'show' && c) body = `<div class="sug" data-suggest><button class="sn" data-act="sheet" data-s="item" data-id="${c.id || ''}">${esc(c.name)}</button><div class="sr">${esc(c.reason)}</div><div class="sb"><button class="primary" data-act="sug-do">${esc(c.verb)}</button><button class="sec2" data-act="sug-not">Not now</button><button class="dots" data-act="sheet" data-s="sugmore" aria-label="More choices"><svg width="18" height="4" viewBox="0 0 18 4" fill="currentColor"><circle cx="2" cy="2" r="1.7"/><circle cx="9" cy="2" r="1.7"/><circle cx="16" cy="2" r="1.7"/></svg></button></div></div>`;
+  else body = `<p class="sughold">${U.sugState === 'took' ? `Today’s idea: ${esc(S.sug.name)}.` : 'Nothing else right now.'}</p>${U.sugState === 'took' ? '' : `<div class="chips"><span style="align-self:center;font:400 13px var(--ui);color:var(--t3);margin-right:2px">I have</span>${[15, 30, 60].map(m => `<button class="chip sm${U.mins === m ? ' on' : ''}" data-act="mins" data-m="${m}" aria-pressed="${U.mins === m}">${m === 60 ? '1 h' : m + ' min'}</button>`).join('')}</div>`}`;
+  return `<section class="sec"><div class="sech"><h2>If you have a moment</h2><button class="aside" data-act="sheet" data-s="sugwhy" aria-label="How suggestions are chosen">Why these</button></div>${body}</section>`;
+}
+
+// ---------- live session ----------
+function renderLive() {
+  if (!S.live) { liveEl.classList.remove('on'); return; }
+  const x = byId(S.live.id) || { name: S.live.name, usual: S.live.plan };
+  const plan = S.live.plan || x.usual;
+  liveEl.innerHTML = `<div class="lt"><div class="a">${esc(x.name || x.title)}</div><div class="b tnum"><span data-liveclock>${liveClock()}</span>${S.live.pausedAt ? ', paused' : plan ? `, usually ${plan} min` : ''}</div></div><button data-act="live-pause">${S.live.pausedAt ? 'Resume' : 'Pause'}</button><button class="end" data-act="live-end">End</button><div class="lp"><i data-liveprog style="width:${liveProg(plan)}%"></i></div>`;
+  liveEl.classList.add('on');
+}
+const liveProg = plan => plan ? Math.min(100, 100 * ((S.live.pausedAt || Date.now()) - S.live.start) / 60000 / plan) : 0;
+setInterval(() => { if (!S || !S.live || STILL) return; document.querySelectorAll('[data-liveclock]').forEach(e => e.textContent = liveClock()); document.querySelectorAll('[data-livetxt]').forEach(e => e.textContent = liveTxt()); const p = document.querySelector('[data-liveprog]'); if (p) { const x = byId(S.live.id); p.style.width = liveProg(S.live.plan || (x && x.usual)) + '%'; } }, 1000);
+function startLive(x, plan) {
+  if (S.live) endLive(true);
+  S.live = { id: x.id, start: Date.now(), plan: plan || null, name: x.name };
+  haptic(12); U.fx.key = x.id; render();
+  toast(`${x.name} started`, plan ? `${plan} min, the bar below keeps time` : 'The bar below keeps time', () => { S.live = null; render(); });
+}
+function endLive(silent) {
+  const L = S.live; if (!L) return; const x = byId(L.id);
+  const mins = Math.max(1, Math.round(((L.pausedAt || Date.now()) - L.start) / 60000));
+  S.live = null;
+  if (!x) { render(); return; }
+  const e = { id: 'e' + uid++, t: S.now, k: 'b', item: x.id, v: mins, dur: mins };
+  const before = { v: x.v, group: x.group };
+  S.entries.push(e); x.v += 1; U.fx.ray = e.id; U.fx.sun = 1;
+  if (silent) return;
+  if (isDone(x) && x.group !== 'settled') complete(x); else render();
+  haptic(14);
+  toast(`${x.name}, ${dur(mins)}`, x.per === 'week' ? `${x.v} of ${x.aim} this week` : 'Saved to today', () => { S.entries = S.entries.filter(q => q !== e); Object.assign(x, before); render(); });
+}
+
+// ---------- logging ----------
+function log(id, val, opt = {}) {
+  const x = byId(id); if (!x) return;
+  if (x.m === 'dur') { if (S.live && S.live.id === id) endLive(); else startLive(x, opt.plan); return; }
+  if (x.m === 'watch') { openSheet('options', id); return; }
+  const v = val != null ? val : x.m === 'amount' ? x.lastAmt : x.m === 'reps' ? x.step : 1;
+  const before = { v: x.v, group: x.group, lastT: x.lastT, lastAmt: x.lastAmt, fresh: x.fresh };
+  const e = { id: 'e' + uid++, t: opt.t != null ? opt.t : S.now, k: 'b', item: id, v };
+  S.entries.push(e); x.v += x.m === 'amount' || x.m === 'reps' ? v : 1; x.lastT = e.t; x.fresh = false;
+  if (x.m === 'amount') { x.lastAmt = v; U.fx.pour = id + v; }
+  U.fx.key = id; U.fx.roll = id; U.fx.ray = e.id; U.fx.sun = 1; if (x.group === 'later') U.fx.tok = id;
+  haptic(x.m === 'amount' ? 6 : 10);
+  const undo = () => { S.entries = S.entries.filter(q => q !== e); Object.assign(x, before); U.completing = U.leaving = null; render(); };
+  const d = isDone(x) && before.group !== 'settled';
+  toast(toastTitle(x, v), toastSub(x, d), undo);
+  if (d) complete(x); else render();
+}
+function toastTitle(x, v) { return x.m === 'amount' ? `${x.name}, +${v} ml` : x.m === 'reps' ? `${x.name}, +${v}` : x.m === 'tap' ? `${x.name}, done` : `${x.name}, one more`; }
+function toastSub(x, d) {
+  if (x.m === 'amount') return d ? `${amt(x.v)}, settled for today` : S.now >= 1080 ? `${amt(x.v)} today` : `${amt(x.v)} of ${amt(x.aim)}`;
+  if (x.m === 'reps') return `${x.v} of ${x.aim} today${d ? ', settled' : ''}`;
+  if (x.m === 'count') return `${x.v} of ${x.aim} today${d ? ', settled' : ''}`;
+  if (x.m === 'event') return `${x.v} of ${x.aim} ${x.per === 'week' ? 'this week' : 'in ' + x.period}${d ? ', settled' : ''}`;
+  return `Logged at ${hm(S.now)}`;
+}
+// a row that completes stays in place, shows it, then leaves for Settled; Now takes no tap until it has closed up
+function complete(x) {
+  if (x.group === 'later') { x.group = 'settled'; U.fx.settled = x.id; render(); return; }
+  U.completing = x.id; render();
+  const ms = STILL ? 0 : 950;
+  clearTimeout(U.cT); U.cT = setTimeout(() => {
+    if (U.completing !== x.id) return;
+    U.completing = null; U.leaving = x.id; render();
+    U.cT = setTimeout(() => { if (U.leaving !== x.id) return; U.leaving = null; x.group = 'settled'; U.fx.settled = x.id; U.lock = Date.now() + 700; render(); setTimeout(() => { const r = $('#rows'); r && r.classList.remove('locked'); }, 720); }, STILL ? 0 : 430);
+  }, ms);
+}
+function logRecord(kind, name, sub) {
+  const e = { id: 'e' + uid++, t: S.now, k: kind, name, v: 0 };
+  S.entries.push(e); U.fx.ray = e.id; render(); haptic(5);
+  toast(name, sub, () => { S.entries = S.entries.filter(q => q !== e); render(); }, true);
+}
+
+// ---------- toast ----------
+let tT;
+function toast(a, b, undo, neutral) {
+  toastEl.innerHTML = `<div class="tt"><div class="a">${esc(a)}</div>${b ? `<div class="b">${esc(b)}</div>` : ''}</div>${undo ? '<button class="undo" data-act="undo">Undo</button>' : ''}${STILL ? '' : '<i class="bar"></i>'}`;
+  toastEl._undo = undo; toastEl.classList.remove('on'); void toastEl.offsetWidth; toastEl.classList.add('on');
+  clearTimeout(tT); if (!STILL) tT = setTimeout(() => hideToast(), 5000);
+}
+function hideToast(now) { toastEl.classList.remove('on'); toastEl._undo = null; }
+
+// ---------- sheets ----------
+const X = '<button class="close" data-act="close" aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.8"><path d="M2 2l10 10M12 2L2 12"/></svg></button>';
+const head = (k, t) => `<div class="grab"></div><div class="sh"><div>${k ? `<div class="k">${k}</div>` : ''}<h3>${t}</h3></div>${X}</div>`;
+function openSheet(kind, id) {
+  const f = SHEETS[kind]; if (!f) return;
+  sheetEl.innerHTML = f(id); sheetEl.scrollTop = 0; sheetEl.dataset.kind = kind; sheetEl.dataset.id = id || '';
+  scrimEl.classList.add('on'); sheetEl.classList.add('on'); hideToast();
+}
+function closeSheet(now) { sheetEl.classList.remove('on'); scrimEl.classList.remove('on'); }
+const entryTxt = e => { if (e.k !== 'b') return e.name; const x = byId(e.item); const nm = x ? x.name : e.item; if (e.dur) return `${nm}, ${dur(e.dur)}`; if (x && x.m === 'amount') return `${nm}, ${e.v} ml`; if (x && x.m === 'reps') return `${nm}, ${e.v}`; return nm; };
+const SHEETS = {
+  item(id) {
+    const x = byId(id); if (!x) return head('', 'Not found');
+    const es = S.entries.filter(e => e.item === id).sort((a, b) => b.t - a.t);
+    const ctl = x.m === 'amount' ? `<div class="scrub">${x.presets.map(p => `<button data-act="slog" data-id="${id}" data-amt="${p}">${p}<small>ml</small></button>`).join('')}</div>` : x.m === 'passive' ? `<p class="note">Filled by your Watch. Nothing to log here.</p>` : `<div class="btns"><button class="btn primary" data-act="slog" data-id="${id}">${x.m === 'dur' ? (S.live && S.live.id === id ? 'End and save' : 'Start') : x.m === 'reps' ? `Log ${x.step}` : x.m === 'watch' ? 'Log a run' : 'Log one'}</button></div>`;
+    return head(x.group === 'settled' ? 'Settled for this period' : '', esc(x.name)) +
+      `<div class="sp"><p class="sline" style="margin-top:6px">${stateLine(x)}</p></div><div style="height:16px"></div>${ctl}` +
+      `<div class="slab">Today</div><div class="slist">${es.length ? es.map(e => `<div class="li"><span class="tm">${hm(e.t)}</span><span class="tx">${esc(entryTxt(e))}</span><button class="rm" data-act="remove" data-e="${e.id}">Remove</button></div>`).join('') : `<div class="li"><span class="tx" style="color:var(--t3)">Nothing logged today</span></div>`}</div>` +
+      `<div class="slab">More</div><div class="btns"><button class="btn" data-act="none" data-id="${id}">Didn’t do it today</button><button class="btn ghost">Results and history</button><button class="btn ghost">Settings for ${esc(x.name)}</button></div>`;
+  },
+  options(id) {
+    const x = byId(id); if (!x) return '';
+    let body = '';
+    if (x.m === 'amount') body = `<div class="scrub">${[...x.presets, 1000].map(p => `<button data-act="slog" data-id="${id}" data-amt="${p}">${p >= 1000 ? '1' : p}<small>${p >= 1000 ? 'L' : 'ml'}</small></button>`).join('')}</div><div class="stepper"><button data-act="step" data-d="-50" aria-label="50 less">−</button><span class="v tnum" id="stepv">400 ml</span><button data-act="step" data-d="50" aria-label="50 more">+</button></div><div class="btns" style="margin-top:10px"><button class="btn primary" data-act="steplog" data-id="${id}">Log this amount</button></div>`;
+    else if (x.m === 'reps') body = `<div class="scrub">${[10, 15, 20, 25, 30, 50].map(p => `<button data-act="slog" data-id="${id}" data-amt="${p}">${p}<small>reps</small></button>`).join('')}</div>`;
+    else if (x.m === 'dur' || x.m === 'watch') body = `<div class="slab" style="margin-top:6px">Already did it</div><div class="scrub">${[10, 20, 30, 45, 60].map(p => `<button data-act="already" data-id="${id}" data-amt="${p}">${p}<small>min</small></button>`).join('')}</div>${x.m === 'dur' ? `<div class="btns" style="margin-top:12px"><button class="btn primary" data-act="slog" data-id="${id}">Start now</button></div>` : ''}`;
+    else body = `<div class="btns"><button class="btn primary" data-act="slog" data-id="${id}">Log one now</button></div><div class="slab">Earlier</div><div class="chips">${[30, 60, 120].map(m => `<button class="chip" data-act="earlier" data-id="${id}" data-m="${m}">${m < 60 ? m + ' min ago' : m / 60 + ' h ago'}</button>`).join('')}</div>`;
+    return head(x.name, x.m === 'amount' ? 'How much?' : x.m === 'reps' ? 'How many?' : x.m === 'dur' || x.m === 'watch' ? 'Start or log' : 'Log') + `<div style="height:12px"></div>${body}<div class="slab">Or</div><div class="btns"><button class="btn" data-act="none" data-id="${id}">Didn’t do it today</button><button class="btn ghost" data-act="sheet" data-s="item" data-id="${id}">Details</button></div>`;
+  },
+  intent(id) {
+    const n = intent(id); if (!n) return '';
+    return head(n.kind === 'held' ? 'Back, as you asked' : 'By a date', esc(n.title)) + `<div class="sp"><p style="margin:4px 0 18px">${esc(n.when)}${n.repeat ? ', ' + esc(n.repeat) : ''}. It stays here until it’s done or you move it. It never turns overdue.</p></div>
+      <div class="btns"><button class="btn primary" data-act="idone" data-id="${id}">Done</button></div><div class="slab">I’m on it for</div><div class="chips">${[5, 10, 25].map(m => `<button class="chip" data-act="onit" data-id="${id}" data-m="${m}">${m} min</button>`).join('')}</div>
+      <div class="slab">${n.kind === 'held' ? 'Later' : 'Another date'}</div><div class="chips">${(n.kind === 'held' ? ['This evening', 'Tomorrow morning', 'At the weekend'] : ['Tomorrow', 'Friday', 'Next week']).map(l => `<button class="chip" data-act="imove" data-id="${id}" data-l="${l}">${l}</button>`).join('')}</div>
+      <div class="btns" style="margin-top:18px"><button class="btn ghost" data-act="iletgo" data-id="${id}">Let it go</button></div>`;
+  },
+  sleep() {
+    const sl = S.sleep; const st = window.__stages || []; const t0 = sl.onset, t1 = sl.wake, Wd = (scrollEl.clientWidth || 390) - 40;
+    const lanes = { awake: 0, rem: 1, light: 2, deep: 3 };
+    const segs = stagesOf(sl).map(([s, a, b]) => `<i style="left:${(a - t0) / (t1 - t0) * 100}%;width:${Math.max(.6, (b - a) / (t1 - t0) * 100)}%;top:${lanes[s] * 20 + 4}px;opacity:${s === 'awake' ? .45 : s === 'deep' ? 1 : s === 'rem' ? .75 : .55}"></i>`).join('');
+    const mx = Math.max(480, ...sl.nights.filter(Boolean));
+    return head('Last night', `${dur(sl.asleep)} asleep`) + `<div class="sp"><p class="sline" style="margin-top:6px">${esc(sl.head)}. ${esc(sl.line)}.</p></div>
+      <div class="slab">Stages</div><div class="hyp">${segs}${['Awake', 'REM', 'Light', 'Deep'].map((l, i) => `<span class="lb" style="top:${i * 20 + 4}px;left:auto;right:calc(100% + 4px)"></span>`).join('')}</div>
+      <div class="sp" style="display:flex;justify-content:space-between;font:400 12px var(--ui);color:var(--t3);margin-top:4px"><span>${hm(t0)}</span><span>Awake, REM, light, deep from top</span><span>${hm(t1)}</span></div>
+      <p class="note">Stages are your Watch’s estimate and can be off. Duration and timing are the solid part.</p>
+      <div class="slab">Seven nights</div><div class="bars7">${sl.nights.map((v, i) => `<div class="c${v == null ? ' gap' : i === 6 ? ' on' : ''}"><i style="height:${v ? 70 * v / mx : 10}px"></i><span>${sl.days[i]}</span></div>`).join('')}</div>
+      <p class="note">A dashed night had no record. It isn’t counted as short or as zero.</p>`;
+  },
+  run(id) {
+    const m = S.moments.find(q => q.id === id) || S.moments.find(q => q.kind === 'run'); const mx = Math.max(...m.splits), mn = Math.min(...m.splits);
+    const f = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    return head(esc(m.kick), `${m.dist} km run`) + `<div class="sp"><p class="sline" style="margin:6px 0 18px">${esc(m.fact)}.</p></div><div class="stats"><div class="s"><div class="l">Time</div><div class="v">${m.time}</div></div><div class="s"><div class="l">Pace</div><div class="v">${m.pace} /km</div></div><div class="s"><div class="l">Heart rate</div><div class="v">${m.hr} bpm</div></div><div class="s"><div class="l">Distance</div><div class="v">${m.dist} km</div></div></div>
+      <div class="slab">Splits</div><div class="splitrows">${m.splits.map((s, i) => `<div class="r${s === mn ? ' best' : ''}"><span>km ${i + 1}</span><i style="width:${40 + 60 * (mx - s) / Math.max(1, mx - mn)}%"></i><span class="v">${f(s)}</span></div>`).join('')}</div>`;
+  },
+  pattern() { const m = S.moments.find(q => q.kind === 'pattern'); return head('An observation, sleep', esc(m.title)) + `<div class="sp"><p style="margin-top:8px">On days with a run, walk or session of 30 min or more, your sleep that night had a median of <b style="color:var(--cream)">${dur(m.a[1])}</b>. On other days, <b style="color:var(--cream)">${dur(m.b[1])}</b>. From ${m.n} days on record, sick and travel days left out.</p><p style="margin-top:12px">This is an association in your own records, not a cause. Other things could explain it.</p></div>`; },
+  week() { const m = S.moments.find(q => q.kind === 'week'); const mx = Math.max(...m.days.map(d => d[1])); return head(m.range, 'This week so far') + `<div style="height:16px"></div><div class="bars7">${m.days.map((d, i) => `<div class="c${i === 6 ? ' on' : ''}"><i style="height:${80 * d[1] / mx}px"></i><span>${d[0]} ${d[1]}</span></div>`).join('')}</div><p class="note">Entries per day. Playing it back takes about 20 seconds.</p><div class="btns" style="margin-top:14px"><button class="btn primary">Play it back</button></div>`; },
+  back() { return head('Back after 3 weeks', 'Set aside, not missed') + `<div class="sp"><p style="margin-top:8px">1 to 21 Nov is marked as away. Those weeks are left out of every aim and comparison. Everything you built before is still there, and nothing is waiting for you to catch up.</p></div>`; },
+  day() {
+    const es = [...S.entries].sort((a, b) => a.t - b.t);
+    return head(S.dow, `${es.length ? es.length + ' entries so far' : 'Nothing logged yet'}`) + `<div class="sp"><p style="margin-top:6px">Each thing you did sits on the arc at its time. Doses and observations sit on the horizon as quiet dots. Corrections live here.</p></div><div class="slab">Today</div><div class="slist">${S.sleep.missing || S.sleep.none ? `<div class="li"><span class="tm">—</span><span class="tx" style="color:var(--t3)">${S.sleep.none ? 'No sleep record' : 'Last night not in yet'}</span></div>` : `<div class="li"><span class="tm">${hm(S.sleep.wake)}</span><span class="dot" style="background:var(--night)"></span><span class="tx">Woke, ${dur(S.sleep.asleep)} asleep</span></div>`}${es.map(e => `<div class="li"><span class="tm">${hm(e.t)}</span><span class="dot${e.k !== 'b' ? ' q' : ''}"></span><span class="tx">${esc(entryTxt(e))}${e.k === 'dose' ? '<small>Medication, a record</small>' : e.k === 'obs' ? '<small>Observation, a record</small>' : ''}</span><button class="rm" data-act="remove" data-e="${e.id}">Remove</button></div>`).join('')}</div>`;
+  },
+  context() {
+    const on = S.ctx && S.ctx.label;
+    return head('Context', 'How is today?') + `<div class="sp"><p style="margin:6px 0 4px">Optional. It shapes what’s suggested and which comparisons are fair. Dates you set always stay.</p></div><div class="chips" style="margin-top:8px">${['Sick', 'Travelling', 'On holiday', 'Off work', 'Unusual hours', 'Stressful'].map(c => `<button class="chip${on === c ? ' on' : ''}" data-act="ctx" data-l="${c}">${c}</button>`).join('')}</div>
+      <div class="slab">For</div><div class="chips">${['Today', 'To tomorrow', 'To Wed', 'Until I say'].map(c => `<button class="chip sm${S.ctx && S.ctx.to === c.toLowerCase() ? ' on' : ''}" data-act="ctxspan" data-l="${c}">${c}</button>`).join('')}</div>
+      <div class="slab">Something happened?</div><input class="field" placeholder="One line, like “car broke down”" aria-label="Something happened">
+      ${on ? `<div class="btns" style="margin-top:18px"><button class="btn" data-act="ctxclear">${on === 'Sick' ? 'I’m better now' : 'Clear'}</button></div>` : ''}`;
+  },
+  feel() { return head('Any time', 'How are you?') + `<div class="sp"><p style="margin:6px 0 4px">Pick any that fit. Nothing is scored.</p></div><div class="chips" style="margin-top:8px">${['Clear', 'Steady', 'Tired', 'Low', 'Restless', 'Overwhelmed', 'Energised', 'Foggy'].map(c => `<button class="chip" data-act="feelpick">${c}</button>`).join('')}</div><div class="slab">A note</div><textarea class="field" rows="2" placeholder="Optional" aria-label="Note"></textarea><div class="btns" style="margin-top:14px"><button class="btn primary" data-act="feelsave">Save</button></div>`; },
+  held() { const l = S.intents.filter(n => !n.done); return head('', 'Held') + `<div class="slab">Dates</div><div class="slist">${l.filter(n => n.kind === 'deadline').map(n => `<button class="li" data-act="sheet" data-s="intent" data-id="${n.id}"><span class="tx">${esc(n.title)}<small>${esc(n.when)}${n.repeat ? ', ' + esc(n.repeat) : ''}</small></span></button>`).join('') || '<div class="li"><span class="tx" style="color:var(--t3)">None</span></div>'}</div><div class="slab">Held for a moment</div><div class="slist">${l.filter(n => n.kind === 'held').map(n => `<button class="li" data-act="sheet" data-s="intent" data-id="${n.id}"><span class="tx">${esc(n.title)}<small>${esc(n.when)}</small></span></button>`).join('') || `<div class="li"><span class="tx">Book a haircut<small>Held for Saturday morning</small></span></div>`}</div>`; },
+  logsheet() {
+    const taken = S.entries.some(e => e.k === 'dose' && /Cetirizine/.test(e.name));
+    return head('', 'Log anything') + `<div class="search"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l4.5 4.5"/></svg><input placeholder="Routines, records, settings" aria-label="Search"></div>
+      <div class="slab">Recent</div><div class="chips"><button class="chip" data-act="rec" data-k="obs" data-n="Espresso" data-s="About 60–80 mg caffeine">Espresso</button><button class="chip" data-act="rec" data-k="obs" data-n="Turkish coffee" data-s="About 50–100 mg caffeine">Turkish coffee</button><button class="chip" data-act="slog" data-id="water" data-amt="250">Water 250</button></div>
+      <div class="slab">Medication</div><div class="slist"><div class="li"><span class="tx">Cetirizine 10 mg<small>${taken ? 'Taken today' : 'Not recorded today'}</small></span><button class="chip sm" data-act="rec" data-k="dose" data-n="Cetirizine 10 mg" data-s="Taken at ${hm(S.now)}">Taken</button></div></div>
+      <div class="slab">Observations</div><div class="chips"><button class="chip" data-act="rec" data-k="obs" data-n="Red Bull" data-s="About 80 mg caffeine">Red Bull</button><button class="chip" data-act="rec" data-k="obs" data-n="Beer" data-s="One serving, noted">Beer</button><button class="chip" data-act="rec" data-k="obs" data-n="Wine" data-s="One glass, noted">Wine</button></div>
+      <div class="slab">How you feel</div><div class="btns"><button class="btn" data-act="sheet" data-s="feel">Note how you feel</button></div>`;
+  },
+  sugmore() { return head(S.sug ? S.sug.name : '', 'Other choices') + `<div class="btns" style="margin-top:8px"><button class="btn" data-act="sug-not">Not today</button><button class="btn" data-act="sug-never">Don’t suggest this one</button><button class="btn" data-act="sug-not">Another idea</button><button class="btn ghost" data-act="sheet" data-s="sugwhy">Why this one?</button></div>`; },
+  sugwhy() { return head('Suggestions', 'Why these') + `<div class="sp"><p style="margin-top:8px">At most one at a time, from your own routines that still have room this week or month. A short night or a stressful day picks the lighter version. Being sick, away or in your first days back keeps them quiet.</p><p style="margin-top:12px">Fixed rules on your own records. Nothing is learned about you or guessed.</p></div>`; },
+};
+function stagesOf(sl) { const out = []; let t = sl.onset, k = 0; const seq = ['light', 'deep', 'light', 'rem', 'light', 'deep', 'light', 'rem', 'awake', 'light', 'rem', 'light', 'rem', 'awake', 'light']; while (t < sl.wake) { const s = seq[k % seq.length]; const d = s === 'awake' ? 5 : s === 'deep' ? 36 : s === 'rem' ? 24 : 42; out.push([s, t, Math.min(sl.wake, t + d)]); t += d; k++; } return out; }
+
+// ---------- input: tap, press, hold ----------
+let press = null;
+document.addEventListener('pointerdown', e => {
+  const k = e.target.closest('[data-key]'); if (!k || k.closest('.locked')) return;
+  k.classList.add('down');
+  const id = k.dataset.key, x = byId(id);
+  press = { k, id, held: false, pv: null, t: setTimeout(() => { // OP-09: the line under the name says what the tap will do
+      const st = document.querySelector(`[data-st="${id}"]`); if (st && x && !k.dataset.amt) { press.pv = st.innerHTML; st.innerHTML = `<span class="pv">${previewTxt(x)}</span>`; }
+    }, 170), t2: setTimeout(() => { press.held = true; haptic(15); k.classList.remove('down'); openSheet('options', id); }, 480) };
+});
+const endPress = cancel => { if (!press) return; clearTimeout(press.t); clearTimeout(press.t2); press.k.classList.remove('down'); if (!press.held) { press.k.classList.remove('rel'); void press.k.offsetWidth; press.k.classList.add('rel'); } if (press.pv != null) { const st = document.querySelector(`[data-st="${press.id}"]`); if (st) st.innerHTML = press.pv; } const p = press; press = null; return p; };
+document.addEventListener('pointerup', e => { const p = endPress(); if (!p || p.held) return; if (!p.k.contains(e.target) && !e.target.closest(`[data-key="${p.id}"]`)) return; if (p.k.closest('.locked')) return; const a = p.k.dataset.amt; log(p.id, a ? +a : null); });
+document.addEventListener('pointercancel', () => endPress(true));
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.key) { e.preventDefault(); log(e.target.dataset.key, e.target.dataset.amt ? +e.target.dataset.amt : null); } if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-key]')) e.preventDefault(); });
+
+let stepV = 400;
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const a = t.dataset.act, id = t.dataset.id;
+  if (a === 'dismiss') { e.stopPropagation(); U.dismissed.add(id); render(); toast('Hidden for now', 'It’s still in Time', () => { U.dismissed.delete(id); render(); }, true); return; }
+  switch (a) {
+    case 'next-sample': load(si + 1); break;
+    case 'sheet': openSheet(t.dataset.s, id); break;
+    case 'logsheet': openSheet('logsheet'); break;
+    case 'close': closeSheet(); break;
+    case 'more': U.more = true; render(); break;
+    case 'undo': { const u = toastEl._undo; hideToast(); u && u(); haptic(6); break; }
+    case 'slog': closeSheet(); log(id, t.dataset.amt ? +t.dataset.amt : null); break;
+    case 'already': { closeSheet(); const x = byId(id); const m = +t.dataset.amt; const ev = { id: 'e' + uid++, t: S.now, k: 'b', item: id, v: m, dur: m }; const before = { v: x.v, group: x.group }; S.entries.push(ev); x.v += 1; U.fx.ray = ev.id; U.fx.sun = 1; toast(`${x.name}, ${m} min`, 'Saved to today', () => { S.entries = S.entries.filter(q => q !== ev); Object.assign(x, before); render(); }); if (isDone(x) && before.group !== 'settled') complete(x); else render(); break; }
+    case 'earlier': closeSheet(); log(id, null, { t: S.now - +t.dataset.m }); break;
+    case 'step': stepV = Math.max(50, Math.min(2000, stepV + +t.dataset.d)); $('#stepv').textContent = `${stepV} ml`; haptic(4); break;
+    case 'steplog': closeSheet(); log(id, stepV); break;
+    case 'none': { closeSheet(); const x = byId(id); const before = x.group; x.group = 'noted'; render(); toast(`${x.name}: not today`, 'Noted, nothing owed', () => { x.group = before; render(); }, true); break; }
+    case 'remove': { const ev = S.entries.find(q => q.id === t.dataset.e); if (!ev) break; const x = ev.item && byId(ev.item); const before = x ? { v: x.v, group: x.group } : null; S.entries = S.entries.filter(q => q !== ev); if (x) { x.v = Math.max(0, x.v - (x.m === 'amount' || x.m === 'reps' ? ev.v : 1)); if (x.group === 'settled' && !isDone(x)) x.group = 'now'; } render(); openSheet(sheetEl.dataset.kind, sheetEl.dataset.id); toast('Removed', entryTxt(ev), () => { S.entries.push(ev); if (x) Object.assign(x, before); render(); }, true); break; }
+    case 'idone': { closeSheet(); const n = intent(id); U.fx.key = id; render(); haptic(10); setTimeout(() => { n.done = true; render(); }, STILL ? 0 : 700); toast(`Done, ${n.title}`, n.repeat ? 'Back next week' : 'Off your list', () => { n.done = false; render(); }, true); break; }
+    case 'onit': { closeSheet(); const n = intent(id); n.started = true; const m = +t.dataset.m || n.est || 15; if (S.live) endLive(true); S.live = { id: 'int:' + id, name: n.title, start: Date.now(), plan: m }; render(); toast(`On it: ${n.title}`, `${m} min, the bar keeps time`, () => { S.live = null; n.started = false; render(); }, true); break; }
+    case 'imove': { closeSheet(); const n = intent(id); const was = n.place; n.place = 'gone'; render(); toast(`${n.title}`, `Moved to ${t.dataset.l.toLowerCase()}`, () => { n.place = was; render(); }, true); break; }
+    case 'iletgo': { closeSheet(); const n = intent(id); n.done = true; render(); toast('Let go', n.title, () => { n.done = false; render(); }, true); break; }
+    case 'live-pause': if (S.live.pausedAt) { S.live.start += Date.now() - S.live.pausedAt; S.live.pausedAt = null; } else S.live.pausedAt = Date.now(); render(); break;
+    case 'live-end': if (String(S.live.id).startsWith('int:')) { const n = intent(S.live.id.slice(4)); const m = Math.max(1, Math.round((Date.now() - S.live.start) / 60000)); S.live = null; render(); toast(`${n.title}, ${m} min`, 'Done, or keep it for later?', null, true); openSheet('intent', n.id); } else endLive(); break;
+    case 'tonight': { const was = U.tonight[id]; U.tonight[id] = !was; render(); if (!was) toast(S.tonight.find(q => q.id === id).label + ' tonight', 'Noted. That fills in the record, nothing more.', () => { U.tonight[id] = false; render(); }, true); break; }
+    case 'sug-do': { const c = U.mins && S.sugAlt ? S.sugAlt : S.sug; U.sugState = 'took'; if (c.mins) { const x = byId(c.id) || { id: c.id, name: c.name.split(',')[0], m: 'dur', usual: c.mins }; if (!byId(c.id)) S.items.push(Object.assign(x, { group: 'later', when: 'any', v: 0, per: 'week', aim: 2 })); startLive(byId(c.id), c.mins); } else { render(); toast(c.name, 'Logged. Enjoy it.', () => { U.sugState = 'show'; render(); }); } break; }
+    case 'sug-not': closeSheet(); U.sugState = 'rest'; render(); toast('Not now', 'It may come back once, later today', () => { U.sugState = 'show'; render(); }, true); break;
+    case 'sug-never': closeSheet(); U.sugState = 'rest'; render(); toast('Won’t suggest it', 'Change this in You, Suggestions', () => { U.sugState = 'show'; render(); }, true); break;
+    case 'mins': { const m = +t.dataset.m; U.mins = U.mins === m ? null : m; U.sugState = U.mins && S.sugAlt ? 'show' : 'rest'; render(); break; }
+    case 'rec': closeSheet(); logRecord(t.dataset.k, t.dataset.n, t.dataset.s); break;
+    case 'ctx': { const l = t.dataset.l; S.ctx = S.ctx && S.ctx.label === l ? null : { label: l, to: 'today' }; S.calm = !!S.ctx && ['Sick', 'On holiday'].includes(l); S.hold = S.calm ? (l === 'Sick' ? 'You’re sick: nothing is suggested until you’re better.' : 'On holiday: suggestions stay quiet until it ends.') : SAMPLES[si].hold || null; render(); openSheet('context'); break; }
+    case 'ctxspan': if (S.ctx) { S.ctx.to = t.dataset.l.toLowerCase(); render(); openSheet('context'); } break;
+    case 'ctxclear': closeSheet(); { const was = S.ctx; S.ctx = null; S.calm = false; S.hold = null; render(); toast(was.label === 'Sick' ? 'Glad you’re better' : 'Context cleared', 'Your routines are back, nothing piled up', () => { S.ctx = was; S.calm = true; render(); }, true); } break;
+    case 'feelpick': t.classList.toggle('on'); haptic(4); break;
+    case 'feelsave': closeSheet(); logRecord('obs', 'How you feel', 'Noted at ' + hm(S.now)); break;
+    case 'toast-add': toast('New routine', 'The composer opens here', null, true); break;
+  }
+});
+scrollEl.addEventListener('scroll', () => { $('#topbar').classList.toggle('on', scrollEl.scrollTop > 120); }, { passive: true });
+window.addEventListener('resize', () => { if (S) render(); });
+document.addEventListener('keydown', e => { if (e.key === 'd' && !e.target.closest('input,textarea')) load(si + 1); });
+window.__meridian = { load: i => load(i), log, openSheet, closeSheet, get S() { return S; }, endLive, render };
+load(si);
+})();
+
+</script>
+<script type="module">
+// Meridian Today v3: the day arc as light (3D round 3).
+// One full-hero fragment shader over the flat arc's exact composition (app.js arcModel/arcSvg -> data).
+// Front-on, no geometry: the arc is computed per pixel from the same X(t)/Y(t) the SVG uses, so every
+// position, count and label matches the flat arc. The SVG keeps its text labels; no WebGL -> the flat SVG stays whole.
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MAXL = 48, MAXR = 12, MAXS = 4, TOPX = 64, BOTX = 24; // canvas bleeds 64 px up (behind the date) and 24 px down
+
+const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS = `
+precision highp float;
+uniform vec2 uRes; uniform float uDpr, uTime, uTop;
+uniform vec4 uA;   // pad, NW, DW, hz
+uniform vec4 uB;   // start, wake, end, bed
+uniform vec4 uC;   // amp, dep, now, noData
+uniform vec4 uL[${MAXL}]; uniform vec4 uLW[${MAXL}]; uniform int uNL; // logs: x, y, r, warmth / flash
+uniform vec4 uR[${MAXR}]; uniform int uNR;   // records: x, y, r, new
+uniform vec4 uS[${MAXS}]; uniform int uNS;   // sessions: x0, x1
+uniform float uPulse, uFlow, uShim;
+
+float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
+// the same curve as app.js arcModel: t(x) piecewise linear, y(t) a trough under the horizon, then the sun path
+float tOf(float x){ float pad=uA.x,NW=uA.y,DW=uA.z; return x<=pad+NW ? uB.x+(x-pad)/NW*(uB.y-uB.x) : uB.y+(x-pad-NW)/DW*(uB.z-uB.y); }
+float yOf(float t){ float hz=uA.w, st=uB.x, wk=uB.y, en=uB.z, bd=uB.w, PI=3.14159265;
+  t=clamp(t,st,en);
+  if(t<=wk) return hz+uC.y*sin(PI*(t-st)/(wk-st));
+  if(t<=bd) return hz-uC.x*sin(PI*(t-wk)/(bd-wk));
+  return hz+10.*sin(PI*.5*min(1.,(t-bd)/(en-bd))); }
+float fx(float x){ return yOf(tOf(x)); }
+float X(float t){ float pad=uA.x,NW=uA.y,DW=uA.z; t=clamp(t,uB.x,uB.z); return t<=uB.y ? pad+(t-uB.x)/(uB.y-uB.x)*NW : pad+NW+(t-uB.y)/(uB.z-uB.y)*DW; }
+float slope(float x){ return (fx(x+.75)-fx(x-.75))/1.5; }
+// distance from a pixel to the curve (graph distance, corrected for slope)
+float dist(vec2 p){ float s=slope(p.x); return abs(p.y-fx(p.x))/sqrt(1.+s*s); }
+// distance to one stretch of the curve: past its ends, the distance to the end point, so light fades round the tips instead of stopping in a column
+float seg(vec2 p,float x0,float x1){ float xc=clamp(p.x,x0,x1); return xc==p.x ? dist(p) : length(p-vec2(xc,fx(xc))); }
+vec3 seg3(vec2 p,float x0,float x1,vec3 o){ return vec3(seg(p+vec2(0.,o.x),x0,x1),seg(p+vec2(0.,o.y),x0,x1),seg(p+vec2(0.,o.z),x0,x1)); }
+
+void main(){
+  vec2 p=vec2(gl_FragCoord.x, uRes.y*uDpr-gl_FragCoord.y)/uDpr; p.y-=uTop; // arc coordinates, same as the SVG
+  float hz=uA.w, xw=X(uB.y), xn=X(uC.z), xb=X(uB.w), xs=X(uB.x), xe=X(uB.z);
+  float yn=yOf(uC.z); vec2 sun=vec2(xn,yn);
+  bool noData=uC.w>.5;
+  vec3 WARM=vec3(1.,.42,.17), CREAM=vec3(1.,.9,.78), COOL=vec3(.56,.58,.98), SUNC=vec3(1.,.55,.3);
+  vec3 c=vec3(0.);
+
+  // dispersion: each channel reads the curve a hair apart, so glow edges split warm/cool like light through glass
+  float sh=uShim*sin(p.x*.06-uTime*.9)*.25;
+  vec3 off=vec3(-.55+sh,sh*.5,.55+sh);
+  float dG=dist(p);
+
+  // last night: a cool glow under the horizon, its hollow filled with faint light that pools toward the line
+  {
+    float m=1.;
+    if(!noData){
+      vec3 d3=seg3(p,xs,xw,off);
+      vec3 core=1.-smoothstep(vec3(.45),vec3(1.45),d3);
+      vec3 glow=exp(-d3/3.)*.4+exp(-d3*d3/(2.*144.))*.1;
+      c+=COOL*(core*.95+glow)*m;
+      float y=fx(p.x); float inside=step(hz,p.y)*step(p.y,y)*step(xs,p.x)*step(p.x,xw);
+      c+=COOL*inside*m*(.07+.12*pow(clamp((p.y-hz)/max(1.,y-hz),0.,1.),1.6));
+    } else {
+      // missing night: a dotted grey trace, never filled, never "none"
+      float ph=fract(p.x/6.), dt=1.-smoothstep(.55,1.2,length(vec2((ph-.5)*6.*sqrt(1.+pow(slope(p.x),2.)),dG)));
+      c+=vec3(.42,.40,.37)*dt*.7*step(xs,p.x)*step(p.x,xw);
+    }
+  }
+
+  // the lived day: a luminous ribbon, cream at waking, warming and brightening toward now
+  if(uC.z>uB.y){
+    float xl=min(xn,xb);
+    vec3 d3=seg3(p,xw,xl,off);
+    float m=1.;
+    float k=clamp((p.x-xw)/max(1.,xl-xw),0.,1.);
+    float heat=pow(k,2.2);
+    vec3 col=mix(CREAM*.82,mix(CREAM,WARM*1.25,.75),heat);
+    float w=1., sess=0.; // sessions (timed things) thicken the ribbon over their span, measured as their own stretch so the light never leaks into columns
+    for(int i=0;i<${MAXS};i++){ if(i>=uNS)break; float ds=seg(p,uS[i].x,uS[i].y); sess=max(sess,(1.-smoothstep(1.5,2.6,ds))*.9+exp(-ds/2.6)*.25); }
+    vec3 core=1.-smoothstep(vec3(.55),vec3(1.65),d3);
+    vec3 glow=exp(-d3/2.2)*.45+exp(-d3*d3/(2.*81.))*(.06+.22*heat)+exp(-d3*d3/(2.*900.))*.07*heat;
+    c+=col*sess*.85;
+    // a slow pulse of light travels the day toward now
+    float flow=uFlow<0. ? 0. : exp(-pow((k-uFlow)/.06,2.))*.9*smoothstep(0.,.15,uFlow)*(1.-smoothstep(.9,1.,uFlow));
+    c+=col*(core*(.85+.4*heat)+glow*(1.+flow)+flow*core*.6)*m;
+  }
+
+  // the rest of the day: a faint dotted trace of light; after bedtime fainter still
+  if(p.x>xn+4.){
+    float sl=sqrt(1.+pow(slope(p.x),2.)), gap=6.;
+    float ph=fract((p.x-xn)/gap);
+    float dt=1.-smoothstep(.45,1.15,length(vec2((ph-.5)*gap*sl,dG)));
+    float fade=p.x>xb ? .45 : 1.;
+    c+=CREAM*dt*.34*fade*smoothstep(xn+5.,xn+12.,p.x)*(1.-smoothstep(xe-6.,xe,p.x));
+  }
+
+  // the horizon: a hairline of light, brightest where the sun is
+  float dh=abs(p.y-hz);
+  c+=vec3(.8,.76,.7)*(1.-smoothstep(.25,.9,dh))*(.09+.3*exp(-pow((p.x-xn)/80.,2.)));
+
+  // the meridian: the middle of the waking day, a dotted plumb line of very faint light
+  float xm=X((uB.y+uB.w)*.5), ym=yOf((uB.y+uB.w)*.5);
+  if(p.y>ym+10. && p.y<hz){ float ph=fract(p.y/5.); c+=CREAM*.07*(1.-smoothstep(.35,.9,abs(p.x-xm)))*(1.-smoothstep(.2,.5,abs(ph-.5))); }
+
+  // logs: one point of light each, at its own time on the ribbon; a busy moment stacks outward, so each can be counted
+  for(int i=0;i<${MAXL};i++){ if(i>=uNL)break; vec4 L=uL[i]; float fl=uLW[i].x;
+    float r=length(p-L.xy), rr=L.z*(1.+.35*fl);
+    float core=1.-smoothstep(rr-.5,rr+.6,r);
+    float glow=exp(-r/1.9)*.55+exp(-r/7.)*.10*(.4+L.w);
+    vec3 col=mix(CREAM,mix(CREAM,WARM*1.3,.8),L.w);
+    c+=col*(core*1.25+glow)*(1.+2.2*fl);
+  }
+  // records (doses, observations): quiet grey points just under the horizon, never on the ribbon
+  for(int i=0;i<${MAXR};i++){ if(i>=uNR)break; vec4 R=uR[i]; float r=length(p-R.xy);
+    c+=vec3(.56,.53,.49)*((1.-smoothstep(R.z-.5,R.z+.6,r))*.85+exp(-r/2.)*.15)*(1.+R.w); }
+
+  // the sun: a hot white core, a warm volumetric glow, and a long horizontal flare through it, like light in a lens
+  vec2 q=p-sun; float r=length(q);
+  float dim=(noData && uC.z<uB.y) ? .55 : 1.;
+  float pul=1.+.5*uPulse;
+  vec3 sunL=mix(vec3(1.,.36,.16)*1.5,vec3(1.,.9,.8)*1.9,1.-smoothstep(.5,3.6,r))*(1.-smoothstep(7.,8.2,r))
+    + SUNC*(exp(-r/3.)*.5 + exp(-r*r/(2.*196.))*.32*pul + exp(-r*r/(2.*1600.))*.16*pul + exp(-r*r/(2.*6400.))*.05)
+    + WARM*exp(-abs(q.y)/.9)*exp(-q.x*q.x/(2.*3600.))*.22*pul;
+  c+=sunL*dim;
+  // the ground under the sun catches a little of its light
+  c+=SUNC*.05*dim*step(hz,p.y)*exp(-(p.y-hz)/12.)*exp(-pow((p.x-xn)/60.,2.));
+
+  // tone: filmic shoulder, gamma, then grain/dither so the long gradients never band
+  c=1.-exp(-c*1.3); // display-space light: no gamma lift on the tails, so the dark stays dark
+  float g=hash(gl_FragCoord.xy+fract(uTime*7.31)*91.7);
+  c+=(g-.5)*(1.5/255.)*step(.004,dot(c,vec3(.33)))+(g-.5)*.02*smoothstep(.03,.4,dot(c,vec3(.33)));
+  gl_FragColor=vec4(max(c,0.),1.);
+}`;
+
+function probe() { try { const c = document.createElement('canvas'); return !!c.getContext('webgl'); } catch (e) { return false; } }
+
+class ArcLight {
+  constructor() {
+    const cv = this.canvas = document.createElement('canvas'); cv.className = 'arc3d'; cv.setAttribute('aria-hidden', 'true');
+    const gl = this.gl = cv.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
+    if (!gl) throw new Error('no webgl');
+    const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
+    const pr = this.pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+    gl.useProgram(pr);
+    const bf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const ap = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+    this.U = {}; ['uRes', 'uDpr', 'uTime', 'uTop', 'uA', 'uB', 'uC', 'uL', 'uLW', 'uNL', 'uR', 'uNR', 'uS', 'uNS', 'uPulse', 'uFlow', 'uShim'].forEach(k => this.U[k] = gl.getUniformLocation(pr, k));
+    this.raf = 0; this.t0 = performance.now(); this.fx = []; this.last = 0;
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) this.kick(); });
+    document.getElementById('scroll').addEventListener('scroll', () => this.kick(), { passive: true });
+  }
+  attach(el, d, still) {
+    if (!el) return;
+    this.el = el; this.d = d; this.still = !!(still || RM);
+    const W = d.W, H = d.A.H + TOPX + BOTX, dpr = this.dpr = Math.min(devicePixelRatio || 1, 3);
+    if (W !== this.W || H !== this.H) { this.W = W; this.H = H; this.canvas.width = Math.round(W * dpr); this.canvas.height = Math.round(H * dpr); this.canvas.style.width = W + 'px'; this.canvas.style.height = H + 'px'; this.gl.viewport(0, 0, this.canvas.width, this.canvas.height); }
+    const A = d.A, now = performance.now();
+    // logs as points of light: the flat arc's slices (6 px, up to 4 a slice), each stacked out along the curve's normal
+    const L = new Float32Array(MAXL * 4); this.LW = new Float32Array(MAXL * 4); this.fx = [];
+    const marks = d.marks.slice(0, MAXL);
+    marks.forEach((m, i) => {
+      const t = A.T(m.x), y = A.Y(t), [nx, ny] = A.N(t), off = 4.6 + m.n * 6.4;
+      L[i * 4] = m.x + nx * off; L[i * 4 + 1] = y + ny * off; L[i * 4 + 2] = 1.55 + .75 * m.size;
+      L[i * 4 + 3] = Math.exp(-Math.max(0, d.now - m.t) / 70); // logs nearest now hold the sun's warmth
+      if (m.isNew && !this.still) this.fx.push({ i, s: now, dur: 1600 });
+    });
+    this.L = L; this.nl = marks.length;
+    const R = new Float32Array(MAXR * 4), recs = d.recs.slice(0, MAXR);
+    recs.forEach((r, i) => { R[i * 4] = A.X(r.t); R[i * 4 + 1] = A.hz + 9; R[i * 4 + 2] = 2.3; R[i * 4 + 3] = r.isNew ? .6 : 0; });
+    this.R = R; this.nr = recs.length;
+    const S = new Float32Array(MAXS * 4), ss = d.sess.slice(0, MAXS);
+    ss.forEach(([a, b], i) => { S[i * 4] = A.X(Math.max(A.wake, a)); S[i * 4 + 1] = A.X(Math.min(b, d.now)); });
+    this.S = S; this.ns = ss.length;
+    this.pulse = d.pulse && !this.still ? now : 0;
+    el.classList.add('is3d'); if (this.canvas.parentNode !== el) el.prepend(this.canvas);
+    this.kick();
+  }
+  frame(ts) {
+    this.raf = 0; if (!this.el || !this.el.isConnected) return;
+    const gl = this.gl, U = this.U, d = this.d, A = d.A, live = !this.still;
+    const tm = live ? (ts - this.t0) / 1000 : 0;
+    let busy = false;
+    this.LW.fill(0);
+    this.fx = this.fx.filter(f => { const k = Math.min(1, (ts - f.s) / f.dur); this.LW[f.i * 4] = Math.pow(1 - k, 2.2) * Math.min(1, k / .12); if (k < 1) busy = true; return k < 1; });
+    let pul = 0; if (this.pulse) { const k = (ts - this.pulse) / 1100; if (k < 1) { pul = Math.sin(Math.PI * k); busy = true; } else this.pulse = 0; }
+    const fl = live ? (tm % 7) / 3.2 : -1; // every 7 s a pulse of light takes 3.2 s to travel from waking to now
+    const NW = .2 * (this.W - 2 * A.pad);
+    gl.uniform2f(U.uRes, this.W, this.H); gl.uniform1f(U.uDpr, this.dpr); gl.uniform1f(U.uTime, tm); gl.uniform1f(U.uTop, TOPX);
+    gl.uniform4f(U.uA, A.pad, NW, this.W - 2 * A.pad - NW, A.hz);
+    gl.uniform4f(U.uB, A.start, A.wake, A.end, A.bed);
+    gl.uniform4f(U.uC, A.amp, A.dep, d.now, d.noData ? 1 : 0);
+    gl.uniform4fv(U.uL, this.L); gl.uniform4fv(U.uLW, this.LW); gl.uniform1i(U.uNL, this.nl);
+    gl.uniform4fv(U.uR, this.R); gl.uniform1i(U.uNR, this.nr); gl.uniform4fv(U.uS, this.S); gl.uniform1i(U.uNS, this.ns);
+    gl.uniform1f(U.uPulse, pul); gl.uniform1f(U.uFlow, fl > 1 ? -1 : fl); gl.uniform1f(U.uShim, live ? 1 : 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    this.last = ts;
+    const r = this.el.getBoundingClientRect(), vis = r.bottom > 0 && r.top < innerHeight && !document.hidden;
+    if (busy) this.raf = requestAnimationFrame(t => this.frame(t));
+    else if (live && vis) { const wait = t => { if (t - this.last < 32) this.raf = requestAnimationFrame(wait); else this.frame(t); }; this.raf = requestAnimationFrame(wait); } // idle shimmer at ~30 fps; stops off screen
+  }
+  kick() { if (!this.raf) this.raf = requestAnimationFrame(t => this.frame(t)); }
+}
+
+if (probe() && !new URLSearchParams(location.search).has('flat')) {
+  try {
+    const a = new ArcLight();
+    window.Arc3D = { attach: (el, d, still) => a.attach(el, d, still) };
+    window.__meridian && window.__meridian.render();
+  } catch (e) { window.Arc3D = null; }
+}
+
+</script>
+</body>
+</html>
